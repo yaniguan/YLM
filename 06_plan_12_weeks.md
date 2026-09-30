@@ -34,10 +34,10 @@ If this fails, stop and rethink before building anything bigger.
 ## Things to decide early (week 1)
 
 - Encoder: e3nn custom (flexible, slower) vs MACE (strong, less flexible). Suggest: custom e3nn for molecules (weeks 3-8), MACE-MP-0 for crystals (weeks 9+).
-- Text model: MiniLM (fastest), MatSciBERT, BatteryBERT. Suggest MiniLM for month 1, then MatSciBERT/BatteryBERT.
+- Text model: run MiniLM and MatSciBERT side by side from month 1 (decided). BatteryBERT added for crystals.
 - float64 for tests, float32 for training.
 
 ## Target venue
 
-NeurIPS / ICLR main track if T3-T5 show a clear gap over EquiLLM-style and frame averaging.
+ICML 2027 (deadline ~late Jan 2027, verify) if T3-T5 show a clear gap over EquiLLM-style and frame averaging.
 If the gap is small, aim for a workshop (AI4Mat, ML4PS) + benchmark release first.

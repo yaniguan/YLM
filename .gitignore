@@ -1,0 +1,7 @@
+data/
+*.pt
+*.ckpt
+__pycache__/
+.ipynb_checkpoints/
+runs/
+.env

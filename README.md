@@ -4,8 +4,8 @@
 (vectors and tensors), so a model can answer questions like *"what is the force on this oxygen atom?"*
 with a vector that rotates correctly when the molecule rotates.
 
-> **Status:** research planning stage (week 0). No code yet. This repo holds the design notes and
-> literature review. Code will be added in `src/` following the [12-week plan](YLM/06_plan_12_weeks.md).
+> **Status:** month 1 of the [12-week plan](06_plan_12_weeks.md). Data pipeline, model (Option A) and
+> equivariance tests work; first training runs in progress. See [`progress.md`](progress.md).
 
 ---
 
@@ -22,7 +22,7 @@ Molecule/material language models today lose direction information before the la
 | LLMs on CIF / xyz text | Coordinates as text. No rotation guarantee. |
 
 So language can't choose, combine, or report directions: dipoles, forces, dielectric or elastic tensors.
-Details and evidence: [`YLM/02_novelty_check.md`](YLM/02_novelty_check.md).
+Details and evidence: [`02_novelty_check.md`](02_novelty_check.md).
 
 ## Core idea
 
@@ -57,7 +57,7 @@ Three building blocks, from simple to strong:
 Each text token carries two streams: the normal invariant hidden state `h_t`, and an irreps side stream `e_t`.
 To output a vector, the model emits a `<VEC>` / `<TENSOR>` token and an equivariant head fills in the numbers.
 
-Full design, pseudocode, chirality handling: [`YLM/03_technical_design.md`](YLM/03_technical_design.md).
+Full design, pseudocode, chirality handling: [`03_technical_design.md`](03_technical_design.md).
 
 ## Main contributions (planned)
 
@@ -74,7 +74,7 @@ Full design, pseudocode, chirality handling: [`YLM/03_technical_design.md`](YLM/
    frame averaging, and a "text replaced by task ID" ablation.
 
 The novelty claim is based on a limited search (2026-09-29). See the re-check list in
-[`YLM/02_novelty_check.md`](YLM/02_novelty_check.md).
+[`02_novelty_check.md`](02_novelty_check.md).
 
 ## First experiment
 
@@ -89,31 +89,51 @@ The novelty claim is based on a limited search (2026-09-29). See the re-check li
 ## Repository layout
 
 ```
-.
-├── README.md                     # this file
-└── YLM/
-    ├── README.md                 # reading order for the notes
-    ├── 00_glossary.md            # irreps, CG products, parity: plain explanations
-    ├── 01_related_work.md        # papers by topic, one line each
-    ├── 02_novelty_check.md       # closest work, where others lose 3D direction
-    ├── 03_technical_design.md    # attention options A/B/C, output heads, chirality
-    ├── 04_data_and_benchmark.md  # datasets, TensorQA, rotation protocol, baselines
-    ├── 05_risks.md               # top 5 risks and fixes
-    └── 06_plan_12_weeks.md       # week-by-week plan
+YLM/
+├── README.md                 # this file
+├── LICENSE                   # MIT (code)
+├── 00_glossary.md            # irreps, CG products, parity: plain explanations
+├── 01_related_work.md        # papers by topic, one line each
+├── 02_novelty_check.md       # closest work, where others lose 3D direction
+├── 03_technical_design.md    # attention options A/B/C, output heads, chirality
+├── 04_data_and_benchmark.md  # datasets, TensorQA, rotation protocol, baselines
+├── 05_risks.md               # top 5 risks and fixes
+├── 06_plan_12_weeks.md       # week-by-week plan
+├── progress.md               # dated progress log
+├── src/                      # encoder, Irreps-to-Text attention, model
+├── scripts/                  # 01 labels, 02 questions, 03 text features, 04 train, 05 LLM baseline
+├── tests/                    # equivariance tests
+├── jobs/                     # Hoffman2 (SGE) and Expanse (Slurm) job scripts
+└── data/                     # downloaded / generated data (git-ignored)
 ```
 
 ## How to run
 
-There is no code yet. Planned environment for the first experiment:
-
 ```bash
-conda create -n ylm python=3.11 -y
+# 1. environment (Mac or Linux)
+conda create -n ylm -c conda-forge python=3.11 pytorch tblite-python rdkit ase -y
 conda activate ylm
-pip install torch e3nn transformers ase
-conda install -c conda-forge xtb-python   # for dipole / force labels
+pip install e3nn transformers pytest
+
+# 2. data: QM9 structures (DeepChem mirror), ~45 MB
+mkdir -p data && cd data
+curl -LO https://deepchemdata.s3-us-west-1.amazonaws.com/datasets/molnet_publish/qm9.zip && unzip qm9.zip && cd ..
+
+# 3. labels, questions, text features
+python scripts/01_make_labels.py --n 20000      # GFN2-xTB dipoles + forces (~15 s)
+python scripts/02_make_questions.py             # TensorQA-v0 questions
+python scripts/03_embed_text.py --name minilm
+python scripts/03_embed_text.py --name matscibert
+
+# 4. check equivariance, then train
+python -m pytest tests -q
+python scripts/04_train.py --text minilm --name ylm_minilm      # ours
+python scripts/04_train.py --text taskid --name base_taskid     # baseline: no language
+python scripts/05_train_llm_baseline.py --name llm05 --augment  # baseline: coordinates as text (GPU)
 ```
 
-To read the notes, start with [`YLM/README.md`](YLM/README.md).
+Results go to `runs/<name>/results.json`. Cluster job scripts are in `jobs/`.
+Progress notes: [`progress.md`](progress.md).
 
 ## Roadmap
 
@@ -145,4 +165,5 @@ Not published yet. Placeholder:
 
 ## License
 
-Not chosen yet. Suggested: MIT for code, CC BY 4.0 for the benchmark (matches Materials Project data).
+- Code: [MIT](LICENSE)
+- Data and benchmark (TensorQA): [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)

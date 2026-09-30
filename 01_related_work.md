@@ -175,9 +175,13 @@ Softmax of non-invariant numbers would break equivariance. That is why weights m
 - Method: Llama-2 on crystal text strings with rotation/translation augmentation.
 - For us: shows that augmentation is the "cheap" way LLMs handle symmetry. Our argument is against this.
 
-**CatalyticMLLM** (2026) — https://arxiv.org/abs/2605.17254 (found in search, not read)
-- Method: graph-text multimodal LLM for catalysts.
-- For us: check whether its graph encoder is equivariant and whether l>=1 reaches the LLM.
+**CatalyticMLLM** (2026) — https://arxiv.org/abs/2605.17254
+- Method: EquiformerV2 encoder -> linear projection -> Qwen2.5-VL. Property prediction and CIF generation.
+- For us: equivariant encoder, but no sign l>=1 reaches the LLM; no vector outputs, no rotation tests.
+
+**MatterChat** (2026, Nature Machine Intelligence) — https://arxiv.org/abs/2502.13107
+- Method: frozen MACE-MP-0 or CHGNet atom embeddings -> BLIP-2 style bridge with 32 queries -> frozen LLM.
+- For us: **closest materials chat model.** Direct baseline for crystals (week 9+). Uses the same MACE-MP-0 encoder we plan to use, so the comparison is clean.
 
 **Zatom-1** (2026) — https://arxiv.org/abs/2602.22251
 - Method: plain (non-equivariant) Transformer, flow matching over molecules + materials.
@@ -238,9 +242,9 @@ Useful for mechanisms, not for symmetry (almost none are equivariant).
 - Method: make any network equivariant by averaging over a few PCA-based frames.
 - For us: a baseline that makes a plain LLM "equivariant" without irreps. Reviewers will ask about this.
 
-**EquiVLA** (2026) — https://arxiv.org/abs/2606.19784 (found in search, not read)
-- Method: rotation-equivariant vision-language-action model.
-- For us: check how they handle language + equivariant features. Possibly close to our Option A.
+**EquiVLA** (2026) — https://arxiv.org/abs/2606.19784
+- Method: frozen VLM sees only invariant visual tokens + language; equivariant tokens (C8 planar group) bypass it and are fused after with an invariant gate.
+- For us: same "language sees invariants only" pattern as EquiLLM, in 2D robotics.
 
 ---
 
