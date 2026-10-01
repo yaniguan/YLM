@@ -2,6 +2,29 @@
 
 Newest first. One entry per work session.
 
+## 2026-10-01 (v0 results)
+
+Month-1 checkpoint: **passed.**
+- 23 runs on Expanse V100 (~35 min each): YLM + MiniLM / MatSciBERT (5 seeds), task ID (4 seeds), 3/10/30% data.
+- Force on a described atom: YLM + MatSciBERT MAE 0.0064, cos 0.96; task ID 0.0424, cos 0.11.
+  The text is what makes atom selection possible.
+- Rotation error mean ~2e-6 for all models (float32), no augmentation.
+- MatSciBERT > MiniLM on held-out wordings (dipole cos 0.94 vs 0.73). MiniLM better with <=10% data.
+- Attention peaks on the asked atom or a bonded neighbour 94-97% of the time; for H atoms it looks at the
+  heavy atom the H is bonded to. Strict "exact atom" accuracy is noisy across seeds (0.08-0.94), so it is not
+  a good headline metric.
+- Task ID is slightly better on the dipole (0.067 vs 0.082): language has a small cost when no selection is needed.
+
+Fixed along the way:
+- Expanse Slurm needs `--nodes=1 --ntasks-per-node=1`; max ~20 queued jobs per account (shared with other work).
+- `evaluate()` device bug on CUDA (scale tensor on CPU).
+- Mac MPS runs out of memory when other apps are open; Mac is not used for training any more.
+- LLM baseline (Qwen 0.5B, float32, V100): batch 32 runs out of memory. Now batch 8 + gradient checkpointing.
+
+Open:
+- Coordinates-as-text LLM baseline (with / without rotation augmentation): re-running.
+- Next (after v0): T4/T5 compositional questions, Option B/C, tensors from QM7b instead of computing DFT.
+
 ## 2026-09-30 (weeks 1-3 of the plan)
 
 Done:

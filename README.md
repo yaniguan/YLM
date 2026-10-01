@@ -4,8 +4,8 @@
 (vectors and tensors), so a model can answer questions like *"what is the force on this oxygen atom?"*
 with a vector that rotates correctly when the molecule rotates.
 
-> **Status:** month 1 of the [12-week plan](06_plan_12_weeks.md). Data pipeline, model (Option A) and
-> equivariance tests work; first training runs in progress. See [`progress.md`](progress.md).
+> **Status: v0.** First release: the **TensorQA-v0** benchmark (dipole and force questions on QM9),
+> the Option A model, and three baselines. See [What is in v0](#what-is-in-v0) and [Results](#results-v0).
 
 ---
 
@@ -54,8 +54,9 @@ Three building blocks, from simple to strong:
 | **B.** Direction-aware keys (same-l dot products) | pick atoms by orientation | "component along this bond" |
 | **C.** Text-weighted CG tensor product | build new tensors (1x1->2, ...) | polarizability, dielectric, elastic tensors |
 
-Each text token carries two streams: the normal invariant hidden state `h_t`, and an irreps side stream `e_t`.
-To output a vector, the model emits a `<VEC>` / `<TENSOR>` token and an equivariant head fills in the numbers.
+Planned (not in v0): each text token carries two streams, the normal invariant hidden state `h_t` and an
+irreps side stream `e_t`; to output a vector, a generative LLM emits a `<VEC>` / `<TENSOR>` token and an
+equivariant head fills in the numbers.
 
 Full design, pseudocode, chirality handling: [`03_technical_design.md`](03_technical_design.md).
 
@@ -75,6 +76,69 @@ Full design, pseudocode, chirality handling: [`03_technical_design.md`](03_techn
 
 The novelty claim is based on a limited search (2026-09-29). See the re-check list in
 [`02_novelty_check.md`](02_novelty_check.md).
+
+## What is in v0
+
+| Part | In v0 | Later |
+|---|---|---|
+| Benchmark | **TensorQA-v0**: 84,757 questions on 20k QM9 molecules. Dipole of the molecule; force on an atom described in words. Held-out wordings. [Data card](DATA_CARD.md) | tensors (polarizability, dielectric), crystals, compositional questions |
+| Model | equivariant encoder (l <= 2) + **Option A** Irreps-to-Text attention + l=1 readout. Frozen text encoder (MiniLM or MatSciBERT) | Options B and C, two-stream LLM, `<VEC>` tokens |
+| Baselines | task ID instead of text; coordinates as text into Qwen2.5-0.5B (with / without rotation augmentation) | EquiLLM-style adapter, frame averaging, 3D-MoLM |
+| Evaluation | rotation protocol: 32 random rotations per test question, equivariance error, attention-on-the-right-atom accuracy | mirror / chirality tests |
+
+## Results (v0)
+
+Full table with all runs: [`results.md`](results.md) (made by `scripts/07_make_table.py`).
+
+Test set, mean ± std over seeds (5 seeds for YLM, 4 for task ID). Every test question is evaluated under
+32 random rotations. MAE units: dipole e·bohr, force hartree/bohr. "Near" = the attention peak is on the asked
+atom or an atom bonded to it; mean over seeds (range in brackets).
+
+| Model | force MAE | force cos | dipole MAE | dipole cos | attention near asked atom | rotation error (mean) |
+|---|---|---|---|---|---|---|
+| **YLM + MatSciBERT** | **0.0064 ± 0.0003** | **0.960** | 0.082 | 0.980 | 0.97 (0.93–1.00) | 2e-6 |
+| YLM + MiniLM | 0.0075 ± 0.0006 | 0.946 | 0.083 | 0.980 | 0.94 (0.87–0.98) | 2e-6 |
+| Task ID instead of text (no language) | 0.0424 ± 0.0000 | 0.113 | **0.067** | **0.986** | 0.20 (0.12–0.43) | 2e-6 |
+| Coordinates as text → Qwen2.5-0.5B | *running* | | | | – | |
+
+Held-out wordings (sentences never seen in training):
+
+| Model | force cos | dipole cos |
+|---|---|---|
+| YLM + MatSciBERT | 0.917 ± 0.021 | 0.941 ± 0.032 |
+| YLM + MiniLM | 0.859 ± 0.040 | 0.726 ± 0.140 |
+
+What this shows:
+
+1. **The words select the atom.** Without the question text (task ID only), the model cannot know which atom
+   is asked about, and the force direction is close to random (cos 0.11). With the text, force error drops
+   6.6x and the direction is right (cos 0.96).
+2. **The answer rotates exactly with the molecule.** Mean rotation error is ~2e-6 (float32 rounding) for every
+   model, without any rotation augmentation. Worst cases reach ~1e-3 on near-zero predictions, where the
+   relative error is large.
+3. **A science text encoder generalizes better.** MatSciBERT beats MiniLM on held-out wordings, most clearly on
+   the dipole (0.94 vs 0.73). With very little data (3-10%) MiniLM learns faster; from 30% on MatSciBERT is better
+   ([plot](analysis/sample_efficiency.png)).
+4. **Attention is local, not always exact.** For hydrogen atoms the attention almost never peaks on the H itself
+   but on the heavy atom it is bonded to (98% "near", 0-40% exact). Some seeds do the same for oxygen. The
+   neighbour's features already carry the force on the asked atom after message passing, so the answer is still
+   right. Details: [`analysis/breakdown.md`](analysis/breakdown.md).
+5. **Where language costs something.** For the dipole, a one-hot task ID is slightly better (MAE 0.067 vs 0.082):
+   the dipole question needs no atom selection, and the text model must first recognize the question type.
+
+Full tables, including 3% / 10% / 30% training data: [`results.md`](results.md).
+
+## Limitations
+
+- Labels are GFN2-xTB (semi-empirical), not DFT. Fine for testing whether a model reads geometry; not chemical accuracy.
+- Questions come from 12 templates (4 held out). Real questions are more varied.
+- Only vectors (l = 1) are asked in v0, although the encoder carries l = 2.
+- The force question can also be solved by a pipeline "parse the description -> atom index -> force model".
+  v0 shows the language model can do it end to end; harder compositional questions are needed to rule out simpler pipelines.
+- The text encoder is frozen and only reads the question; the model does not generate text yet.
+- Attention often lands on a bonded neighbour instead of the exact atom (see Results), so attention maps are
+  only roughly interpretable.
+- Data-fraction runs (3%, 10%, 30%) use one seed each.
 
 ## First experiment
 
@@ -100,8 +164,13 @@ YLM/
 ├── 05_risks.md               # top 5 risks and fixes
 ├── 06_plan_12_weeks.md       # week-by-week plan
 ├── progress.md               # dated progress log
+├── DATA_CARD.md              # TensorQA-v0: sources, units, splits, limits
+├── results.md                # v0 results table
+├── environment.yml           # conda environment
 ├── src/                      # encoder, Irreps-to-Text attention, model
-├── scripts/                  # 01 labels, 02 questions, 03 text features, 04 train, 05 LLM baseline
+├── scripts/                  # 01 labels, 02 questions, 03 text features, 04 train, 05 LLM baseline,
+│                             # 06 export release data, 07 results table, 08 analysis plots
+├── analysis/                 # sample-efficiency plot, error breakdown
 ├── tests/                    # equivariance tests
 ├── jobs/                     # Hoffman2 (SGE) and Expanse (Slurm) job scripts
 └── data/                     # downloaded / generated data (git-ignored)
@@ -110,10 +179,9 @@ YLM/
 ## How to run
 
 ```bash
-# 1. environment (Mac or Linux)
-conda create -n ylm -c conda-forge python=3.11 pytorch tblite-python rdkit ase -y
+# 1. environment (Mac or Linux; for old Linux see the note in environment.yml)
+conda env create -f environment.yml
 conda activate ylm
-pip install e3nn transformers pytest
 
 # 2. data: QM9 structures (DeepChem mirror), ~45 MB
 mkdir -p data && cd data
@@ -130,17 +198,25 @@ python -m pytest tests -q
 python scripts/04_train.py --text minilm --name ylm_minilm      # ours
 python scripts/04_train.py --text taskid --name base_taskid     # baseline: no language
 python scripts/05_train_llm_baseline.py --name llm05 --augment  # baseline: coordinates as text (GPU)
+
+# 5. table and release files
+python scripts/07_make_table.py           # -> results.md
+python scripts/08_analyze.py              # -> analysis/ (plot + breakdown by element, size, wording)
+python scripts/06_export_release.py       # -> data/release/tensorqa_v0.tar.gz (JSONL + data card)
 ```
+
+Only want the benchmark? Download `tensorqa_v0.tar.gz` from the GitHub release. Each JSONL line has the atoms,
+positions, question and answer, so no code from this repo is needed.
 
 Results go to `runs/<name>/results.json`. Cluster job scripts are in `jobs/`.
 Progress notes: [`progress.md`](progress.md).
 
 ## Roadmap
 
-- [ ] Weeks 1-4: labels, Option A, rotation test, first baselines (month-1 checkpoint)
+- [x] v0: labels, TensorQA-v0, Option A, rotation protocol, task-ID and coordinates-as-text baselines
 - [ ] Weeks 5-8: Options B and C, tensor outputs, EquiLLM-style and frame-averaging baselines, chirality tests
 - [ ] Weeks 9-10: crystals (MACE-MP-0, Materials Project tensors), battery literature text
-- [ ] Weeks 11-12: generative LLM version, paper draft, TensorQA v0 release
+- [ ] Weeks 11-12: generative LLM version, paper draft
 
 ## Built on
 

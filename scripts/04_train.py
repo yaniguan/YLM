@@ -101,6 +101,7 @@ def get_batch(data, split, idx, device, R=None):
 @torch.no_grad()
 def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0):
     model.eval()
+    scale = scale.to(device)
     rotations = [torch.eye(3)]  # first one = no rotation
     if n_rot > 1:
         with torch.random.fork_rng():  # same rotations every time, without touching the training RNG

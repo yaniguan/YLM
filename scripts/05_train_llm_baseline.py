@@ -48,7 +48,12 @@ def make_prompt(numbers, pos, question):
 class LLMRegressor(torch.nn.Module):
     def __init__(self, name):
         super().__init__()
-        self.llm = AutoModel.from_pretrained(name, torch_dtype=torch.bfloat16)
+        # bf16 on A100/H100; V100 has no bf16, so use float32 there
+        dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float32
+        self.llm = AutoModel.from_pretrained(name, torch_dtype=dtype)
+        # recompute activations in the backward pass instead of storing them: fits a 32 GB V100 in float32
+        self.llm.gradient_checkpointing_enable()
+        self.llm.config.use_cache = False
         self.head = torch.nn.Linear(self.llm.config.hidden_size, 3)
 
     def forward(self, input_ids, attention_mask):
@@ -128,11 +133,13 @@ def main():
     p.add_argument("--name", required=True)
     p.add_argument("--augment", action="store_true")
     p.add_argument("--epochs", type=int, default=3)
-    p.add_argument("--batch_size", type=int, default=32)
+    p.add_argument("--batch_size", type=int, default=8, help="32 runs out of memory on a V100 in float32")
     p.add_argument("--lr", type=float, default=2e-5)
     p.add_argument("--eval_rotations", type=int, default=8)
     p.add_argument("--val_size", type=int, default=2000, help="val questions checked each epoch")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--max_steps", type=int, default=0, help="debug: stop training early")
+    p.add_argument("--test_limit", type=int, default=0, help="debug: only evaluate this many test questions")
     args = p.parse_args()
 
     torch.manual_seed(args.seed)
@@ -186,6 +193,8 @@ def main():
             losses.append(loss.item())
             if len(losses) % 200 == 0:
                 say(f"epoch {epoch} step {len(losses)} loss {np.mean(losses[-200:]):.4f} {time.time() - t0:.0f}s")
+            if args.max_steps and len(losses) >= args.max_steps:
+                break
         val = evaluate(model, labels, val_qs, tok, scale, device, n_rot=1)
         score = val["dipole"]["mae"] / scale[0].item() + val["force"]["mae"] / scale[1].item()
         say(f"epoch {epoch} val {json.dumps(val)}")
@@ -196,7 +205,8 @@ def main():
     model.load_state_dict(torch.load(f"{out_dir}/model.pt"))
     results = {"args": vars(args), "scale": scale.tolist()}
     for split in ["test", "test_heldout"]:
-        results[split] = evaluate(model, labels, splits[split], tok, scale, device, n_rot=args.eval_rotations)
+        qs = splits[split][: args.test_limit] if args.test_limit else splits[split]
+        results[split] = evaluate(model, labels, qs, tok, scale, device, n_rot=args.eval_rotations)
         say(split, json.dumps(results[split]))
     json.dump(results, open(f"{out_dir}/results.json", "w"), indent=2)
     os.remove(f"{out_dir}/model.pt")  # 1-3 GB each; scratch space is not free
