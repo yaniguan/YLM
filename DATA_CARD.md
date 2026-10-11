@@ -61,7 +61,7 @@ Also report the error in the dataset's own orientation (`mae_orig_frame`) for mo
   not to claim chemical accuracy.
 - **Questions are templated** (6 dipole and 6 force templates, 2 of each held out). Real users ask more varied things.
 - **Only vectors (l = 1).** Tensors (polarizability, dielectric) come in a later version. xTB polarizabilities are
-  wrong (water: 2.4 vs 9.8 bohr^3), so tensor labels need DFT or an existing dataset (e.g. QM7b).
+  wrong (water: 2.4 vs 9.8 bohr^3), so tensor labels need DFT or an existing dataset (e.g. Wilkins et al. 2019 tensors on QM7b molecules; the plain QM7b file only has scalar polarizabilities).
 - **Small molecules only** (QM9). No crystals yet.
 - The `force` question is solvable by "parse the description -> pick the atom -> predict its force".
   v0 tests whether a model can do this end to end from language; harder compositional questions come later.

@@ -2,6 +2,25 @@
 
 Newest first. One entry per work session.
 
+## 2026-10-11 (v0.1.0 + post-v0 baselines)
+
+Done:
+- Released v0.1.0 (tag + GitHub release): 3 checkpoints, `scripts/09` (re-evaluating the MatSciBERT checkpoint
+  reproduces training numbers: force MAE 0.00684 vs 0.00686; rotated-molecule demo diff ~2e-7).
+- Read Mol-StrucTok (KDD '26): invariant spherical-coordinate tokens for generation, not irreps-to-text. Cited, claim unchanged.
+- Code added (smoke-tested on CPU, tests pass, **no result numbers yet**): pipeline and scalar-collapse baselines
+  (`src/baselines.py`, `04_train.py --model`), rule parser (100% on v0 test and held-out force questions),
+  compositional questions + Option B/C-lite, quadrupole labels.
+- Hoffman2 queue (all V100): Qwen aug / noaug (15130177/8), pipe_s0-2 + scalar_s0-2 (15130204-9), comp_bc/optA_s0-2 (15130255-60).
+  Old m1_* jobs from 09-30 are still `qw` there and were not touched (results already exist from Expanse).
+
+Notes / corrections:
+- The original QM7b file has scalar polarizabilities only. Full tensors are in Wilkins et al. 2019 (Materials Cloud,
+  availability still to verify); QM7-X also lists polarizability tensors. Quadrupole (PySCF single point) is the cheap l=2 fallback.
+- The v0 questions are fully parseable by regex, so the pipeline baseline will likely match YLM on v0. That is why T4/T5 exist.
+- The scalar-collapse baseline is a proxy for invariant-token methods, not a reproduction of Mol-StrucTok.
+- Expanse SSH key is still not installed (needs `ssh-copy-id` by hand), so nothing was submitted there.
+
 ## 2026-10-01 (v0 results)
 
 Month-1 checkpoint: **passed.**
@@ -23,7 +42,7 @@ Fixed along the way:
 
 Open:
 - Coordinates-as-text LLM baseline (with / without rotation augmentation): re-running.
-- Next (after v0): T4/T5 compositional questions, Option B/C, tensors from QM7b instead of computing DFT.
+- Next (after v0): T4/T5 compositional questions, Option B/C, l=2 targets (quadrupole via PySCF, or Wilkins et al. polarizability tensors).
 
 ## 2026-09-30 (weeks 1-3 of the plan)
 

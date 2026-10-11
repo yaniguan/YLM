@@ -45,3 +45,29 @@ def test_model_equivariant_and_translation_invariant():
         assert (attn_rot - attn).abs().max() < 1e-9, mode      # attention does not change
         assert (y_move - y).abs().max() < 1e-9, mode           # translation does nothing
         assert attn[0, -2:].abs().max() == 0                   # padding atoms get no attention
+
+
+def test_pipeline_and_compositional_models_equivariant():
+    from src.baselines import PipelineForce, ScalarCollapse
+    from src.option_bc import CompModel
+    Z, pos, mask, text, tmask, task = fake_batch()
+    R = o3.rand_matrix()
+    shift = torch.tensor([5.0, -2.0, 1.0])
+    atom = torch.tensor([-1, 2, 3])
+    cases = {
+        "pipeline": (PipelineForce(), (task, atom)),
+        "bc": (CompModel(text_dim=16), ()),
+    }
+    for name, (model, extra) in cases.items():
+        args = (Z, pos, mask, text, tmask) + extra
+        y, _ = model(*args)
+        y_rot, _ = model(Z, pos @ R.T, mask, text, tmask, *extra)
+        y_move, _ = model(Z, pos + shift, mask, text, tmask, *extra)
+        assert (y_rot - y @ R.T).abs().max() < 1e-8, name
+        assert (y_move - y).abs().max() < 1e-8, name
+    # the scalar-collapse baseline is NOT equivariant: its output must not follow the rotation
+    sc = ScalarCollapse(text_dim=16)
+    y, _ = sc(Z, pos, mask, text, tmask, task)
+    y_rot, _ = sc(Z, pos @ R.T, mask, text, tmask, task)
+    assert (y_rot - y).abs().max() < 1e-8                      # invariant: same output after rotation
+    assert (y_rot - y @ R.T).abs().max() > 1e-4                # so it cannot be equivariant

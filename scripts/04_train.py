@@ -93,9 +93,12 @@ def get_batch(data, split, idx, device, R=None):
         pos = pos @ R.T
         target = target @ R.T
     t = split["text"][idx]
-    return (data["Z"][m].to(device), pos.to(device), data["mask"][m].to(device),
-            data["text"][t].to(device), data["text_mask"][t].to(device),
-            split["task"][idx].to(device)), target.to(device)
+    inputs = (data["Z"][m].to(device), pos.to(device), data["mask"][m].to(device),
+              data["text"][t].to(device), data["text_mask"][t].to(device),
+              split["task"][idx].to(device))
+    if data.get("with_atom"):  # pipeline baseline: the atom index the parser found (or the true one in training)
+        inputs += (split.get("atom_in", split["atom"])[idx].to(device),)
+    return inputs, target.to(device)
 
 
 @torch.no_grad()
@@ -145,9 +148,37 @@ def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0):
     return out
 
 
+def attach_parsed_atoms(splits, sdf, labels_path, questions_path, say):
+    """Pipeline baseline: replace the atom index of val/test splits by what the rule parser finds."""
+    from rdkit import Chem, RDLogger
+    from src.parse_question import resolve
+    RDLogger.DisableLog("rdApp.*")
+    labels = pickle.load(open(labels_path, "rb"))
+    questions = json.load(open(questions_path))
+    supplier = Chem.SDMolSupplier(sdf, removeHs=False, sanitize=True)
+    for name in ["val", "test", "test_heldout"]:
+        qs = [q for q in questions if q["split"] == name]
+        parsed = torch.full((len(qs),), -1, dtype=torch.long)
+        ok = n = 0
+        for k, q in enumerate(qs):
+            if q["task"] != "force":
+                continue
+            parsed[k] = resolve(q["question"], supplier[labels[q["mol"]]["qm9_index"]])
+            n += 1
+            ok += int(parsed[k] == q["atom"])
+        splits[name]["atom_in"] = parsed
+        if n:
+            say(f"parser accuracy {name}: {ok}/{n} = {ok / n:.4f}")
+        splits[name]["parse_acc"] = ok / max(n, 1)
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--text", choices=["minilm", "matscibert", "taskid"], required=True)
+    p.add_argument("--model", choices=["ylm", "pipeline", "scalar"], default="ylm",
+                   help="ylm = Option A; pipeline = parse text -> atom index -> force model; "
+                        "scalar = invariants only (see src/baselines.py)")
+    p.add_argument("--augment", action="store_true", help="random rotation of every training batch")
     p.add_argument("--name", required=True)
     p.add_argument("--epochs", type=int, default=60)
     p.add_argument("--batch_size", type=int, default=128)
@@ -156,10 +187,12 @@ def main():
     p.add_argument("--eval_rotations", type=int, default=32)
     p.add_argument("--max_steps", type=int, default=0, help="debug: stop early")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--device", default=None, help="default: cuda, else mps, else cpu")
+    p.add_argument("--test_limit", type=int, default=0, help="debug: only evaluate this many questions per split")
     args = p.parse_args()
 
     torch.manual_seed(args.seed)
-    device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
+    device = args.device or ("cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu"))
     out_dir = f"runs/{args.name}"
     os.makedirs(out_dir, exist_ok=True)
     log = open(f"{out_dir}/log.txt", "w")
@@ -182,7 +215,16 @@ def main():
     say("device", device, "| train questions", len(train["mol"]), "| scale", scale.tolist())
     scale_dev = scale.to(device)
 
-    model = YLM(text_dim=data["text_dim"], text_mode="taskid" if args.text == "taskid" else "text").to(device)
+    if args.model == "pipeline":
+        from src.baselines import PipelineForce
+        data["with_atom"] = True
+        model = PipelineForce().to(device)
+        attach_parsed_atoms(splits, "data/gdb9.sdf", "data/qm9_xtb.pkl", "data/tensorqa_v0.json", say)
+    elif args.model == "scalar":
+        from src.baselines import ScalarCollapse
+        model = ScalarCollapse(text_dim=data["text_dim"]).to(device)
+    else:
+        model = YLM(text_dim=data["text_dim"], text_mode="taskid" if args.text == "taskid" else "text").to(device)
     say("parameters", sum(p.numel() for p in model.parameters()))
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-5)
     steps_per_epoch = math.ceil(len(train["mol"]) / args.batch_size)
@@ -195,7 +237,8 @@ def main():
         losses = []
         for start in range(0, len(perm), args.batch_size):
             idx = perm[start: start + args.batch_size]
-            inputs, target = get_batch(data, train, idx, device)
+            R = o3.rand_matrix() if args.augment else None
+            inputs, target = get_batch(data, train, idx, device, R)
             y, _ = model(*inputs)
             loss = ((y - target / scale_dev[inputs[5]][:, None]) ** 2).mean()
             opt.zero_grad()
@@ -220,7 +263,11 @@ def main():
 
     model.load_state_dict(torch.load(f"{out_dir}/model.pt"))
     results = {"args": vars(args), "scale": scale.tolist()}
+    if args.model == "pipeline":
+        results["parser_accuracy"] = {k: splits[k]["parse_acc"] for k in ("val", "test", "test_heldout")}
     for split in ["test", "test_heldout"]:
+        if args.test_limit:
+            splits[split] = {k: (v[: args.test_limit] if torch.is_tensor(v) else v) for k, v in splits[split].items()}
         results[split] = evaluate(model, data, splits[split], scale, device, n_rot=args.eval_rotations)
         say(split, json.dumps(results[split]))
     json.dump(results, open(f"{out_dir}/results.json", "w"), indent=2)

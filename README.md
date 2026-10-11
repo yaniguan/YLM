@@ -84,7 +84,7 @@ The novelty claim is based on a limited search (2026-09-29). See the re-check li
 | Benchmark | **TensorQA-v0**: 84,757 questions on 20k QM9 molecules. Dipole of the molecule; force on an atom described in words. Held-out wordings. [Data card](DATA_CARD.md) | tensors (polarizability, dielectric), crystals, compositional questions |
 | Model | equivariant encoder (l <= 2) + **Option A** Irreps-to-Text attention + l=1 readout. Frozen text encoder (MiniLM or MatSciBERT) | Options B and C, two-stream LLM, `<VEC>` tokens |
 | Checkpoints | [`checkpoints/v0/`](checkpoints/v0/README.md): YLM + MatSciBERT, YLM + MiniLM, task-ID baseline (seed 0, 1-2 MB each) | larger models, more seeds |
-| Baselines | task ID instead of text (done); coordinates as text into Qwen2.5-0.5B (script written, runs not finished) | EquiLLM-style adapter, frame averaging, 3D-MoLM |
+| Baselines | task ID instead of text (done); coordinates as text into Qwen2.5-0.5B (queued, results pending); *post-v0.1.0, scripts ready, runs queued:* text→atom-index→force pipeline, invariants-only (scalar-collapse) | EquiLLM-style adapter, frame averaging, 3D-MoLM |
 | Evaluation | rotation protocol: 32 random rotations per test question, equivariance error, attention-on-the-right-atom accuracy | mirror / chirality tests |
 
 ## Results (v0)
@@ -220,7 +220,14 @@ Progress notes: [`progress.md`](progress.md).
 ## Roadmap
 
 - [x] v0: labels, TensorQA-v0, Option A, rotation protocol, task-ID and coordinates-as-text baselines
-- [ ] Weeks 5-8: Options B and C, tensor outputs, EquiLLM-style and frame-averaging baselines, chirality tests
+- [x] v0.1.0 release: checkpoints, `scripts/09` checkpoint eval + rotation demo (GitHub release v0.1.0)
+- [~] After v0.1.0 (code written and smoke-tested, **no results yet**; jobs queued on Hoffman2):
+  Qwen coordinates-as-text baseline (`jobs/hoffman2_llm.sh`), pipeline baseline (`--model pipeline`, rule parser
+  `src/parse_question.py`, 100% parse accuracy on v0 questions, so v0 cannot separate it from YLM),
+  invariants-only baseline (`--model scalar`), compositional questions T4 diff / T5 proj
+  (`scripts/13`, 84,196 questions) with Option B/C-lite (`src/option_bc.py`, `scripts/14`),
+  l=2 quadrupole labels (`scripts/12`, PySCF; rotation check 6e-12), extra seeds for the data-fraction curve (`jobs/sweep_fractions.sh`, not submitted)
+- [ ] Weeks 5-8: tensor outputs (l=2) in the model, EquiLLM-style and frame-averaging baselines, chirality tests
 - [ ] Weeks 9-10: crystals (MACE-MP-0, Materials Project tensors), battery literature text
 - [ ] Weeks 11-12: generative LLM version, paper draft
 
