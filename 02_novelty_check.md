@@ -72,6 +72,22 @@ YLM is the first to let text tokens attend over l>=1 irreps with exact SE(3) equ
 
 Make this claim only after the re-check below.
 
+## Added 2026-10-11: Mol-StrucTok (KDD '26)
+
+Gao et al., "Tokenizing 3D Molecule Structure with Quantized Spherical Coordinates", doi 10.1145/3770854.3780301
+(code: github.com/KyGao/Mol-StrucTok). Read in full.
+
+- It is **not** irreps-to-text. It goes the other way: structure -> discrete tokens -> GPT-2 that *generates* 3D molecules.
+- Each atom becomes (distance, bond angle, torsion angle) in a local spherical frame, then a VQ-VAE turns these
+  into codebook tokens. All inputs are **SE(3)-invariant by construction** (proof in their Appendix B).
+- Reported: diffusion-level stability at 28x faster inference; 5-8x lower property-matching MAE (conditional generation).
+- Relation to YLM: same family of problem (put 3D into a language model), opposite design choice.
+  They remove direction up front (invariant tokens, equivariance never needed because the model emits
+  coordinates, not vectors). YLM keeps l>=1 features and answers with a vector that rotates with the input.
+  Their approach cannot answer "what is the force vector on this atom in the lab frame": the frame is gone.
+- Use in our paper: cite as the invariant-token route in related work; possible future baseline
+  ("invariant spherical tokens + LLM regression head"). It does not change the novelty claim.
+
 ## Re-check list (do this before writing)
 
 Search Google Scholar, arXiv, OpenReview (ICLR/NeurIPS/ICML 2025-2026) for:
@@ -97,3 +113,4 @@ Search Google Scholar, arXiv, OpenReview (ICLR/NeurIPS/ICML 2025-2026) for:
 - https://arxiv.org/abs/2605.17254 (CatalyticMLLM)
 - https://arxiv.org/abs/2602.22251 (Zatom-1)
 - https://arxiv.org/abs/2502.13107 (MatterChat)
+- https://doi.org/10.1145/3770854.3780301 (Mol-StrucTok)

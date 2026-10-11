@@ -83,7 +83,8 @@ The novelty claim is based on a limited search (2026-09-29). See the re-check li
 |---|---|---|
 | Benchmark | **TensorQA-v0**: 84,757 questions on 20k QM9 molecules. Dipole of the molecule; force on an atom described in words. Held-out wordings. [Data card](DATA_CARD.md) | tensors (polarizability, dielectric), crystals, compositional questions |
 | Model | equivariant encoder (l <= 2) + **Option A** Irreps-to-Text attention + l=1 readout. Frozen text encoder (MiniLM or MatSciBERT) | Options B and C, two-stream LLM, `<VEC>` tokens |
-| Baselines | task ID instead of text; coordinates as text into Qwen2.5-0.5B (with / without rotation augmentation) | EquiLLM-style adapter, frame averaging, 3D-MoLM |
+| Checkpoints | [`checkpoints/v0/`](checkpoints/v0/README.md): YLM + MatSciBERT, YLM + MiniLM, task-ID baseline (seed 0, 1-2 MB each) | larger models, more seeds |
+| Baselines | task ID instead of text (done); coordinates as text into Qwen2.5-0.5B (script written, runs not finished) | EquiLLM-style adapter, frame averaging, 3D-MoLM |
 | Evaluation | rotation protocol: 32 random rotations per test question, equivariance error, attention-on-the-right-atom accuracy | mirror / chirality tests |
 
 ## Results (v0)
@@ -99,7 +100,7 @@ atom or an atom bonded to it; mean over seeds (range in brackets).
 | **YLM + MatSciBERT** | **0.0064 ± 0.0003** | **0.960** | 0.082 | 0.980 | 0.97 (0.93–1.00) | 2e-6 |
 | YLM + MiniLM | 0.0075 ± 0.0006 | 0.946 | 0.083 | 0.980 | 0.94 (0.87–0.98) | 2e-6 |
 | Task ID instead of text (no language) | 0.0424 ± 0.0000 | 0.113 | **0.067** | **0.986** | 0.20 (0.12–0.43) | 2e-6 |
-| Coordinates as text → Qwen2.5-0.5B | *running* | | | | – | |
+| Coordinates as text → Qwen2.5-0.5B | *not finished in v0* (script and job are in the repo; the Expanse runs did not complete) | | | | – | |
 
 Held-out wordings (sentences never seen in training):
 
@@ -169,8 +170,10 @@ YLM/
 ├── environment.yml           # conda environment
 ├── src/                      # encoder, Irreps-to-Text attention, model
 ├── scripts/                  # 01 labels, 02 questions, 03 text features, 04 train, 05 LLM baseline,
-│                             # 06 export release data, 07 results table, 08 analysis plots
+│                             # 06 export release data, 07 results table, 08 analysis plots,
+│                             # 09 evaluate a checkpoint + rotation demo, 10 package checkpoints
 ├── analysis/                 # sample-efficiency plot, error breakdown
+├── checkpoints/v0/           # 3 small trained checkpoints (MatSciBERT, MiniLM, task-ID) + README
 ├── tests/                    # equivariance tests
 ├── jobs/                     # Hoffman2 (SGE) and Expanse (Slurm) job scripts
 └── data/                     # downloaded / generated data (git-ignored)
@@ -199,7 +202,10 @@ python scripts/04_train.py --text minilm --name ylm_minilm      # ours
 python scripts/04_train.py --text taskid --name base_taskid     # baseline: no language
 python scripts/05_train_llm_baseline.py --name llm05 --augment  # baseline: coordinates as text (GPU)
 
-# 5. table and release files
+# 5. (optional) skip training: evaluate the released v0 checkpoint and see the rotation demo
+python scripts/09_eval_checkpoint.py --ckpt checkpoints/v0/ylm_matscibert_s0.pt --demo
+
+# 6. table and release files
 python scripts/07_make_table.py           # -> results.md
 python scripts/08_analyze.py              # -> analysis/ (plot + breakdown by element, size, wording)
 python scripts/06_export_release.py       # -> data/release/tensorqa_v0.tar.gz (JSONL + data card)
