@@ -231,6 +231,11 @@ Progress notes: [`progress.md`](progress.md).
 - [ ] Weeks 9-10: crystals (MACE-MP-0, Materials Project tensors), battery literature text
 - [ ] Weeks 11-12: generative LLM version, paper draft
 
+## Development workflow
+
+`main` is the released state (tag `v0.1.0`). New work goes on a branch from `main` (`feat/<name>`, `exp/<name>`),
+is merged back when its results are in `results.md`, and each release gets a tag and a GitHub release.
+
 ## Built on
 
 [e3nn](https://github.com/e3nn/e3nn) ·
