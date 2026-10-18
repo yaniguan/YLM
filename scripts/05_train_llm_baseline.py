@@ -36,11 +36,14 @@ TASKS = {"dipole": 0, "force": 1}
 SYMBOL = {1: "H", 6: "C", 7: "N", 8: "O", 9: "F"}
 
 
-def make_prompt(numbers, pos, question):
+def make_prompt(numbers, pos, question, hint_atom=None):
     lines = ["Atom positions in bohr:"]
-    for z, (x, y, w) in zip(numbers, pos):
-        lines.append(f"{SYMBOL[int(z)]} {x:.2f} {y:.2f} {w:.2f}")
+    for k, (z, (x, y, w)) in enumerate(zip(numbers, pos)):
+        prefix = f"{k} " if hint_atom is not None else ""
+        lines.append(f"{prefix}{SYMBOL[int(z)]} {x:.2f} {y:.2f} {w:.2f}")
     lines.append(f"Question: {question}")
+    if hint_atom is not None and hint_atom >= 0:  # diagnostic: atom selection is solved for the model
+        lines.append(f"The question is about atom {hint_atom}.")
     lines.append("Answer:")
     return "\n".join(lines)
 
@@ -55,6 +58,8 @@ class LLMRegressor(torch.nn.Module):
         self.llm.gradient_checkpointing_enable()
         self.llm.config.use_cache = False
         self.head = torch.nn.Linear(self.llm.config.hidden_size, 3)
+        torch.nn.init.zeros_(self.head.weight)  # start by predicting zero: avoids the loss spike (~16) of a random head
+        torch.nn.init.zeros_(self.head.bias)
 
     def forward(self, input_ids, attention_mask):
         h = self.llm(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state
@@ -70,7 +75,7 @@ def load(labels_path, questions_path):
     return labels, splits
 
 
-def get_batch(labels, qs, tok, device, R=None, random_rotation=False):
+def get_batch(labels, qs, tok, device, R=None, random_rotation=False, hint=False):
     prompts, targets, tasks = [], [], []
     for q in qs:
         lab = labels[q["mol"]]
@@ -80,7 +85,7 @@ def get_batch(labels, qs, tok, device, R=None, random_rotation=False):
         rot = o3.rand_matrix() if random_rotation else R
         if rot is not None:
             pos, target = pos @ rot.T, target @ rot.T
-        prompts.append(make_prompt(lab["numbers"], pos.tolist(), q["question"]))
+        prompts.append(make_prompt(lab["numbers"], pos.tolist(), q["question"], q["atom"] if hint else None))
         targets.append(target)
         tasks.append(TASKS[q["task"]])
     enc = tok(prompts, return_tensors="pt", padding=True)
@@ -89,7 +94,7 @@ def get_batch(labels, qs, tok, device, R=None, random_rotation=False):
 
 
 @torch.no_grad()
-def evaluate(model, labels, qs, tok, scale, device, n_rot, batch_size=64, seed=0):
+def evaluate(model, labels, qs, tok, scale, device, n_rot, batch_size=64, seed=0, hint=False):
     model.eval()
     rotations = [torch.eye(3)]
     if n_rot > 1:
@@ -101,7 +106,7 @@ def evaluate(model, labels, qs, tok, scale, device, n_rot, batch_size=64, seed=0
         chunk = qs[start: start + batch_size]
         y0 = None
         for r, R in enumerate(rotations):
-            ids, am, target, task = get_batch(labels, chunk, tok, device, R=R)
+            ids, am, target, task = get_batch(labels, chunk, tok, device, R=R, hint=hint)
             y = (model(ids, am) * scale[task][:, None]).cpu()
             target, task = target.cpu(), task.cpu()
             err = (y - target).abs().mean(-1)
@@ -135,6 +140,8 @@ def main():
     p.add_argument("--epochs", type=int, default=3)
     p.add_argument("--batch_size", type=int, default=8, help="32 runs out of memory on a V100 in float32")
     p.add_argument("--lr", type=float, default=2e-5)
+    p.add_argument("--head_lr", type=float, default=1e-3)
+    p.add_argument("--hint_atom", action="store_true", help="diagnostic: tell the model which atom is asked about")
     p.add_argument("--eval_rotations", type=int, default=8)
     p.add_argument("--val_size", type=int, default=2000, help="val questions checked each epoch")
     p.add_argument("--seed", type=int, default=0)
@@ -169,10 +176,10 @@ def main():
     model = LLMRegressor(args.llm).to(device)
     opt = torch.optim.AdamW([
         {"params": model.llm.parameters(), "lr": args.lr},
-        {"params": model.head.parameters(), "lr": 1e-3},
+        {"params": model.head.parameters(), "lr": args.head_lr},
     ], weight_decay=0.0)
     steps = args.epochs * math.ceil(len(train) / args.batch_size)
-    sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=[args.lr, 1e-3], total_steps=steps, pct_start=0.05)
+    sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=[args.lr, args.head_lr], total_steps=steps, pct_start=0.05)
 
     rng = np.random.default_rng(args.seed)
     val_qs = [splits["val"][i] for i in rng.choice(len(splits["val"]), args.val_size, replace=False)]
@@ -182,7 +189,7 @@ def main():
         losses = []
         for start in range(0, len(order), args.batch_size):
             chunk = [train[i] for i in order[start: start + args.batch_size]]
-            ids, am, target, task = get_batch(labels, chunk, tok, device, random_rotation=args.augment)
+            ids, am, target, task = get_batch(labels, chunk, tok, device, random_rotation=args.augment, hint=args.hint_atom)
             y = model(ids, am)
             loss = ((y - target / scale[task][:, None]) ** 2).mean()
             opt.zero_grad()
@@ -195,7 +202,7 @@ def main():
                 say(f"epoch {epoch} step {len(losses)} loss {np.mean(losses[-200:]):.4f} {time.time() - t0:.0f}s")
             if args.max_steps and len(losses) >= args.max_steps:
                 break
-        val = evaluate(model, labels, val_qs, tok, scale, device, n_rot=1)
+        val = evaluate(model, labels, val_qs, tok, scale, device, n_rot=1, hint=args.hint_atom)
         score = val["dipole"]["mae"] / scale[0].item() + val["force"]["mae"] / scale[1].item()
         say(f"epoch {epoch} val {json.dumps(val)}")
         if score < best:
@@ -206,7 +213,7 @@ def main():
     results = {"args": vars(args), "scale": scale.tolist()}
     for split in ["test", "test_heldout"]:
         qs = splits[split][: args.test_limit] if args.test_limit else splits[split]
-        results[split] = evaluate(model, labels, qs, tok, scale, device, n_rot=args.eval_rotations)
+        results[split] = evaluate(model, labels, qs, tok, scale, device, n_rot=args.eval_rotations, hint=args.hint_atom)
         say(split, json.dumps(results[split]))
     json.dump(results, open(f"{out_dir}/results.json", "w"), indent=2)
     os.remove(f"{out_dir}/model.pt")  # 1-3 GB each; scratch space is not free

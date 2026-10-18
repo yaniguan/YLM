@@ -148,28 +148,33 @@ def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0):
     return out
 
 
-def attach_parsed_atoms(splits, sdf, labels_path, questions_path, say):
-    """Pipeline baseline: replace the atom index of val/test splits by what the rule parser finds."""
-    from rdkit import Chem, RDLogger
-    from src.parse_question import resolve
-    RDLogger.DisableLog("rdApp.*")
-    labels = pickle.load(open(labels_path, "rb"))
+def attach_parsed_atoms(splits, sdf, labels_path, questions_path, say, cache_path="data/parsed_atoms.json"):
+    """Pipeline baseline: replace the atom index of val/test splits by what the rule parser finds.
+
+    The parse needs RDKit. It is cached in cache_path (one entry per question, -1 = not a force question
+    or parse failure), so a machine without RDKit (e.g. an old cluster) can reuse a file made elsewhere."""
     questions = json.load(open(questions_path))
-    supplier = Chem.SDMolSupplier(sdf, removeHs=False, sanitize=True)
+    if os.path.exists(cache_path):
+        parsed_all = json.load(open(cache_path))
+        assert len(parsed_all) == len(questions), "parsed_atoms.json does not match the questions file"
+    else:
+        from rdkit import Chem, RDLogger
+        from src.parse_question import resolve
+        RDLogger.DisableLog("rdApp.*")
+        labels = pickle.load(open(labels_path, "rb"))
+        supplier = Chem.SDMolSupplier(sdf, removeHs=False, sanitize=True)
+        parsed_all = [resolve(q["question"], supplier[labels[q["mol"]]["qm9_index"]]) if q["task"] == "force" else -1
+                      for q in questions]
+        json.dump(parsed_all, open(cache_path, "w"))
     for name in ["val", "test", "test_heldout"]:
-        qs = [q for q in questions if q["split"] == name]
-        parsed = torch.full((len(qs),), -1, dtype=torch.long)
-        ok = n = 0
-        for k, q in enumerate(qs):
-            if q["task"] != "force":
-                continue
-            parsed[k] = resolve(q["question"], supplier[labels[q["mol"]]["qm9_index"]])
-            n += 1
-            ok += int(parsed[k] == q["atom"])
+        idx = [k for k, q in enumerate(questions) if q["split"] == name]
+        qs = [questions[k] for k in idx]
+        parsed = torch.tensor([parsed_all[k] for k in idx], dtype=torch.long)
+        force = [k for k, q in enumerate(qs) if q["task"] == "force"]
+        ok = sum(int(parsed[k] == qs[k]["atom"]) for k in force)
         splits[name]["atom_in"] = parsed
-        if n:
-            say(f"parser accuracy {name}: {ok}/{n} = {ok / n:.4f}")
-        splits[name]["parse_acc"] = ok / max(n, 1)
+        splits[name]["parse_acc"] = ok / max(len(force), 1)
+        say(f"parser accuracy {name}: {ok}/{len(force)} = {splits[name]['parse_acc']:.4f}")
 
 
 def main():

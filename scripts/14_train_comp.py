@@ -76,6 +76,7 @@ def forward(model, kind, inputs, task):
 @torch.no_grad()
 def evaluate(model, kind, data, sp, scale, device, n_rot, bs=512):
     model.eval()
+    scale = scale.to(device)
     rots = [torch.eye(3)]
     if n_rot > 1:
         with torch.random.fork_rng():

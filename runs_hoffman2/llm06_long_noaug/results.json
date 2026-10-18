@@ -1,0 +1,53 @@
+{
+  "args": {
+    "llm": "Qwen/Qwen2.5-0.5B",
+    "name": "llm06_long_noaug",
+    "augment": false,
+    "epochs": 5,
+    "batch_size": 8,
+    "lr": 5e-05,
+    "head_lr": 0.0003,
+    "hint_atom": false,
+    "eval_rotations": 8,
+    "val_size": 2000,
+    "seed": 0,
+    "max_steps": 0,
+    "test_limit": 0
+  },
+  "scale": [
+    0.8147165179252625,
+    0.060388702899217606
+  ],
+  "test": {
+    "dipole": {
+      "mae": 0.6146691128153641,
+      "mae_orig_frame": 0.5663781182827337,
+      "cosine": 0.10498584627870457,
+      "eq_err_mean": 1.813129398119122,
+      "eq_err_max": 70.11604309082031
+    },
+    "force": {
+      "mae": 0.04253199334528979,
+      "mae_orig_frame": 0.04176991514611261,
+      "cosine": 0.004461288304668073,
+      "eq_err_mean": 1.9338013477093419,
+      "eq_err_max": 30.35466957092285
+    }
+  },
+  "test_heldout": {
+    "dipole": {
+      "mae": 0.616587325422612,
+      "mae_orig_frame": 0.5663825086611516,
+      "cosine": 0.0979488781056804,
+      "eq_err_mean": 1.8451568005935328,
+      "eq_err_max": 45.958343505859375
+    },
+    "force": {
+      "mae": 0.04253919935333778,
+      "mae_orig_frame": 0.04177048556776016,
+      "cosine": 0.002723804944404511,
+      "eq_err_mean": 1.9992924515030315,
+      "eq_err_max": 90.89859771728516
+    }
+  }
+}

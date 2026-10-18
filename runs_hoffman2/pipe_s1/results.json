@@ -1,0 +1,56 @@
+{
+  "args": {
+    "text": "taskid",
+    "model": "pipeline",
+    "augment": false,
+    "name": "pipe_s1",
+    "epochs": 60,
+    "batch_size": 128,
+    "lr": 0.001,
+    "train_fraction": 1.0,
+    "eval_rotations": 32,
+    "max_steps": 0,
+    "seed": 1,
+    "device": null,
+    "test_limit": 0
+  },
+  "scale": [
+    0.8147165179252625,
+    0.060388702899217606
+  ],
+  "parser_accuracy": {
+    "val": 1.0,
+    "test": 1.0,
+    "test_heldout": 1.0
+  },
+  "test": {
+    "dipole": {
+      "mae": 0.08241880111026756,
+      "cosine": 0.9782965220571922,
+      "eq_err_mean": 2.6879907889149044e-06,
+      "eq_err_max": 0.0001664422597968951
+    },
+    "force": {
+      "mae": 0.005627494662111075,
+      "cosine": 0.9703373541444068,
+      "eq_err_mean": 2.547151153998262e-06,
+      "eq_err_max": 0.000501172267831862,
+      "atom_acc": 1.0
+    }
+  },
+  "test_heldout": {
+    "dipole": {
+      "mae": 0.08241880110699228,
+      "cosine": 0.9782965181881706,
+      "eq_err_mean": 2.687914423387295e-06,
+      "eq_err_max": 0.00015601838822476566
+    },
+    "force": {
+      "mae": 0.005627494625929031,
+      "cosine": 0.9703373530835144,
+      "eq_err_mean": 2.551461792690356e-06,
+      "eq_err_max": 0.0005013924674130976,
+      "atom_acc": 1.0
+    }
+  }
+}

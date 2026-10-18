@@ -100,7 +100,8 @@ atom or an atom bonded to it; mean over seeds (range in brackets).
 | **YLM + MatSciBERT** | **0.0064 ± 0.0003** | **0.960** | 0.082 | 0.980 | 0.97 (0.93–1.00) | 2e-6 |
 | YLM + MiniLM | 0.0075 ± 0.0006 | 0.946 | 0.083 | 0.980 | 0.94 (0.87–0.98) | 2e-6 |
 | Task ID instead of text (no language) | 0.0424 ± 0.0000 | 0.113 | **0.067** | **0.986** | 0.20 (0.12–0.43) | 2e-6 |
-| Coordinates as text → Qwen2.5-0.5B | *not finished in v0* (script and job are in the repo; the Expanse runs did not complete) | | | | – | |
+| Coordinates as text → Qwen2.5-0.5B (did not learn the force) | 0.0425 | ≈0 | 0.51–0.61 | 0.05–0.46 | – | not equivariant (1.7) |
+| Pipeline: rule parser → atom → equivariant force model (post-v0) | 0.0057 ± 0.0001 | 0.970 | 0.082 | 0.978 | 1.0 (given) | 3e-6 |
 
 Held-out wordings (sentences never seen in training):
 
@@ -108,6 +109,12 @@ Held-out wordings (sentences never seen in training):
 |---|---|---|
 | YLM + MatSciBERT | 0.917 ± 0.021 | 0.941 ± 0.032 |
 | YLM + MiniLM | 0.859 ± 0.040 | 0.726 ± 0.140 |
+
+Post-v0 baselines ([`results_baselines.md`](results_baselines.md)) change how to read this table:
+the Qwen baseline did **not learn the force at all** in any setting tried (it can memorise 16 questions, so the code works,
+but it does not generalise; tuning was narrow), so it is **not** evidence that an end-to-end LLM cannot do this.
+And a hand-written rule parser feeding the same equivariant encoder (100% parse accuracy on v0 questions) is
+**as good or better than YLM** (force MAE 0.0057 vs 0.0064). v0 questions are too easy to parse to separate them.
 
 What this shows:
 
@@ -134,7 +141,8 @@ Full tables, including 3% / 10% / 30% training data: [`results.md`](results.md).
 - Labels are GFN2-xTB (semi-empirical), not DFT. Fine for testing whether a model reads geometry; not chemical accuracy.
 - Questions come from 12 templates (4 held out). Real questions are more varied.
 - Only vectors (l = 1) are asked in v0, although the encoder carries l = 2.
-- The force question can also be solved by a pipeline "parse the description -> atom index -> force model".
+- The force question can also be solved by a pipeline (**confirmed post-v0: it matches or beats YLM on v0 questions**, see above)
+  -- original note: "parse the description -> atom index -> force model".
   v0 shows the language model can do it end to end; harder compositional questions are needed to rule out simpler pipelines.
 - The text encoder is frozen and only reads the question; the model does not generate text yet.
 - Attention often lands on a bonded neighbour instead of the exact atom (see Results), so attention maps are

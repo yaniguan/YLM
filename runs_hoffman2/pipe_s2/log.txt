@@ -1,0 +1,68 @@
+device cuda | train questions 61619 | scale [0.8147165179252625, 0.060388702899217606]
+parser accuracy val: 5742/5742 = 1.0000
+parser accuracy test: 5717/5717 = 1.0000
+parser accuracy test_heldout: 5717/5717 = 1.0000
+parameters 155936
+epoch 0 loss 0.7898 | val dipole mae 0.3363 cos 0.800 | force mae 0.03432 cos 0.498 atom_acc 1.000 | 40s
+epoch 1 loss 0.4020 | val dipole mae 0.2554 cos 0.860 | force mae 0.02138 cos 0.744 atom_acc 1.000 | 78s
+epoch 2 loss 0.1779 | val dipole mae 0.1850 cos 0.910 | force mae 0.01510 cos 0.859 atom_acc 1.000 | 113s
+epoch 3 loss 0.0984 | val dipole mae 0.1578 cos 0.935 | force mae 0.01198 cos 0.898 atom_acc 1.000 | 148s
+epoch 4 loss 0.0711 | val dipole mae 0.1430 cos 0.945 | force mae 0.01061 cos 0.913 atom_acc 1.000 | 182s
+epoch 5 loss 0.0599 | val dipole mae 0.1405 cos 0.946 | force mae 0.00980 cos 0.923 atom_acc 1.000 | 216s
+epoch 6 loss 0.0536 | val dipole mae 0.1381 cos 0.948 | force mae 0.00929 cos 0.928 atom_acc 1.000 | 250s
+epoch 7 loss 0.0495 | val dipole mae 0.1267 cos 0.955 | force mae 0.00904 cos 0.930 atom_acc 1.000 | 285s
+epoch 8 loss 0.0456 | val dipole mae 0.1162 cos 0.961 | force mae 0.00859 cos 0.937 atom_acc 1.000 | 319s
+epoch 9 loss 0.0431 | val dipole mae 0.1172 cos 0.960 | force mae 0.00849 cos 0.937 atom_acc 1.000 | 353s
+epoch 10 loss 0.0410 | val dipole mae 0.1738 cos 0.963 | force mae 0.00867 cos 0.935 atom_acc 1.000 | 393s
+epoch 11 loss 0.0389 | val dipole mae 0.1144 cos 0.959 | force mae 0.00801 cos 0.943 atom_acc 1.000 | 428s
+epoch 12 loss 0.0373 | val dipole mae 0.1155 cos 0.960 | force mae 0.00781 cos 0.946 atom_acc 1.000 | 462s
+epoch 13 loss 0.0356 | val dipole mae 0.1125 cos 0.962 | force mae 0.00762 cos 0.948 atom_acc 1.000 | 496s
+epoch 14 loss 0.0344 | val dipole mae 0.1047 cos 0.966 | force mae 0.00754 cos 0.949 atom_acc 1.000 | 531s
+epoch 15 loss 0.0330 | val dipole mae 0.1097 cos 0.963 | force mae 0.00738 cos 0.950 atom_acc 1.000 | 564s
+epoch 16 loss 0.0320 | val dipole mae 0.1001 cos 0.968 | force mae 0.00727 cos 0.950 atom_acc 1.000 | 598s
+epoch 17 loss 0.0310 | val dipole mae 0.1008 cos 0.968 | force mae 0.00711 cos 0.953 atom_acc 1.000 | 635s
+epoch 18 loss 0.0300 | val dipole mae 0.0997 cos 0.969 | force mae 0.00714 cos 0.954 atom_acc 1.000 | 673s
+epoch 19 loss 0.0292 | val dipole mae 0.1020 cos 0.968 | force mae 0.00708 cos 0.953 atom_acc 1.000 | 710s
+epoch 20 loss 0.0283 | val dipole mae 0.0990 cos 0.969 | force mae 0.00694 cos 0.955 atom_acc 1.000 | 746s
+epoch 21 loss 0.0276 | val dipole mae 0.0988 cos 0.968 | force mae 0.00668 cos 0.958 atom_acc 1.000 | 784s
+epoch 22 loss 0.0270 | val dipole mae 0.0973 cos 0.969 | force mae 0.00666 cos 0.958 atom_acc 1.000 | 819s
+epoch 23 loss 0.0265 | val dipole mae 0.1034 cos 0.967 | force mae 0.00665 cos 0.959 atom_acc 1.000 | 855s
+epoch 24 loss 0.0259 | val dipole mae 0.0937 cos 0.971 | force mae 0.00655 cos 0.959 atom_acc 1.000 | 892s
+epoch 25 loss 0.0253 | val dipole mae 0.0927 cos 0.971 | force mae 0.00652 cos 0.960 atom_acc 1.000 | 928s
+epoch 26 loss 0.0248 | val dipole mae 0.0914 cos 0.971 | force mae 0.00650 cos 0.961 atom_acc 1.000 | 963s
+epoch 27 loss 0.0243 | val dipole mae 0.0931 cos 0.971 | force mae 0.00639 cos 0.961 atom_acc 1.000 | 1004s
+epoch 28 loss 0.0240 | val dipole mae 0.0939 cos 0.971 | force mae 0.00630 cos 0.961 atom_acc 1.000 | 1038s
+epoch 29 loss 0.0235 | val dipole mae 0.0942 cos 0.972 | force mae 0.00628 cos 0.962 atom_acc 1.000 | 1079s
+epoch 30 loss 0.0231 | val dipole mae 0.0931 cos 0.970 | force mae 0.00622 cos 0.962 atom_acc 1.000 | 1115s
+epoch 31 loss 0.0227 | val dipole mae 0.0898 cos 0.972 | force mae 0.00615 cos 0.963 atom_acc 1.000 | 1149s
+epoch 32 loss 0.0225 | val dipole mae 0.0876 cos 0.973 | force mae 0.00613 cos 0.963 atom_acc 1.000 | 1183s
+epoch 33 loss 0.0221 | val dipole mae 0.0884 cos 0.974 | force mae 0.00612 cos 0.963 atom_acc 1.000 | 1217s
+epoch 34 loss 0.0218 | val dipole mae 0.0891 cos 0.972 | force mae 0.00602 cos 0.964 atom_acc 1.000 | 1251s
+epoch 35 loss 0.0215 | val dipole mae 0.0896 cos 0.971 | force mae 0.00605 cos 0.964 atom_acc 1.000 | 1285s
+epoch 36 loss 0.0214 | val dipole mae 0.0888 cos 0.974 | force mae 0.00603 cos 0.964 atom_acc 1.000 | 1319s
+epoch 37 loss 0.0210 | val dipole mae 0.0857 cos 0.973 | force mae 0.00602 cos 0.964 atom_acc 1.000 | 1353s
+epoch 38 loss 0.0208 | val dipole mae 0.0877 cos 0.974 | force mae 0.00597 cos 0.965 atom_acc 1.000 | 1387s
+epoch 39 loss 0.0206 | val dipole mae 0.0854 cos 0.973 | force mae 0.00593 cos 0.965 atom_acc 1.000 | 1422s
+epoch 40 loss 0.0204 | val dipole mae 0.0865 cos 0.973 | force mae 0.00587 cos 0.966 atom_acc 1.000 | 1456s
+epoch 41 loss 0.0202 | val dipole mae 0.0850 cos 0.973 | force mae 0.00586 cos 0.966 atom_acc 1.000 | 1490s
+epoch 42 loss 0.0200 | val dipole mae 0.0861 cos 0.975 | force mae 0.00589 cos 0.965 atom_acc 1.000 | 1525s
+epoch 43 loss 0.0199 | val dipole mae 0.0848 cos 0.975 | force mae 0.00581 cos 0.966 atom_acc 1.000 | 1562s
+epoch 44 loss 0.0197 | val dipole mae 0.0845 cos 0.974 | force mae 0.00581 cos 0.966 atom_acc 1.000 | 1599s
+epoch 45 loss 0.0196 | val dipole mae 0.0849 cos 0.975 | force mae 0.00582 cos 0.966 atom_acc 1.000 | 1635s
+epoch 46 loss 0.0195 | val dipole mae 0.0833 cos 0.975 | force mae 0.00580 cos 0.966 atom_acc 1.000 | 1671s
+epoch 47 loss 0.0194 | val dipole mae 0.0839 cos 0.975 | force mae 0.00578 cos 0.966 atom_acc 1.000 | 1707s
+epoch 48 loss 0.0193 | val dipole mae 0.0832 cos 0.975 | force mae 0.00579 cos 0.966 atom_acc 1.000 | 1742s
+epoch 49 loss 0.0193 | val dipole mae 0.0837 cos 0.975 | force mae 0.00578 cos 0.967 atom_acc 1.000 | 1777s
+epoch 50 loss 0.0192 | val dipole mae 0.0829 cos 0.975 | force mae 0.00575 cos 0.967 atom_acc 1.000 | 1812s
+epoch 51 loss 0.0191 | val dipole mae 0.0827 cos 0.975 | force mae 0.00577 cos 0.966 atom_acc 1.000 | 1847s
+epoch 52 loss 0.0190 | val dipole mae 0.0829 cos 0.975 | force mae 0.00574 cos 0.967 atom_acc 1.000 | 1882s
+epoch 53 loss 0.0190 | val dipole mae 0.0826 cos 0.975 | force mae 0.00574 cos 0.967 atom_acc 1.000 | 1917s
+epoch 54 loss 0.0190 | val dipole mae 0.0824 cos 0.975 | force mae 0.00574 cos 0.967 atom_acc 1.000 | 1951s
+epoch 55 loss 0.0189 | val dipole mae 0.0824 cos 0.975 | force mae 0.00573 cos 0.967 atom_acc 1.000 | 1987s
+epoch 56 loss 0.0189 | val dipole mae 0.0824 cos 0.975 | force mae 0.00573 cos 0.967 atom_acc 1.000 | 2022s
+epoch 57 loss 0.0189 | val dipole mae 0.0824 cos 0.975 | force mae 0.00573 cos 0.967 atom_acc 1.000 | 2057s
+epoch 58 loss 0.0189 | val dipole mae 0.0823 cos 0.975 | force mae 0.00573 cos 0.967 atom_acc 1.000 | 2092s
+epoch 59 loss 0.0189 | val dipole mae 0.0823 cos 0.975 | force mae 0.00573 cos 0.967 atom_acc 1.000 | 2127s
+test {"dipole": {"mae": 0.08303523386774468, "cosine": 0.9784008418743274, "eq_err_mean": 2.3909040618350505e-06, "eq_err_max": 7.655456283828244e-05}, "force": {"mae": 0.005739878634995618, "cosine": 0.9693833675186916, "eq_err_mean": 2.563425524265538e-06, "eq_err_max": 0.0009810858173295856, "atom_acc": 1.0}}
+test_heldout {"dipole": {"mae": 0.08303523539591193, "cosine": 0.9784008413843543, "eq_err_mean": 2.3841637082136624e-06, "eq_err_max": 7.14847628842108e-05}, "force": {"mae": 0.005739878656092412, "cosine": 0.969383367332463, "eq_err_mean": 2.5590412690925948e-06, "eq_err_max": 0.0009701144299469888, "atom_acc": 1.0}}
+saved runs/pipe_s2
