@@ -100,8 +100,8 @@ atom or an atom bonded to it; mean over seeds (range in brackets).
 | **YLM + MatSciBERT** | **0.0064 ± 0.0003** | **0.960** | 0.082 | 0.980 | 0.97 (0.93–1.00) | 2e-6 |
 | YLM + MiniLM | 0.0075 ± 0.0006 | 0.946 | 0.083 | 0.980 | 0.94 (0.87–0.98) | 2e-6 |
 | Task ID instead of text (no language) | 0.0424 ± 0.0000 | 0.113 | **0.067** | **0.986** | 0.20 (0.12–0.43) | 2e-6 |
-| Coordinates as text → Qwen2.5-0.5B | 0.0425 | ≈0 | 0.61 | ≈0 | – | – |
-| Pipeline: rule parser → atom → equivariant force model (post-v0) | 0.0057 ± 0.0001 | 0.970 | 0.080 | 0.978 | 1.0 (given) | 3e-6 |
+| Coordinates as text → Qwen2.5-0.5B (did not learn the force) | 0.0425 | ≈0 | 0.51–0.61 | 0.05–0.46 | – | not equivariant (1.7) |
+| Pipeline: rule parser → atom → equivariant force model (post-v0) | 0.0057 ± 0.0001 | 0.970 | 0.082 | 0.978 | 1.0 (given) | 3e-6 |
 
 Held-out wordings (sentences never seen in training):
 
