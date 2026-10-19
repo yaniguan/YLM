@@ -60,3 +60,29 @@ class ScalarCollapse(nn.Module):
         w = self.token_weight(h).squeeze(-1).masked_fill(~text_mask, float("-inf")).softmax(-1)
         return self.head(torch.cat([torch.einsum("bt,btd->bd", w, picked), h.mean(1)], -1)), \
             torch.einsum("bt,btn->bn", w, attn)
+
+
+class PipelineComp(nn.Module):
+    """Parser-driven baseline for the compositional questions: the rule parser supplies (task, atom a, atom b).
+
+    The task decides which hand-written composition is applied to the equivariant per-atom vectors
+    (diff: V_a - V_b; proj: (V_a . u) u with u = unit(r_b - r_a)). Parse failures (task code -1, or an atom
+    index < 0) give a zero vector.  Exactly equivariant: only dot products and vector sums of equivariant terms.
+    """
+
+    def __init__(self, hidden_irreps="64x0e + 8x0o + 32x1o + 8x1e + 16x2e", n_layers=3):
+        super().__init__()
+        self.encoder = Encoder(hidden_irreps=hidden_irreps, n_layers=n_layers)
+        self.readout = o3.Linear(self.encoder.irreps_out, "1x1o")
+
+    def forward(self, Z, pos, atom_mask, ptask, atoms):
+        """ptask: (B,) 0 = diff, 1 = proj, -1 = parse failure; atoms: (B, 2) long, -1 = unresolved"""
+        v = self.readout(self.encoder(Z, pos, atom_mask)) * atom_mask[..., None]
+        b = torch.arange(v.shape[0], device=v.device)
+        ia, ib = atoms[:, 0].clamp(min=0), atoms[:, 1].clamp(min=0)
+        va, vb = v[b, ia], v[b, ib]
+        u = pos[b, ib] - pos[b, ia]
+        u = u / (u.pow(2).sum(-1, keepdim=True) + 1e-6).sqrt()
+        y = torch.where((ptask == 0)[:, None], va - vb, (va * u).sum(-1, keepdim=True) * u)
+        ok = (ptask >= 0) & (atoms >= 0).all(-1)
+        return y * ok[:, None]

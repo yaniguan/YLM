@@ -71,3 +71,27 @@ def test_pipeline_and_compositional_models_equivariant():
     y_rot, _ = sc(Z, pos @ R.T, mask, text, tmask, task)
     assert (y_rot - y).abs().max() < 1e-8                      # invariant: same output after rotation
     assert (y_rot - y @ R.T).abs().max() > 1e-4                # so it cannot be equivariant
+
+
+def test_pipeline_comp_equivariant_and_failure_gives_zero():
+    from src.baselines import PipelineComp
+    Z, pos, mask, *_ = fake_batch()
+    model = PipelineComp()
+    ptask = torch.tensor([0, 1, 1])
+    atoms = torch.tensor([[0, 3], [1, 4], [2, 5]])
+    R = o3.rand_matrix()
+    y = model(Z, pos, mask, ptask, atoms)
+    assert (model(Z, pos @ R.T, mask, ptask, atoms) - y @ R.T).abs().max() < 1e-8
+    assert (model(Z, pos + 3.0, mask, ptask, atoms) - y).abs().max() < 1e-8
+    bad = model(Z, pos, mask, torch.tensor([-1, 0, 1]), torch.tensor([[0, 1], [-1, 2], [1, 2]]))
+    assert bad[0].abs().max() == 0 and bad[1].abs().max() == 0 and bad[2].abs().max() > 0
+
+
+def test_pair_parser_handles_order_and_unseen_wordings():
+    from src.parse_question import parse_pair
+    a, b = "the carbon atom in a ring", "the oxygen atom bonded to two hydrogens"
+    t, first, second = parse_pair(f"Subtract the force on {b} from the force on {a}.")
+    assert t == "diff" and first["element"] == 6 and second["element"] == 8     # A is mentioned second
+    t, first, second = parse_pair(f"What is the projection of the force on {a} toward {b}?")
+    assert t == "proj" and first["element"] == 6 and second["element"] == 8
+    assert parse_pair(f"Is the force on {a} larger than on {b}?") is None       # unknown type -> failure, not a guess
