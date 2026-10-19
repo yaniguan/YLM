@@ -24,8 +24,9 @@ from src.irreps_to_text import invariants
 
 class CompModel(nn.Module):
     def __init__(self, text_dim, hidden_irreps="64x0e + 8x0o + 32x1o + 8x1e + 16x2e", n_layers=3, d=256, key=64,
-                 n_heads=2):
+                 n_heads=2, token_dropout=0.0):
         super().__init__()
+        self.token_dropout = token_dropout
         self.encoder = Encoder(hidden_irreps=hidden_irreps, n_layers=n_layers)
         irreps = self.encoder.irreps_out
         self.n_heads, self.key = n_heads, key
@@ -37,7 +38,11 @@ class CompModel(nn.Module):
         self.coef = nn.Sequential(nn.Linear(n_heads * d, d), nn.SiLU(), nn.Linear(d, 2 * n_heads))
 
     def forward(self, Z, pos, atom_mask, text, text_mask):
-        h = self.text_proj(text)                                            # (B, T, d) invariant
+        if self.training and self.token_dropout > 0:     # wording robustness: drop random tokens, keep [CLS]
+            keep = torch.rand(text_mask.shape, device=text_mask.device) > self.token_dropout
+            keep[:, 0] = True
+            text_mask = text_mask & keep
+        h = self.text_proj(text.float())                                            # (B, T, d) invariant
         x = self.encoder(Z, pos, atom_mask)
         keys = self.k(invariants(x, self.encoder.irreps_out))               # (B, N, key)
         v = self.value(x) * atom_mask[..., None]                            # (B, N, 3) equivariant
@@ -58,4 +63,5 @@ class CompModel(nn.Module):
         terms = F + [(f * u).sum(-1, keepdim=True) * u for f in F]          # 2K vector terms
         c = self.coef(torch.cat(pooled, -1))                                # (B, 2K) invariant
         y = sum(c[:, t, None] * terms[t] for t in range(len(terms)))
+        self.last = dict(attn=[a.detach() for a in attns], c=c.detach())     # for scripts/14 diagnostics
         return y, attns[0]

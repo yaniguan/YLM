@@ -37,7 +37,19 @@ TEMPLATES = {
              "Give the component of the force on {a} along the direction to {b}.",
              "Project the force on {a} onto the line pointing to {b}."],
 }
-HELDOUT_IDX = 2  # last template of each task is only used in test_heldout
+HELDOUT_IDX = 2  # last of the three templates above is only used in test_heldout
+# Extra training wordings (--extra k adds the first k per task). Different cue words and word orders on purpose;
+# the held-out wording ("minus" / "Project ... onto the line") is never among them.
+EXTRA = {
+    "diff": ["Take the force on {a} and remove the force on {b}.",
+             "Starting from the force on {a}, subtract the force on {b}.",
+             "Take away the force on {b} from the force on {a}.",
+             "Compute the vector difference, the force on {a} less the force on {b}."],
+    "proj": ["How much of the force on {a} lies along the direction toward {b}?",
+             "Keep only the component of the force on {a} that points at {b}.",
+             "What is the force on {a} resolved along the line towards {b}?",
+             "Of the force on {a}, give just the portion directed at {b}."],
+}
 
 
 def main():
@@ -48,8 +60,10 @@ def main():
     p.add_argument("--out", default="data/tensorqa_comp.json")
     p.add_argument("--pairs_per_task", type=int, default=2)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--extra", type=int, default=0, help="extra training wordings per task (0-4)")
     args = p.parse_args()
     rng = random.Random(args.seed)
+    trng = random.Random(args.seed + 1)   # wording choice has its own stream, so --extra never changes the pairs
     labels = pickle.load(open(args.labels, "rb"))
     split_of = {q["mol"]: q["split"] for q in json.load(open(args.v0)) if q["split"] != "test_heldout"}
     supplier = Chem.SDMolSupplier(args.sdf, removeHs=False, sanitize=True)
@@ -73,7 +87,8 @@ def main():
                     target = (forces[a] @ u) * u
                 if np.abs(target).max() > 2 * mkq.MAX_FORCE:
                     continue
-                splits = [(split, rng.choice(templates[:HELDOUT_IDX]))]
+                train_t = templates[:HELDOUT_IDX] + EXTRA[task][:args.extra]
+                splits = [(split, trng.choice(train_t))]
                 if split == "test":
                     splits.append(("test_heldout", templates[HELDOUT_IDX]))
                 for sp, t in splits:

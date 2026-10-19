@@ -25,6 +25,7 @@ def main():
     parser.add_argument("--name", choices=list(MODELS), required=True)
     parser.add_argument("--questions", default="data/tensorqa_v0.json")
     parser.add_argument("--out", default=None, help="default: data/text_<name>.pt")
+    parser.add_argument("--half", action="store_true", help="store float16 (half the file size)")
     args = parser.parse_args()
     out = args.out or f"data/text_{args.name}.pt"
 
@@ -36,7 +37,7 @@ def main():
     with torch.no_grad():
         for q in questions:
             enc = tok(q, return_tensors="pt")
-            states[q] = model(**enc).last_hidden_state[0].clone()   # (T, d), includes [CLS] and [SEP]
+            states[q] = model(**enc).last_hidden_state[0].clone().half() if args.half else model(**enc).last_hidden_state[0].clone()   # (T, d), includes [CLS] and [SEP]
     dim = next(iter(states.values())).shape[-1]
     torch.save({"dim": dim, "states": states}, out)
     print(f"{args.name}: {len(states)} questions, dim {dim}, saved {out}")

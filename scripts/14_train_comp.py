@@ -53,6 +53,7 @@ def load(labels_path, qpath, tpath):
         splits[sp] = dict(mol=torch.tensor([q["mol"] for q in sel]),
                           text=torch.tensor([sid[q["question"]] for q in sel]),
                           task=torch.tensor([TASKS[q["task"]] for q in sel]),
+                          atoms=torch.tensor([q["atoms"] for q in sel]),
                           target=torch.tensor([q["target"] for q in sel], dtype=torch.float32))
     return dict(Z=Z, pos=pos, mask=mask, text=text, tmask=tmask, dim=cache["dim"]), splits
 
@@ -106,10 +107,41 @@ def evaluate(model, kind, data, sp, scale, device, n_rot, bs=512):
                     eq_err_mean=float(np.mean(r["eq"])) if r["eq"] else None) for n, r in res.items()}
 
 
+@torch.no_grad()
+def diagnose(model, data, sp, device, bs=512):
+    """Where do the two pointers look, and which coefficients does the model choose?
+
+    hit[h][j] = fraction of questions where head h's argmax atom is the question's atom j (0 = A, 1 = B).
+    A model that follows the wording has hit[0] = (1, 0), hit[1] = (0, 1) for "A ... B" order and the
+    reverse for "Subtract B from A"; coef = mean (c1..c4) per task; ideal diff (1,-1,0,0), proj (0,0,1,0).
+    """
+    model.eval()
+    hits = {t: torch.zeros(2, 2) for t in TASKS}
+    coef = {t: torch.zeros(4) for t in TASKS}
+    n = {t: 0 for t in TASKS}
+    for s in range(0, len(sp["mol"]), bs):
+        idx = torch.arange(s, min(s + bs, len(sp["mol"])))
+        inp, _, task = batch(data, sp, idx, device)
+        model(*inp)
+        arg = [a.argmax(-1).cpu() for a in model.last["attn"]]
+        atoms, task, c = sp["atoms"][idx], task.cpu(), model.last["c"].cpu()
+        for t, k in TASKS.items():
+            sel = task == k
+            n[t] += int(sel.sum())
+            coef[t] += c[sel].sum(0)
+            for h in range(2):
+                for j in range(2):
+                    hits[t][h, j] += (arg[h][sel] == atoms[sel][:, j]).sum()
+    model.train()
+    return {t: dict(hit=(hits[t] / n[t]).tolist(), coef=(coef[t] / n[t]).tolist()) for t in TASKS}
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--model", choices=["bc", "optA"], required=True)
     p.add_argument("--text", default="matscibert")
+    p.add_argument("--data", default="tensorqa_comp", help="questions file data/<data>.json; text cache data/text_<data>_<text>.pt")
+    p.add_argument("--token_dropout", type=float, default=0.0, help="bc only: drop this fraction of text tokens in training")
     p.add_argument("--name", required=True)
     p.add_argument("--epochs", type=int, default=40)
     p.add_argument("--batch_size", type=int, default=128)
@@ -132,11 +164,11 @@ def main():
         log.write(s + "\n")
         log.flush()
 
-    data, splits = load("data/qm9_xtb.pkl", "data/tensorqa_comp.json", f"data/text_comp_{args.text}.pt")
+    data, splits = load("data/qm9_xtb.pkl", f"data/{args.data}.json", f"data/text_{args.data.replace('tensorqa_', '')}_{args.text}.pt")
     train = splits["train"]
     scale = torch.stack([train["target"][train["task"] == k].pow(2).mean().sqrt() for k in TASKS.values()])
     sd = scale.to(device)
-    model = (CompModel(data["dim"]) if args.model == "bc" else YLM(text_dim=data["dim"])).to(device)
+    model = (CompModel(data["dim"], token_dropout=args.token_dropout) if args.model == "bc" else YLM(text_dim=data["dim"])).to(device)
     say("device", device, "| params", sum(q.numel() for q in model.parameters()), "| scale", scale.tolist())
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-5)
     total = args.epochs * math.ceil(len(train["mol"]) / args.batch_size)
@@ -174,6 +206,9 @@ def main():
             d = {k: v[: args.test_limit] for k, v in d.items()}
         results[sp] = evaluate(model, args.model, data, d, scale, device, args.eval_rotations)
         say(sp, json.dumps(results[sp]))
+        if args.model == "bc":
+            results[sp + "_diag"] = diagnose(model, data, d, device)
+            say(sp, "diag", json.dumps(results[sp + "_diag"]))
     json.dump(results, open(f"{out}/results.json", "w"), indent=2)
 
 
