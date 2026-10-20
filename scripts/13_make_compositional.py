@@ -60,6 +60,9 @@ def main():
     p.add_argument("--out", default="data/tensorqa_comp.json")
     p.add_argument("--pairs_per_task", type=int, default=2)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--paraphrases", default=None,
+                   help="data/paraphrases.json (scripts/19): free-form wordings; train styles for train/val/test, "
+                        "held-out styles only in test_heldout. Replaces the hand-written templates.")
     p.add_argument("--extra", type=int, default=0, help="extra training wordings per task (0-4)")
     args = p.parse_args()
     rng = random.Random(args.seed)
@@ -68,6 +71,12 @@ def main():
     split_of = {q["mol"]: q["split"] for q in json.load(open(args.v0)) if q["split"] != "test_heldout"}
     supplier = Chem.SDMolSupplier(args.sdf, removeHs=False, sanitize=True)
 
+    para = None
+    if args.paraphrases:
+        P = json.load(open(args.paraphrases))
+        hs = set(P["heldout_styles"])
+        para = {t: dict(train=[x for st, v in P["templates"][t].items() if st not in hs for x in v],
+                        held=[x for st, v in P["templates"][t].items() if st in hs for x in v]) for t in TEMPLATES}
     out = []
     for m, split in sorted(split_of.items()):
         lab = labels[m]
@@ -87,10 +96,15 @@ def main():
                     target = (forces[a] @ u) * u
                 if np.abs(target).max() > 2 * mkq.MAX_FORCE:
                     continue
-                train_t = templates[:HELDOUT_IDX] + EXTRA[task][:args.extra]
-                splits = [(split, trng.choice(train_t))]
-                if split == "test":
-                    splits.append(("test_heldout", templates[HELDOUT_IDX]))
+                if para:
+                    splits = [(split, trng.choice(para[task]["train"]))]
+                    if split == "test":
+                        splits.append(("test_heldout", trng.choice(para[task]["held"])))
+                else:
+                    train_t = templates[:HELDOUT_IDX] + EXTRA[task][:args.extra]
+                    splits = [(split, trng.choice(train_t))]
+                    if split == "test":
+                        splits.append(("test_heldout", templates[HELDOUT_IDX]))
                 for sp, t in splits:
                     out.append(dict(mol=m, split=sp, task=task, atoms=[a, b], target=target.tolist(),
                                     question=t.format(a=desc[a], b=desc[b])))
