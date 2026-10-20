@@ -311,3 +311,4 @@ O(d)-equivariant functions can be written through scalar contractions (dot produ
 "an ordinary scalar language model cannot choose directions" is not a valid motivation. The question is which interface
 LEARNS to choose and combine directions correctly out of distribution. Our Option A is already a scalar-weights-on-vectors
 construction.
+
