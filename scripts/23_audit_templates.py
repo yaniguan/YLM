@@ -22,6 +22,10 @@ DEF = {
             "that line (points toward {b} if the force has a positive component that way, away otherwise). {a} and {b} are "
             "ANY two atoms, not necessarily bonded to each other",
     "quad": "the traceless electric quadrupole tensor of the whole molecule",
+    "pol_iso": "the isotropic (orientation-averaged) static polarizability of the molecule, one scalar",
+    "pol_aniso": "the traceless anisotropic part of the static polarizability tensor (symmetric traceless 3x3), not the isotropic average",
+    "pol_dir": "the SCALAR u^T alpha u: the polarizability along the direction from atom {a} to atom {b} ({a}, {b} are any two atoms, not necessarily bonded)",
+    "pol_ind": "the 3D VECTOR alpha u: the dipole induced by a unit electric field pointing from atom {a} toward atom {b} ({a}, {b} any two atoms, not necessarily bonded)",
 }
 
 
@@ -36,9 +40,17 @@ def call(prompt):
 
 
 def main():
-    P = json.load(open("data/paraphrases.json"))
-    verdict = {}
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--file", default="data/paraphrases.json")
+    ap.add_argument("--tasks", default=None, help="comma list; default all")
+    ap.add_argument("--apply", action="store_true", help="rewrite --file keeping only templates judged ok (and without 'bond' wording)")
+    args = ap.parse_args()
+    P = json.load(open(args.file))
+    verdict = json.load(open("data/audit_templates.json")) if os.path.exists("data/audit_templates.json") else {}
     for task, styles in P["templates"].items():
+        if args.tasks and task not in args.tasks.split(","):
+            continue
         for style, temps in styles.items():
             for i in range(0, len(temps), 30):
                 chunk = temps[i:i + 30]
@@ -60,6 +72,18 @@ def main():
     json.dump(verdict, open("data/audit_templates.json", "w"), indent=1)
     from collections import Counter
     print(Counter((v["task"], v["verdict"]) for v in verdict.values()))
+    if args.apply:
+        bad = re.compile(r"\bbond(?!ed to)\w*|\bbonding\b", re.I)
+        removed = []
+        for task, styles in P["templates"].items():
+            if args.tasks and task not in args.tasks.split(","):
+                continue
+            for style, temps in styles.items():
+                keep = [t for t in temps if verdict.get(t, {}).get("verdict") == "ok" and not bad.search(t)]
+                removed += [dict(task=task, style=style, template=t) for t in temps if t not in keep]
+                styles[style] = keep
+        json.dump(P, open(args.file, "w"), indent=1)
+        print("removed", len(removed))
 
 
 if __name__ == "__main__":

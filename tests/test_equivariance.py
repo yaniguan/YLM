@@ -136,3 +136,24 @@ def test_prog_model_equivariant_and_permutation_invariant():
         m2 = mask[:, perm]
         y_p, _ = model(Z[:, perm], pos[:, perm], m2, text, tmask)
         assert (y_p - y).abs().max() < 1e-8 or not training       # soft pointers: permutation invariant
+
+
+def test_pol_model_tensor_equivariance_and_contractions():
+    from src.pol import PolModel, execute_pol, to_matrix
+    Z, pos, mask, text, tmask, _ = fake_batch()
+    model = PolModel(text_dim=16, iso_mean=3.0, iso_std=2.0, s2=1.5)
+    R = -o3.rand_matrix()                                       # reflections too
+    D = o3.Irreps("2e").D_from_matrix(R)
+    a0, a2, _, _ = model(Z, pos, mask, text, tmask)
+    b0, b2, _, _ = model(Z, pos @ R.T, mask, text, tmask)
+    assert (b0 - a0).abs().max() < 1e-8 and (b2 - a2 @ D.T).abs().max() < 1e-8
+    # matrix form rotates as R A R^T
+    A, B = to_matrix(a0, a2), to_matrix(b0, b2)
+    assert (B - R @ A @ R.T).abs().max() < 1e-8
+    # exact contractions
+    ptask = torch.tensor([2, 3, 3])
+    atoms = torch.tensor([[0, 3], [1, 4], [2, 5]])
+    y, yr = execute_pol(a0, a2, pos, ptask, atoms), execute_pol(b0, b2, pos @ R.T, ptask, atoms)
+    assert (yr[0, 0] - y[0, 0]).abs() < 1e-8                      # u^T alpha u is a scalar
+    assert (yr[1:, :3] - y[1:, :3] @ R.T).abs().max() < 1e-8      # alpha u is a vector
+    assert execute_pol(a0, a2, pos, torch.tensor([2, -1, 3]), torch.tensor([[0, 3], [1, 4], [2, -1]]))[1:].abs().max() == 0

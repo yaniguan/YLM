@@ -26,8 +26,8 @@ from rdkit import Chem, RDLogger
 
 RDLogger.DisableLog("rdApp.*")
 
-NAME = {1: "hydrogen", 6: "carbon", 7: "nitrogen", 8: "oxygen", 9: "fluorine"}
-NAME_PLURAL = {1: "hydrogens", 6: "carbons", 7: "nitrogens", 8: "oxygens", 9: "fluorines"}
+NAME = {1: "hydrogen", 6: "carbon", 7: "nitrogen", 8: "oxygen", 9: "fluorine", 16: "sulfur", 17: "chlorine"}
+NAME_PLURAL = {1: "hydrogens", 6: "carbons", 7: "nitrogens", 8: "oxygens", 9: "fluorines", 16: "sulfurs", 17: "chlorines"}
 COUNT_WORD = {1: "one", 2: "two", 3: "three", 4: "four"}
 
 DIPOLE_TEMPLATES = [
