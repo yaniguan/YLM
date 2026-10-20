@@ -12,3 +12,4 @@ paper/*.xdv
 paper/*.bbl
 paper/*.blg
 paper/*.out
+colab_bundle/
