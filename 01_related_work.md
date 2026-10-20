@@ -291,3 +291,23 @@ vector/tensor answers, per-molecule geometry.
 Positioning that follows: the contribution is the generalisation of language-conditioned equivariance from SE(2) with
 invariant queries to SO(3)/O(3) irreps and scientific tensor question answering, plus the benchmark, plus an honest
 study of when language is necessary (see PLAN_v1.md).
+
+## Added 2026-10-19 (second review; each paper checked against its arXiv/proceedings page)
+
+**Large Language-Geometry Model: When LLM meets Equivariance** (the EquiLLM framework; Li et al., ICML 2025,
+PMLR 267:34054) — https://arxiv.org/abs/2502.11149
+Equivariant encoder + LLM + equivariant adapter; the LLM only handles invariant features and all 3D directional
+information goes through the encoder/adapter. Tasks: molecular dynamics, human motion, antibody design (geometric
+prediction conditioned on prompts of invariant context). Difference: the language is context for a geometric regression;
+ours asks the language to *select and combine* physical observables (which atom, which operator, which direction), and
+we test that selection on unseen wordings, entities and operator combinations.
+
+**EquAct** (Zhu, Qi, Zhu, Walters, Platt; arXiv 2505.21351) — https://arxiv.org/abs/2505.21351
+SE(3)-equivariant point-cloud U-Net with SE(3)-invariant FiLM language conditioning; 18 RLBench tasks + 4 real tasks.
+Language-conditioned SE(3) equivariance already exists in robotics, so "2D to 3D" is not a contribution by itself.
+
+**Scalars are universal** (Villar, Hogg, Storey-Fisher, Yao, Blum-Smith; NeurIPS 2021) — https://arxiv.org/abs/2106.06610
+O(d)-equivariant functions can be written through scalar contractions (dot products) of the inputs. Consequence for us:
+"an ordinary scalar language model cannot choose directions" is not a valid motivation. The question is which interface
+LEARNS to choose and combine directions correctly out of distribution. Our Option A is already a scalar-weights-on-vectors
+construction.

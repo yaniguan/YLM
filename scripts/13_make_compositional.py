@@ -4,12 +4,12 @@
            Needs TWO atoms selected and combined with a sign.
   T5 proj  "What is the vector projection of the force on A onto the direction toward B?"   (F_A . u) u, u = unit(r_B - r_A)
            This is the AXIS projection: signed, so it points away from B when F_A . u < 0 (not a ray component).
-           Needs a direction built from two atoms (Option B/C territory); a plain weighted average of atom
-           vectors cannot make it.
+           Needs a direction built from two atoms (Option B/C territory); a single weighted average of atom
+           vectors is not designed for it (see scripts/28_convex_ceiling.py: it is not impossible either).
 
 Atoms A, B are described as in TensorQA-v0 (unique descriptions only), A != B.
 Splits follow tensorqa_v0.json (by molecule). Held-out wordings only in test_heldout.
-A plain parser needs a new grammar rule per question type; that is the point of the comparison.
+A parser needs a new grammar rule per question type; that is the point of the comparison.
 
   python scripts/13_make_compositional.py            # -> data/tensorqa_comp.json
 """

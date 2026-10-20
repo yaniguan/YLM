@@ -10,7 +10,9 @@ INVARIANT coefficients c(text):
 Dot products and u(u.F) are CG products 1x1->0 and 0x1->1, so the output is exactly equivariant.
   diff  ("F_A - F_B")           : c = (+1, -1, 0, 0)
   proj  ("F_A along A->B")      : c = (0, 0, 1, 0)
-Option A (a single weighted average of atom vectors) cannot build the second type.
+Option A (one convex combination of atom vectors) is NOT provably unable to build these: with perfect per-atom forces
+the closest convex combination already reaches cosine ~0.97 (diff) / ~0.99 (proj) on TensorQA-v1
+(scripts/28_convex_ceiling.py). The gap is about what is learnable from the text and invariants, not expressivity.
 """
 import math
 
