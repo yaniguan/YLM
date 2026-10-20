@@ -1,0 +1,3 @@
+python scripts/18_train_quad.py --model quad --name quad_s1 --seed 1 > runs/quad_s1.stdout 2>&1
+python scripts/18_train_quad.py --model scalar --name quadsc_s1 --seed 1 > runs/quadsc_s1.stdout 2>&1
+python scripts/18_train_quad.py --model scalar --name quadsca_s1 --seed 1 --augment > runs/quadsca_s1.stdout 2>&1

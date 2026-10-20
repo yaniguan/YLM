@@ -1,0 +1,4 @@
+python scripts/22_train_v1.py --name v1_rule_s1 --model rule --seed 1 > runs/v1_rule_s1.stdout 2>&1
+python scripts/22_train_v1.py --name v1_oracle_s1 --model oracle --seed 1 > runs/v1_oracle_s1.stdout 2>&1
+python scripts/22_train_v1.py --name v1_bc_s2 --model bc --seed 2 > runs/v1_bc_s2.stdout 2>&1
+python scripts/22_train_v1.py --name v1_optA_s2 --model optA --seed 2 > runs/v1_optA_s2.stdout 2>&1

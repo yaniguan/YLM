@@ -1,12 +1,13 @@
 #!/bin/bash
 # Run several small trainings concurrently on ONE GPU (the account is capped at 4 GPUs at a time).
+# L40S (48 GB) is pinned because some nodes expose 8 GB GPUs where 4 concurrent trainings run out of memory.
 #   qsub -N pack_a0 jobs/hoffman2_pack.sh jobs/packs/a_s0.txt
 # Each line of the pack file is a full command (include "> runs/<name>.stdout 2>&1"). All lines start together.
 #$ -cwd
 #$ -o runs/$JOB_NAME.$JOB_ID.out
 #$ -j y
-#$ -pe shared 5
-#$ -l h_rt=24:00:00,h_data=6G,gpu,cuda=1
+#$ -pe shared 4
+#$ -l h_rt=24:00:00,h_data=6G,gpu,L40S,cuda=1
 
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate ylm
