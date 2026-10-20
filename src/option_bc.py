@@ -42,7 +42,7 @@ class CompModel(nn.Module):
             keep = torch.rand(text_mask.shape, device=text_mask.device) > self.token_dropout
             keep[:, 0] = True
             text_mask = text_mask & keep
-        h = self.text_proj(text.float())                                            # (B, T, d) invariant
+        h = self.text_proj(text.to(self.text_proj[1].weight.dtype))                                            # (B, T, d) invariant
         x = self.encoder(Z, pos, atom_mask)
         keys = self.k(invariants(x, self.encoder.irreps_out))               # (B, N, key)
         v = self.value(x) * atom_mask[..., None]                            # (B, N, 3) equivariant
