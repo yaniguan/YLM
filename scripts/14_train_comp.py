@@ -83,9 +83,12 @@ def batch(data, sp, idx, device, R=None):
             data["text"][t].to(device), data["tmask"][t].to(device)), tgt.to(device), sp["task"][idx].to(device)
 
 
-def forward(model, kind, inputs, task):
+def forward(model, kind, inputs, task, scale):
+    """Prediction in units of the per-task RMS target (the loss/eval convention). The parser pipeline composes
+    ONE shared per-atom force vector with a fixed operator, so it lives in physical units; dividing by the task
+    scale here keeps the two tasks (diff scale 0.092, proj 0.043) from forcing a mismatch it cannot absorb."""
     if kind == "pipeline":
-        return model(*inputs)
+        return model(*inputs) / scale[task][:, None]
     if kind == "optA":  # YLM takes a task id only in "taskid" mode; here it reads the text
         return model(*inputs, task)[0]
     return model(*inputs)[0]
@@ -106,7 +109,7 @@ def evaluate(model, kind, data, sp, scale, device, n_rot, bs=512):
         y0 = None
         for R in rots:
             inp, tgt, task = batch(data, sp, idx, device, R)
-            y = (forward(model, kind, inp, task) * scale[task][:, None]).cpu()
+            y = (forward(model, kind, inp, task, scale) * scale[task][:, None]).cpu()
             tgt, task = tgt.cpu(), task.cpu()
             if y0 is None:
                 y0 = y
@@ -201,7 +204,7 @@ def main():
         ls = []
         for s in range(0, len(perm), args.batch_size):
             inp, tgt, task = batch(data, train, perm[s: s + args.batch_size], device)
-            loss = ((forward(model, args.model, inp, task) - tgt / sd[task][:, None]) ** 2).mean()
+            loss = ((forward(model, args.model, inp, task, sd) - tgt / sd[task][:, None]) ** 2).mean()
             opt.zero_grad()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 10.0)

@@ -29,7 +29,7 @@ TASKS = {
                   base="What is the force on {a}?"),
     "diff": dict(ph=["a", "b"], meaning="the 3D VECTOR F_a - F_b: the force on atom {a} minus the force on atom {b} (order matters)",
                  base="What is the difference between the force on {a} and the force on {b}?"),
-    "proj": dict(ph=["a", "b"], meaning="the component of the force on atom {a} along the direction pointing from atom {a} toward atom {b}, as a 3D VECTOR parallel to that direction (not a scalar length)",
+    "proj": dict(ph=["a", "b"], meaning="the vector projection of the force on atom {a} onto the axis through atom {a} and atom {b}: a 3D VECTOR parallel to the line from {a} to {b}, SIGNED (it points toward {b} if the force has a positive component that way, and away from {b} if the force points away). Not a scalar length, and not 'the part of the force that points toward {b}' (which would clip the negative case)",
                  base="What is the part of the force on {a} that points toward {b}?"),
     "quad": dict(ph=[], meaning="the traceless electric quadrupole tensor of the whole molecule",
                  base="What is the quadrupole moment of the molecule?"),
@@ -92,9 +92,14 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--n", type=int, default=24, help="templates requested per (task, style)")
     p.add_argument("--out", default="data/paraphrases.json")
+    p.add_argument("--tasks", default=None, help="comma list; regenerate only these and merge into the existing --out file")
     args = p.parse_args()
     out = {"model": MODEL, "heldout_styles": HELDOUT_STYLES, "templates": {}}
+    if args.tasks and os.path.exists(args.out):
+        out = json.load(open(args.out))
     for task, spec in TASKS.items():
+        if args.tasks and task not in args.tasks.split(","):
+            continue
         out["templates"][task] = {}
         for style in STYLES:
             raw = generate(task, style, args.n)
