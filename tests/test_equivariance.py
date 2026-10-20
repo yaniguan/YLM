@@ -157,3 +157,18 @@ def test_pol_model_tensor_equivariance_and_contractions():
     assert (yr[0, 0] - y[0, 0]).abs() < 1e-8                      # u^T alpha u is a scalar
     assert (yr[1:, :3] - y[1:, :3] @ R.T).abs().max() < 1e-8      # alpha u is a vector
     assert execute_pol(a0, a2, pos, torch.tensor([2, -1, 3]), torch.tensor([[0, 3], [1, 4], [2, -1]]))[1:].abs().max() == 0
+
+
+def test_quadrupole_head_equivariant_l2():
+    from src.quad import QuadModel, quad_to_2e
+    Z, pos, mask, text, tmask, _ = fake_batch()
+    R = o3.rand_matrix()
+    D = o3.Irreps("2e").D_from_matrix(R)
+    A = torch.randn(3, 3)
+    Q = A + A.T
+    Q = Q - torch.eye(3) * torch.trace(Q) / 3
+    assert (quad_to_2e(R @ Q @ R.T) - quad_to_2e(Q) @ D.T).abs().max() < 1e-9      # label convention: Q -> R Q R^T
+    model = QuadModel(text_dim=16)
+    y = model(Z, pos, mask, text, tmask)
+    assert (model(Z, pos @ R.T, mask, text, tmask) - y @ D.T).abs().max() < 1e-8
+    assert (model(Z, pos + 4.0, mask, text, tmask) - y).abs().max() < 1e-8
