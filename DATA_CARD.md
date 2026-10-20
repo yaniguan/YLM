@@ -89,7 +89,7 @@ Scientific Data 1, 140022 (2014). xTB: Bannwarth, Ehlert, Grimme, JCTC 15, 1652 
   second call of the same model, then audited by `claude-sonnet-5-5` (`scripts/23_audit_templates.py`); only templates the
   audit called `ok` (and with no "bond" wording, since A and B need not be bonded) are kept: 66 of the generated
   `force/diff/proj/quad` templates were removed (`data/paraphrases_removed.json`, raw file `data/paraphrases_raw.json`).
-  This is not a human audit. `data/audit_sample_200.csv` (if present) is the sheet for one.
+  This is not a human audit. `audit/audit_sample_200.csv` is the sheet for one (200 filled-in questions, stratified by task and style; the `verdict` column is empty).
 - **Known ambiguities**: "difference between X and Y" is read as X - Y (the audit flagged such templates as ambiguous and
   they were removed from the free-form set, but the hand-written v0/comp templates still use it); some paraphrases can be
   read as a scalar component. Treat the last digits of wording-level results accordingly.
