@@ -76,7 +76,7 @@ def test_pipeline_and_compositional_models_equivariant():
 def test_pipeline_comp_equivariant_and_failure_gives_zero():
     from src.baselines import PipelineComp
     Z, pos, mask, *_ = fake_batch()
-    model = PipelineComp()
+    model = PipelineComp(ops=("diff", "proj"))
     ptask = torch.tensor([0, 1, 1])
     atoms = torch.tensor([[0, 3], [1, 4], [2, 5]])
     R = o3.rand_matrix()
@@ -95,3 +95,44 @@ def test_pair_parser_handles_order_and_unseen_wordings():
     t, first, second = parse_pair(f"What is the projection of the force on {a} toward {b}?")
     assert t == "proj" and first["element"] == 6 and second["element"] == 8
     assert parse_pair(f"Is the force on {a} larger than on {b}?") is None       # unknown type -> failure, not a guess
+
+
+def test_pipeline_comp_force_op_and_improper_rotation():
+    from src.baselines import PipelineComp
+    Z, pos, mask, *_ = fake_batch()
+    model = PipelineComp()                       # ops = force, diff, proj
+    ptask = torch.tensor([0, 1, 2])
+    atoms = torch.tensor([[0, -1], [1, 4], [2, 5]])
+    y = model(Z, pos, mask, ptask, atoms)
+    assert y[0].abs().max() > 0                  # force needs no second atom
+    R = -o3.rand_matrix()                        # improper: det = -1 (inversion composed with a rotation)
+    assert torch.det(R) < 0
+    assert (model(Z, pos @ R.T, mask, ptask, atoms) - y @ R.T).abs().max() < 1e-8   # true vectors follow O(3), incl. parity
+
+
+def test_o3_parity_option_makes_readouts_reflection_equivariant():
+    from src.option_bc import CompModel
+    Z, pos, mask, text, tmask, task = fake_batch()
+    R = -o3.rand_matrix()
+    for name, model in [("bc", CompModel(text_dim=16, parity="o3")), ("ylm", YLM(text_dim=16, parity="o3"))]:
+        args = (Z, pos, mask, text, tmask) + ((task,) if name == "ylm" else ())
+        args_r = (Z, pos @ R.T, mask, text, tmask) + ((task,) if name == "ylm" else ())
+        y, y_r = model(*args)[0], model(*args_r)[0]
+        assert (y_r - y @ R.T).abs().max() < 1e-8, name
+    # the so3 variant keeps the sign of 0o scalars: not guaranteed under reflections (documented, used as ablation)
+
+
+def test_prog_model_equivariant_and_permutation_invariant():
+    from src.prog import ProgModel
+    Z, pos, mask, text, tmask, _ = fake_batch()
+    for training in (True, False):
+        model = ProgModel(text_dim=16)
+        model.train(training)
+        R = -o3.rand_matrix()                                     # includes reflections
+        y, _ = model(Z, pos, mask, text, tmask)
+        y_r, _ = model(Z, pos @ R.T, mask, text, tmask)
+        assert (y_r - y @ R.T).abs().max() < 1e-8
+        perm = torch.tensor([2, 0, 1, 4, 3, 6, 5])                # same molecule, atoms listed in another order
+        m2 = mask[:, perm]
+        y_p, _ = model(Z[:, perm], pos[:, perm], m2, text, tmask)
+        assert (y_p - y).abs().max() < 1e-8 or not training       # soft pointers: permutation invariant

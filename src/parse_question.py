@@ -55,24 +55,38 @@ def resolve(question, rdkit_mol):
 
 
 # ---- two-atom (compositional) questions -------------------------------------------------------------
-# One extra rule per question type, which is exactly the maintenance cost the comparison is about.
-DIFF = re.compile(r"\b(difference|subtract|minus)\b")
-PROJ = re.compile(r"\b(part|component|project|projection)\b")
-SUBTRACT_FROM = re.compile(r"\bsubtract\b.*\bfrom\b")  # "Subtract F_b from F_a": the first atom mentioned is B
+# One extra rule per question type: this is the maintenance cost the comparison is about. Version 2 of the rules
+# was written after reading failures on the TRAIN split only (v1 benchmark); held-out wording families were not used.
+DIFF = re.compile(r"\b(differ\w*|subtract\w*|minus|less|remov\w*|deduct\w*|take[sn]? away|taken away|taking away|"
+                  r"negative of|excess|negative term)\b|f_a\s*[\u2212-]|\(\u2212f_b\)")
+PROJ = re.compile(r"\b(project\w*|axis|axial|along|resolved|parallel|portion|share|component|part)\b")
+# verbs of the form "subtract X FROM Y": the atom after "from" is the minuend A
+SUBTRACT_FROM = re.compile(r"\b(subtract\w*|deduct\w*|remov\w*|taken away|take[sn]? away|taking away)\b.*\bfrom\b")
+KEEP_ORDER = re.compile(r"from it\b|from the first\b|subtracting from it|as the positive term")   # "subtract ... FROM IT": A is first
+NEG_FIRST = re.compile(r"negative term.*positive term")
+FORCE_BEFORE = re.compile(r"force[^.?!,;]{0,40}\b(on|by|of|upon|exerted on|acting on|experienced by|felt by)\s+$")
 
 
 def parse_pair(question):
     """-> (task, spec_a, spec_b) with task in {"diff", "proj"}, or None. The specs are as in parse()."""
     q = question.lower()
-    task = "diff" if DIFF.search(q) else "proj" if PROJ.search(q) else None
     heads = [m.start() for m in HEAD.finditer(q)]
-    if task is None or len(heads) != 2:
+    if len(heads) != 2:
         return None
-    first, second = (parse(q[heads[0]:heads[1]]), parse(q[heads[1]:]))
-    if first is None or second is None:
+    task = "diff" if DIFF.search(q) else "proj" if PROJ.search(q) else None
+    first, second = parse(q[heads[0]:heads[1]]), parse(q[heads[1]:])
+    if task is None or first is None or second is None:
         return None
-    if task == "diff" and SUBTRACT_FROM.search(q):
-        first, second = second, first
+    if task == "diff":
+        swap = bool(SUBTRACT_FROM.search(q)) and not KEEP_ORDER.search(q)
+        swap = swap or bool(NEG_FIRST.search(q))
+        if swap:
+            first, second = second, first
+    else:   # proj: A is the atom whose description follows "force on / acting on / ..."; otherwise mention order
+        a_first = bool(FORCE_BEFORE.search(q[:heads[0]]))
+        a_second = bool(FORCE_BEFORE.search(q[heads[0]:heads[1]]))
+        if a_second and not a_first:
+            first, second = second, first
     return task, first, second
 
 
@@ -96,3 +110,12 @@ def resolve_pair(question, rdkit_mol):
         return None, -1, -1
     task, sa, sb = p
     return task, _match(sa, rdkit_mol), _match(sb, rdkit_mol)
+
+
+def resolve_program(question, rdkit_mol):
+    """-> (task, atom_a, atom_b) for force / diff / proj questions. task None = parse failure.
+    Exactly one atom description means a force question (atom_b = -1)."""
+    heads = HEAD.findall(question.lower())
+    if len(heads) == 1:
+        return "force", resolve(question.lower(), rdkit_mol), -1
+    return resolve_pair(question, rdkit_mol)

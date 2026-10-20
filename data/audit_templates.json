@@ -1,0 +1,4970 @@
+{
+ "Determine the three-dimensional force vector acting on {a}.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector on the atom."
+ },
+ "What is the net force vector experienced by {a}?": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Net force vector on the atom."
+ },
+ "Compute the components of the force vector on {a} in Cartesian coordinates.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Cartesian components of the force on the atom."
+ },
+ "Find the total force vector exerted on {a}, expressed in three dimensions.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Total force vector in 3D."
+ },
+ "Evaluate the vector force acting upon {a}.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Vector force on the atom."
+ },
+ "Calculate the resultant three-dimensional force vector on {a}.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Resultant 3D force vector."
+ },
+ "Report the force vector on {a} along the x, y, and z axes.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Force vector given as x, y, z components."
+ },
+ "Express the spatial force vector acting on {a} in its Cartesian components.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Cartesian components of the force."
+ },
+ "What three-dimensional force vector does {a} experience?": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "3D force vector the atom experiences."
+ },
+ "Obtain the net force, as a vector, on {a}.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Net force as a vector."
+ },
+ "Give the vector sum of all forces acting on {a} in three-dimensional space.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "'Vector sum of all forces' implies summing several separate forces, which may not match a single force-vector question."
+ },
+ "What is the Cartesian force vector exerted on {a}?": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Cartesian force vector on the atom."
+ },
+ "Calculate the x, y, and z components of the force acting on {a}.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "x, y, z components of the force on the atom."
+ },
+ "State the force vector on {a} as a sum of its three orthogonal components.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Force vector written as its three orthogonal components."
+ },
+ "Find the vectorial force on {a} in three dimensions.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Vectorial force in 3D."
+ },
+ "Determine the force acting on {a}, expressed as a three-dimensional vector.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Force as a 3D vector."
+ },
+ "Compute the total force vector on {a}.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Total force vector."
+ },
+ "Calculate the force experienced by {a}, reported as a three-component vector.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Three-component force vector."
+ },
+ "Evaluate the force vector F acting on {a}.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Force vector F on the atom."
+ },
+ "Specify the net three-dimensional force acting on {a}.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Net 3D force on the atom."
+ },
+ "Provide the force vector on {a}, giving each Cartesian component explicitly.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Force vector with explicit Cartesian components."
+ },
+ "Determine the force vector F for {a}, the force acting on that atom in three dimensions.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Force vector F on the atom in 3D."
+ },
+ "Find the vector force on {a} and resolve it into its x, y, and z components.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Vector force resolved into x, y, z."
+ },
+ "What are the Cartesian components of the force on {a}?": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Cartesian components of the force."
+ },
+ "Establish the force vector that acts on {a}.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Force vector acting on the atom."
+ },
+ "Calculate the three-dimensional vector representing the force on {a}.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "3D vector for the force on the atom."
+ },
+ "Give the net force vector on {a} in units consistent with the given system.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Net force vector, with units following the system."
+ },
+ "Determine the force experienced by {a} as a vector quantity in three-dimensional space.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Force as a 3D vector quantity."
+ },
+ "What vector force is exerted on {a}?": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Vector force exerted on the atom."
+ },
+ "Compute the spatial force acting on {a}, expressed component-wise.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Force on the atom given component-wise."
+ },
+ "Resolve the net force on {a} into its three Cartesian components.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the net force on {a} as three Cartesian components, which is the 3D force vector."
+ },
+ "Obtain the force vector on {a} along the three coordinate axes.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a} along the three axes."
+ },
+ "Calculate the vector sum of the forces on {a} in three dimensions.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "The vector sum of the forces on {a} in 3D is the net force vector. The wording is slightly indirect but not misleading."
+ },
+ "Determine, in vector form, the force acting on {a}.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Directly asks for the force on {a} in vector form."
+ },
+ "What is the vectorial net force on {a} when expressed in Cartesian coordinates?": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the net force vector on {a} in Cartesian coordinates."
+ },
+ "Find the components (F_x, F_y, F_z) of the force acting on {a}.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for (F_x, F_y, F_z) of the force on {a}, which is the 3D vector."
+ },
+ "Evaluate the force vector on {a}, including its x-, y-, and z-projections.": {
+  "task": "force",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a} with its x, y and z projections."
+ },
+ "Report the 3D force vector on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Directly asks for the 3D force vector on a."
+ },
+ "Compute the force vector acting on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear request for the force vector acting on a."
+ },
+ "Give the 3D force vector for {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector for a, which is fine."
+ },
+ "Find the force vector on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear request for the force vector on a."
+ },
+ "Calculate the 3D force on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'3D force' means the force vector."
+ },
+ "State the force vector experienced by {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Force vector experienced by a is the correct quantity."
+ },
+ "Return the 3D force components on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "3D force components on a describe the vector."
+ },
+ "Determine the net force vector on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Net force vector on a is the total force on the atom."
+ },
+ "Provide the force vector of {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Force vector of a' is slightly loose wording but means the force on a."
+ },
+ "Work out the 3D force on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the 3D force on a."
+ },
+ "Output the force vector acting on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear request for the force vector acting on a."
+ },
+ "Give me the force vector on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear request for the force vector on a."
+ },
+ "Tell me the 3D force on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the 3D force on a."
+ },
+ "Obtain the force vector at {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'At a' is slightly loose but equals the force on the atom."
+ },
+ "Evaluate the 3D force vector on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector on a."
+ },
+ "List the force vector components of {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the force vector components of a."
+ },
+ "Specify the force vector on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear request for the force vector on a."
+ },
+ "Show the 3D force vector for {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector for a."
+ },
+ "Derive the force vector on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the force vector on a."
+ },
+ "Estimate the 3D force on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "'Estimate' suggests an approximation rather than the exact force vector."
+ },
+ "Get the force vector acting upon {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Force vector acting upon a is correct."
+ },
+ "Supply the force vector for {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the force vector for a."
+ },
+ "State the vector force felt by {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Vector force felt by a is the same quantity."
+ },
+ "Solve for the force vector on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks to solve for the force vector on a."
+ },
+ "Give the x, y, z force on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the x, y, z force components on a."
+ },
+ "Compute the three-dimensional force on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Three-dimensional force on a is the vector."
+ },
+ "Return the force vector felt by {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Force vector felt by a is correct."
+ },
+ "Find the 3D force acting on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the 3D force acting on a."
+ },
+ "Calculate the force vector exerted on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Force vector exerted on a is correct."
+ },
+ "Report the force exerted on {a} as a vector.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Force exerted on a as a vector is correct."
+ },
+ "Determine the 3D force vector acting on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Directly asks for the 3D force vector acting on {a}."
+ },
+ "Provide the force vector experienced by {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Force vector experienced by {a}; the 3D setting is implied."
+ },
+ "Give the spatial force vector on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Spatial force vector' means the 3D vector on {a}."
+ },
+ "Output the 3D force vector of {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Of {a}' is slightly loose wording, but it clearly means the force on {a}."
+ },
+ "Compute the net 3D force on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Net 3D force on {a} is the force vector on that atom."
+ },
+ "Tell me the force vector on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Plain request for the force vector on {a}."
+ },
+ "State the 3D force acting on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "A 3D force is a vector, and the target is {a}."
+ },
+ "Find the vector force on {a}.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the vector force on {a}."
+ },
+ "Give the force vector on {a} in 3D.": {
+  "task": "force",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Explicitly asks for the 3D force vector on {a}."
+ },
+ "Hey, what's the force vector acting on {a}?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Directly asks for the force vector on {a}."
+ },
+ "Quick question: what net force does {a} feel in 3D?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Net force in 3D on {a} implies the vector."
+ },
+ "Could you tell me the force vector on {a}?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Directly asks for the force vector on {a}."
+ },
+ "What's the x, y, z force components on {a}?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "x, y, z components are the 3D force vector."
+ },
+ "I'm curious what the 3D force on {a} looks like.": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the 3D force on {a}; a bit loose but fine."
+ },
+ "Mind sharing the force vector for {a}?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Directly asks for the force vector for {a}."
+ },
+ "So what's the net force pushing or pulling on {a} in each direction?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Net force in each direction means the vector components."
+ },
+ "Do you know the force vector experienced by {a}?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force vector experienced by {a}."
+ },
+ "What does the three-dimensional force on {a} come out to?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the three-dimensional force on {a}."
+ },
+ "Can you pull up the force vector on {a} for me?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a}."
+ },
+ "I'd love to see the force vector acting on {a}, if you've got it.": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force vector acting on {a}."
+ },
+ "What's the total force on {a}, broken down into its vector components?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Total force broken into vector components."
+ },
+ "Hit me with the force vector on {a}.": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Casual, but clearly asks for the force vector on {a}."
+ },
+ "How's the force on {a} shaping up in 3D?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "'Shaping up' is vague and does not clearly ask for a vector or its components."
+ },
+ "Could you run down the force vector for {a}?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force vector for {a}."
+ },
+ "Which way and how hard is {a} being pushed, as a 3D vector?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Direction and magnitude given as a 3D vector."
+ },
+ "What's the force vector currently acting on {a}?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force vector currently acting on {a}."
+ },
+ "Got the force vector on {a} handy?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a}."
+ },
+ "Just wondering what the 3D force on {a} is.": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the 3D force on {a}."
+ },
+ "Can you give me the force vector felt by {a}?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force vector felt by {a}."
+ },
+ "What are the Cartesian force components on {a}?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Cartesian components are the force vector."
+ },
+ "Tell me the net force vector on {a}, would you?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the net force vector on {a}."
+ },
+ "I need the force vector on {a}, what do you get?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a}."
+ },
+ "Walk me through the force vector on {a}.": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "'Walk me through' asks for an explanation or derivation, not just the vector."
+ },
+ "Any idea what the force on {a} works out to as a vector?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force on {a} as a vector."
+ },
+ "What force vector does {a} experience in this geometry?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a} in this geometry."
+ },
+ "So, what's the force vector sitting on {a}?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a}."
+ },
+ "Could you crunch the numbers and give the force vector on {a}?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a}."
+ },
+ "What's the 3D force acting on {a} right now?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the 3D force on {a}."
+ },
+ "Let me know the force vector on {a} when you get a chance.": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a}."
+ },
+ "I'm trying to figure out the force vector on {a}, what's yours say?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a}; 'yours' is just casual phrasing."
+ },
+ "What's the force on {a}, expressed as x, y, and z components?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force on {a} as x, y, z components."
+ },
+ "Do you have the force vector for {a} worked out?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Indirect phrasing, but it asks for the force vector for {a}."
+ },
+ "Can you report the three-component force on {a}?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "A three-component force on {a} is the 3D force vector."
+ },
+ "What net force vector is {a} subject to?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the net force vector on {a}."
+ },
+ "Based on the current forces, what's the vector on {a}?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'The vector' is not named as force, but 'based on the current forces' makes it clear."
+ },
+ "Hey, how about the force vector on {a}?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Casual, but it asks for the force vector on {a}."
+ },
+ "What would the force vector on {a} be in 3D?": {
+  "task": "force",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector on {a}."
+ },
+ "Compute the three-dimensional force vector acting on {a}.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Directly asks for the 3D force vector on the atom."
+ },
+ "Determine the Cartesian components of the force vector on {a}.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Cartesian components of the force vector."
+ },
+ "Report the 3D force vector (Fx, Fy, Fz) acting on {a}.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Explicitly asks for (Fx, Fy, Fz)."
+ },
+ "Evaluate the resultant force vector exerted on {a} in Cartesian coordinates.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Resultant force vector in Cartesian coordinates."
+ },
+ "Calculate the vector sum of all interatomic forces acting on {a}.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The vector sum of all forces is the net force vector."
+ },
+ "What force vector, expressed in x, y, and z components, acts on {a}?": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Force vector in x, y, z components."
+ },
+ "Obtain the force vector on {a} as the negative gradient of the potential energy with respect to its Cartesian position.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Negative gradient with respect to the atom's position is the force."
+ },
+ "Give the spatial force vector F = -\u2207E evaluated at the coordinates of {a}.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "F = -\u2207E is the force; slightly terse but unambiguous in intent."
+ },
+ "Provide the force vector components along the laboratory x-, y-, and z-axes for {a}.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Components along x, y, z."
+ },
+ "What is the three-component force vector on {a} in the global reference frame?": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Three-component force vector."
+ },
+ "Resolve the total force acting on {a} into its orthogonal Cartesian components.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Total force resolved into Cartesian components."
+ },
+ "Determine the vectorial force on {a} as a three-dimensional array of components.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Force as a 3-component array."
+ },
+ "Specify the force vector, in units of eV/\u00c5, acting on {a}.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Force vector with units given; still the force vector."
+ },
+ "What are the x, y, and z projections of the force vector on {a}?": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "x, y, z projections of the force vector."
+ },
+ "Compute the negative energy gradient, a rank-1 tensor of force components, at the site of {a}.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Negative energy gradient at the atom's site is the force vector."
+ },
+ "Return the 3-vector of forces experienced by {a}.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "3-vector of forces on the atom."
+ },
+ "Calculate the instantaneous force 3-vector on {a} from the current atomic configuration.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Force 3-vector from the current configuration."
+ },
+ "Derive the Cartesian force components on {a} from the first derivatives of the interatomic potential.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Force components from the first derivatives of the potential."
+ },
+ "What is the Hellmann\u2013Feynman force vector on {a}?": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "Hellmann\u2013Feynman implies a quantum-mechanical calculation, which may not match the underlying potential."
+ },
+ "Report the total force vector on {a}, including all pairwise and many-body contributions.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Total force including all contributions."
+ },
+ "Provide the net 3D force vector exerted on {a} by the surrounding atoms.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Net 3D force from the surrounding atoms."
+ },
+ "Quantify the force vector acting on {a} as a column vector in R^3.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Force as a column vector in R^3."
+ },
+ "Obtain the components of the force vector F_i acting on {a}, where i indexes the Cartesian direction.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Components of F_i for the atom."
+ },
+ "What is the spatial force vector, with x, y, and z components, on {a}?": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Spatial force vector with x, y, z components."
+ },
+ "Determine the resultant Cartesian force vector applied to {a} under the current potential.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Resultant Cartesian force under the potential."
+ },
+ "Specify the vector force field value at the position of {a}.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "'Force field value at the position' could be read as a field at a point rather than the force on the atom."
+ },
+ "What vector force does {a} experience, reported in its three Cartesian components?": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Force vector in three Cartesian components."
+ },
+ "Tabulate the x-, y-, and z-components of the force vector on {a}.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the x, y, z components of the force."
+ },
+ "Give the force acting on {a} as a directed three-dimensional vector quantity.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Force as a directed 3D vector."
+ },
+ "Evaluate the force vector on {a} as the negative gradient of the total potential energy.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a}, given as the negative gradient of the potential energy, which is correct."
+ },
+ "Using the Cartesian basis, express the force vector on {a} as (Fx, Fy, Fz).": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks directly for the force on {a} as (Fx, Fy, Fz)."
+ },
+ "What is the 3D force vector on {a}, expressed with its directional components?": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks directly for the 3D force vector on {a} with its components."
+ },
+ "Compute the vectorial sum of forces on {a} and report its Cartesian decomposition.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The vector sum of forces is the net force on {a}, reported in Cartesian components."
+ },
+ "Report the three-component force vector on {a} as a rank-one tensor in Cartesian space.": {
+  "task": "force",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "A rank-one tensor is a vector, so this asks for the three-component force on {a}. The wording is jargon but not misleading."
+ },
+ "Could you tell me the three-dimensional force vector acting on {a}?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks directly for the 3D force vector on {a}."
+ },
+ "I would like to know the 3D force vector experienced by {a}.": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks directly for the 3D force vector on {a}."
+ },
+ "Would you be able to share the force vector on {a} in three dimensions?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a} in three dimensions."
+ },
+ "I'd appreciate it if you could report the full 3D force vector acting on {a}.": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the full 3D force vector on {a}."
+ },
+ "Might you let me know what the net force vector on {a} looks like in 3D?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'Net force vector in 3D' on {a} is the correct quantity."
+ },
+ "I am curious about the three-component force vector exerted on {a}; could you provide it?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'Three-component force vector' on {a} means the 3D vector."
+ },
+ "Could you kindly calculate the 3D force vector that acts upon {a}?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks to calculate the 3D force vector on {a}."
+ },
+ "I wonder if you could give me the force vector on {a}, expressed in x, y, and z components.": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a} in x, y, z components."
+ },
+ "Would it be possible to obtain the spatial force vector acting on {a}?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'Spatial force vector' is a slightly loose phrase but still means the 3D force on {a}."
+ },
+ "If it is not too much trouble, could you state the 3D force vector on {a}?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector on {a}."
+ },
+ "I would be grateful if you could determine the force vector experienced by {a} in three dimensions.": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks to determine the 3D force vector on {a}."
+ },
+ "Could you please provide the vectorial force on {a} along the x, y, and z axes?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the force on {a} along the x, y, z axes."
+ },
+ "I'd like to ask for the 3D force vector that is applied to {a}.": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector applied to {a}."
+ },
+ "May I request the force vector acting on {a} in all three spatial dimensions?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a} in all three dimensions."
+ },
+ "I was hoping you could work out the force vector affecting {a} in 3D space.": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a} in 3D space."
+ },
+ "Could you help me find the three-dimensional force vector on {a}?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector on {a}."
+ },
+ "It would be helpful to know the force vector on {a} in 3D; would you be able to provide it?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a} in 3D."
+ },
+ "I'd welcome your help in identifying the 3D force vector acting on {a}.": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks to identify the 3D force vector on {a}."
+ },
+ "Would you kindly supply the components of the 3D force vector on {a}?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the components of the 3D force vector on {a}."
+ },
+ "Is it possible for you to give the full force vector exerted on {a} in three dimensions?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the full force vector on {a} in three dimensions."
+ },
+ "I am interested in learning the 3D force vector on {a}; could you share that?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector on {a}."
+ },
+ "I would appreciate knowing the three-dimensional force vector that {a} experiences.": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector that {a} experiences."
+ },
+ "Would you be so kind as to compute the force vector on {a} across x, y, and z?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks to compute the force vector on {a} across x, y, z."
+ },
+ "Please, if you can, report the net 3D force vector acting upon {a}.": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the net 3D force vector on {a}."
+ },
+ "Could you possibly tell me which 3D force vector is acting on {a}?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks which 3D force vector acts on {a}."
+ },
+ "I'd be obliged if you could indicate the force vector on {a} in three-dimensional coordinates.": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a} in 3D coordinates."
+ },
+ "May I ask you to provide the force vector on {a} as a 3D quantity?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a} as a 3D quantity."
+ },
+ "Do you think you could estimate the 3D force vector affecting {a}?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "'Estimate' suggests an approximate answer rather than the exact force vector."
+ },
+ "I would like your assistance in obtaining the three-dimensional force vector on {a}.": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector on {a}."
+ },
+ "Could you let me know the vector form of the force acting on {a} in 3D?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the vector form of the force on {a} in 3D."
+ },
+ "I am wondering whether you can supply the force vector on {a} in Cartesian components.": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a} in Cartesian components."
+ },
+ "Would it be alright to request the 3D force vector on {a}?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Politely requests the 3D force vector on {a}; the intent is clear."
+ },
+ "I'd really appreciate it if you could give the spatial force vector on {a}.": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'Spatial force vector on {a}' means the 3D force on {a}."
+ },
+ "Might you be able to present the 3D force vector experienced by {a}?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector experienced by {a}."
+ },
+ "Would you please share the three-dimensional force vector exerted on {a}?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the three-dimensional force vector exerted on {a}; direction is correct."
+ },
+ "I am hoping you can determine the force vector on {a} within a 3D frame.": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a} in a 3D frame."
+ },
+ "Could you be so kind as to state the force vector acting on {a} in its three spatial components?": {
+  "task": "force",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the force vector acting on {a} in three spatial components."
+ },
+ "The three-dimensional force vector acting on {a} is what I'd like you to compute.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Directly asks for the 3D force vector on {a}."
+ },
+ "Compute the net force vector, with x, y, and z components, experienced by {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Net force vector with x, y, z components on {a}."
+ },
+ "Force vector, in 3D, on {a}: what is it?": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector on {a}."
+ },
+ "Fill in the blank: the net 3D force vector on {a} is ______.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Fill-in-the-blank for the net 3D force vector on {a}."
+ },
+ "Acting on {a}, the force vector in three dimensions amounts to what?": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Awkward wording, but it asks for the 3D force vector on {a}."
+ },
+ "Tell me the spatial force vector felt by {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Spatial force vector felt by {a}' means the 3D force vector."
+ },
+ "Report the xyz components of the force vector exerted on {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the xyz components of the force on {a}."
+ },
+ "Calculate the 3D force vector that {a} is subject to.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector on {a}."
+ },
+ "Subject to the forces present, {a} carries what three-dimensional force vector?": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector on {a}."
+ },
+ "What three-component force vector does {a} experience?": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "A three-component force vector on {a} is a 3D force vector."
+ },
+ "The force vector on {a}, resolved along x, y and z, is what?": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Force vector on {a} resolved along x, y, z."
+ },
+ "Provide the vector (Fx, Fy, Fz) of the net force on {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for (Fx, Fy, Fz) of the net force on {a}."
+ },
+ "Work out the net force, as a 3D vector, on {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Net force as a 3D vector on {a}."
+ },
+ "Experiencing forces from its neighbors, {a} feels a net 3D force vector of what value?": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Net 3D force vector on {a}; the mention of neighbors is harmless."
+ },
+ "Find the force vector in three dimensions for {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector for {a}."
+ },
+ "Give me the vector form of the force on {a} in 3D space.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Vector form of the force on {a} in 3D."
+ },
+ "The net force on {a}, as a Cartesian vector, equals which?": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Net force on {a} as a Cartesian vector."
+ },
+ "State the three-dimensional force vector that acts upon {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector acting on {a}."
+ },
+ "Which 3D force vector is applied to {a}?": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector applied to {a}."
+ },
+ "Evaluate the force vector on {a} across all three spatial components.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Force vector on {a} across all three components."
+ },
+ "For {a}, the net interatomic force vector in 3D is what?": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Net interatomic force vector in 3D on {a}."
+ },
+ "Determine the Cartesian components of the force acting on {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Cartesian components of the force on {a}."
+ },
+ "What vector quantity describes the force on {a} in three dimensions?": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ambiguous",
+  "why": "'What vector quantity describes' could be answered with just 'the force vector' rather than its values."
+ },
+ "Predict the 3D force vector on {a} from the current geometry.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector on {a} from the geometry."
+ },
+ "{a} is acted upon by a force vector whose three components are what?": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the three components of the force on {a}."
+ },
+ "Obtain the force vector, x, y and z parts, for {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Force vector x, y, z parts for {a}."
+ },
+ "Quantify the net three-dimensional force exerted on {a}, as a vector.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Net 3D force on {a} as a vector."
+ },
+ "The force on {a} in vector form across 3D space: please give it.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Force on {a} in vector form in 3D."
+ },
+ "Ascertain the directional force vector in 3D on {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Awkward wording, but it asks for the 3D force vector on {a}."
+ },
+ "Output the net 3D force vector experienced by {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Outputs the net 3D force vector on {a}."
+ },
+ "Specify, component by component, the force vector on {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the force vector on {a} component by component."
+ },
+ "Among all forces, the 3D vector contribution on {a} totals what?": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Awkwardly worded, but it asks for the total (net) 3D force vector on {a}."
+ },
+ "Please supply the spatial force vector that {a} is undergoing.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the spatial force vector on {a}."
+ },
+ "Reveal the 3D force vector affecting {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector on {a}."
+ },
+ "Compute, in three coordinates, the force felt by {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the force on {a} in three coordinates."
+ },
+ "What net force vector, expressed in 3D, is {a} subjected to?": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the net 3D force vector on {a}."
+ },
+ "Given the system, the force vector on {a} is ___ in three dimensions.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Fill-in form asking for the 3D force vector on {a}."
+ },
+ "Derive the total force vector in 3D acting on {a}.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the total 3D force vector on {a}."
+ },
+ "Tell me which three-dimensional force vector {a} experiences.": {
+  "task": "force",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the 3D force vector {a} experiences."
+ },
+ "What is the vector obtained by subtracting the force on {b} from the force on {a}?": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Explicit: F_a minus F_b."
+ },
+ "Determine the three-dimensional force vector given by the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Explicit: force on {a} minus force on {b}."
+ },
+ "Compute the resultant vector when the force exerted on {b} is subtracted from the force exerted on {a}.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Subtracts the force on {b} from the force on {a}."
+ },
+ "Find the 3D force vector obtained by subtracting the net force on {b} from the net force on {a}.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Net force on {b} subtracted from net force on {a}; correct order."
+ },
+ "Calculate the vector force on {a} minus the vector force on {b} and report its three Cartesian components.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Force on {a} minus force on {b}, with Cartesian components."
+ },
+ "Express, in Cartesian components, the vector difference between the force on {a} and the force on {b}.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "'Difference between' gives no subtraction order."
+ },
+ "What three-dimensional vector results when the force on {b} is subtracted from the force on {a}?": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Subtracts the force on {b} from the force on {a}."
+ },
+ "Obtain the vector whose value equals the force on {a} less the force on {b}.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'{a} less {b}' means F_a - F_b."
+ },
+ "Calculate the Cartesian vector representing the force on {a} diminished by the force on {b}.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'Diminished by' means F_a - F_b."
+ },
+ "What is the 3D vector obtained by taking the force on {a} and subtracting from it the force on {b}?": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Explicit: subtract the force on {b} from the force on {a}."
+ },
+ "Derive the vector that represents the force on {a} relative to the force on {b}, defined as the former minus the latter.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Defined as the former minus the latter, so F_a - F_b."
+ },
+ "Find the vector difference between the force acting on {a} and the force acting on {b}, where the second is subtracted from the first.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "States the second is subtracted from the first."
+ },
+ "What is the force-vector discrepancy obtained by subtracting the force on {b} from the force on {a}?": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'Discrepancy' is vague, but the subtraction is explicit and correctly ordered."
+ },
+ "Compute the vector result of subtracting the force on {b} from the force on {a}, expressed in three dimensions.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Subtracts the force on {b} from the force on {a}."
+ },
+ "Calculate the 3D force vector representing the excess of the force on {a} over the force on {b}, taking vector components into account.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'Excess of a over b' means F_a - F_b."
+ },
+ "Let the force on {a} be denoted by one vector and the force on {b} by another; what is their difference, the first minus the second?": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "States the first minus the second."
+ },
+ "What vector is produced by the operation of subtracting the force on {b} from the force on {a}?": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Subtracts the force on {b} from the force on {a}."
+ },
+ "Obtain an expression, in Cartesian coordinates, for the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Force on {a} minus force on {b}."
+ },
+ "Determine the vector-valued difference between the force on {a} and the force on {b}, retaining the order of subtraction.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "Says to retain the order but never states which atom is subtracted."
+ },
+ "Find the vector resulting from the force on {a} after the force on {b} has been subtracted from it.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Force on {a} with the force on {b} subtracted."
+ },
+ "What is the vector that must be added to the force on {b} to yield the force on {a}?": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "The vector added to F_b to give F_a is F_a - F_b."
+ },
+ "Determine the three-component vector equal to the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Force on {a} minus force on {b}."
+ },
+ "Evaluate the 3D vector force on {a} subtracted by the vector force on {b}.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Awkward wording, but 'a subtracted by b' means F_a - F_b."
+ },
+ "Obtain the vector difference between the forces on {a} and {b}, giving the result as a directed quantity in space.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "'Difference between' with no order specified."
+ },
+ "Report the vector obtained by subtracting the force on {b} from the force on {a} in a fixed Cartesian frame.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Subtracts the force on {b} from the force on {a}."
+ },
+ "Compute the vector sum of the force on {a} and the negative of the force on {b}.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "F_a + (-F_b) = F_a - F_b."
+ },
+ "Find the vector difference of forces when the force on {b} is removed vectorially from the force on {a}.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Removes F_b vectorially from F_a."
+ },
+ "What vector emerges from forming the force on {a} and then subtracting the force on {b} from it?": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Subtracts the force on {b} from the force on {a}."
+ },
+ "State the three-dimensional vector equal to the force on {a} minus the force on {b}, with components referred to a common coordinate system.": {
+  "task": "diff",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Force on {a} minus force on {b}, in a common frame."
+ },
+ "Compute the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear: F_a - F_b."
+ },
+ "Subtract the force on {b} from the force on {a}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Subtracting F_b from F_a gives F_a - F_b."
+ },
+ "Find F on {a} minus F on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear order."
+ },
+ "Give the force difference: {a} minus {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'{a} minus {b}' fixes the order."
+ },
+ "Calculate the 3D vector F({a}) minus F({b}).": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Explicit 3D vector F(a) - F(b)."
+ },
+ "Report the force on {a} less the force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Less' means subtract b from a."
+ },
+ "Evaluate force at {a} minus force at {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Force at a minus force at b."
+ },
+ "Work out the vector by which the force on {a} exceeds the force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "The amount by which F_a exceeds F_b is F_a - F_b."
+ },
+ "Give the vector: force on {a} minus force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Show the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Return the 3D vector for {a} force minus {b} force.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'{a} force minus {b} force' is unambiguous."
+ },
+ "Obtain force({a}) minus force({b}) as a 3D vector.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Subtract {b}'s force from {a}'s force.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Subtract b's force from a's force gives F_a - F_b."
+ },
+ "Find the vector: force on {a}, minus force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Deduct the force on {b} from the force on {a}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Deduct F_b from F_a."
+ },
+ "Take the force on {a} and remove the force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Remove' is informal but means subtract b from a."
+ },
+ "Compute the 3D force vector on {a} less that on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Less that on {b}' means F_a - F_b."
+ },
+ "Produce the difference vector F({a}) minus F({b}).": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Tell me the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "State the 3D difference of the force on {a} and the force on {b}, in that order.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "The order is stated explicitly."
+ },
+ "Give the force on {a} with the force on {b} subtracted.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "F_a with F_b subtracted."
+ },
+ "Compute the force on {a}, then subtract the force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Get the vector difference: {a} force minus {b} force.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Derive the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Quantify the vector gap: force on {a} minus force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Vector gap' is vague, but the explicit 'a minus b' fixes it."
+ },
+ "List the 3D components of force on {a} minus force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Slightly awkward phrasing, but the intended difference vector is clear."
+ },
+ "Output the force on {a} minus the force on {b}, as a vector.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Express the force on {a} minus the force on {b} in 3D.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Compute the net vector: force on {a} minus force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Net' is slightly odd, but 'minus' is explicit."
+ },
+ "Find the 3D result of force on {a} minus force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Give me the force on {a} less the force on {b}, in 3D.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'A less B' means F_a - F_b, and 'in 3D' signals a vector."
+ },
+ "Work out the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clearly F_a - F_b."
+ },
+ "Solve for the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clearly F_a - F_b."
+ },
+ "Determine F on {a} minus F on {b}, componentwise.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "F_a - F_b is stated, and 'componentwise' signals a vector."
+ },
+ "Provide the x, y, z of force on {a} minus force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the x, y, z components of F_a - F_b, with the order clear."
+ },
+ "Measure the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Measure' is an odd verb, but the quantity and order are still F_a - F_b."
+ },
+ "Report the vector difference of forces: {a} minus {b}.": {
+  "task": "diff",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Vector difference ... {a} minus {b}' gives F_a - F_b with a clear order."
+ },
+ "Hey, can you work out the force on {a} minus the force on {b} for me?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly F_a minus F_b."
+ },
+ "What's the force vector on {a} after subtracting the force on {b}?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Awkward wording, but it still means F_a minus F_b."
+ },
+ "Could you give me the force on {a} minus the force on {b}, keeping the vector components?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly F_a minus F_b, with vector components requested."
+ },
+ "I need the net difference: force on {a} less the force on {b}, as a 3D vector.": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Less' gives F_a minus F_b, as a 3D vector."
+ },
+ "Quick question, what do you get if you subtract the force on {b} from the force on {a}?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Subtracts the force on b from the force on a."
+ },
+ "Mind calculating the force on {a} and then taking away the force on {b}?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Takes the force on b away from the force on a."
+ },
+ "So what 3D vector do you land on when you do force on {a} minus force on {b}?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly F_a minus F_b as a 3D vector."
+ },
+ "Can you tell me the vector difference between the force on {a} and the force on {b}?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "'Difference between' gives no order, so the sign is unclear."
+ },
+ "What's the force on {a} relative to the force on {b}, i.e., F_a minus F_b?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Relative to' is vague, but the 'i.e., F_a minus F_b' fixes the meaning."
+ },
+ "Got a sec to compute the force on {a} minus the force on {b}?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly F_a minus F_b."
+ },
+ "Between {a} and {b}, what's the force on the first one minus the force on the second?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "First minus second maps to a minus b."
+ },
+ "Run the numbers for me: force on {a} subtract force on {b}, in vector form.": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly F_a minus F_b in vector form."
+ },
+ "I'm curious what the force on {a} minus the force on {b} comes out to in 3D.": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly F_a minus F_b in 3D."
+ },
+ "Could you subtract the force experienced by {b} from the force experienced by {a}?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Subtracts the force on b from the force on a."
+ },
+ "What vector do you get when you take the force on {b} away from the force on {a}?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Takes the force on b away from the force on a."
+ },
+ "Walk me through the force on {a} minus the force on {b} as a vector.": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for a walkthrough, but the quantity is F_a minus F_b as a vector."
+ },
+ "Give me the 3D difference vector: force on {a} less force on {b}.": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Less' gives F_a minus F_b as a 3D vector."
+ },
+ "Any idea what the force on {a} minus the force on {b} looks like in x, y, and z?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly F_a minus F_b, in x, y and z."
+ },
+ "If I take the force on {b} out of the force on {a}, what's the resulting vector?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Removing the force on b from the force on a gives F_a minus F_b."
+ },
+ "Can you crunch the force on {a} minus the force on {b} for the x, y, and z components?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly F_a minus F_b, with components."
+ },
+ "What's the vector obtained by subtracting the force on {b} from the force on {a}?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Subtracts the force on b from the force on a."
+ },
+ "Dumb question maybe, but what's the force on {a} minus the force on {b}?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly F_a minus F_b."
+ },
+ "Let's see the net vector: force on {a} minus force on {b}, please.": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly F_a minus F_b as a vector."
+ },
+ "Would you work out the force difference, F on {a} minus F on {b}, in 3D?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Explicit F on a minus F on b, in 3D."
+ },
+ "Mind giving me the vector F_a minus F_b, meaning force on {a} minus force on {b}?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Explicit F_a minus F_b."
+ },
+ "Show me what the force on {a} minus the force on {b} gives as a vector.": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly F_a minus F_b as a vector."
+ },
+ "What's the difference vector when you go force on {a} minus force on {b}?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly F_a minus F_b."
+ },
+ "Can you compute the 3D force difference between {a} and {b}, in that order?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'In that order' implies a minus b, though it is a little loose."
+ },
+ "Subtract the force on {b} from the force on {a} and tell me the vector, would you?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Subtracts the force on b from the force on a."
+ },
+ "Hit me with the force on {a} minus the force on {b}, vector components please.": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly F_a minus F_b, with vector components."
+ },
+ "What's left over when you subtract the force on {b} from the force on {a}, as a 3D vector?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Subtract b from a' gives F_a - F_b, and it asks for a 3D vector."
+ },
+ "Could you calculate the net force difference, force on {a} less force on {b}, in Cartesian form?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Force on {a} less force on {b}' is explicit about order, and it asks for Cartesian form."
+ },
+ "I want the vector result of force on {a} minus force on {b} for my analysis.": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly asks for the vector F_a - F_b."
+ },
+ "Do the math for me: force on {a} minus force on {b}, reported in 3D.": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear order, and it asks for the result in 3D."
+ },
+ "Working through the forces, can you give me force on {a} minus force on {b}?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "The order is explicit. It doesn't say 'vector', but a difference of forces is naturally a vector."
+ },
+ "Please provide the 3D vector equal to the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Explicitly asks for the 3D vector F_a - F_b."
+ },
+ "What would the vector difference of the force on {a} and the force on {b} be, with the first one as the positive term?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'First one as the positive term' makes a the minuend, and it asks for a vector difference."
+ },
+ "Quick check: what's force on {a} minus force on {b}, as a vector?": {
+  "task": "diff",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Explicit order, and it asks for a vector."
+ },
+ "Compute the vector difference F_a \u2212 F_b, where F_a is the net force vector on {a} and F_b is the net force vector on {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "explicit F_a \u2212 F_b"
+ },
+ "Evaluate the Cartesian component-wise difference obtained by subtracting the force vector acting on {b} from the force vector acting on {a}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "subtract force on b from force on a"
+ },
+ "What vector results from subtracting the net force on {b} from the net force on {a}?": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "subtract force on b from force on a"
+ },
+ "Determine the relative force vector F_a \u2212 F_b, defined as the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "explicitly F_a \u2212 F_b"
+ },
+ "Calculate the 3D force difference vector whose minuend is the net force on {a} and whose subtrahend is the net force on {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "minuend a, subtrahend b"
+ },
+ "Express the resultant of the force on {a} added to the negative of the force on {b} as a 3-component vector.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "F_a + (\u2212F_b) equals F_a \u2212 F_b"
+ },
+ "Find the vector F_a \u2212 F_b in Cartesian coordinates, with F_a the force experienced by {a} and F_b the force experienced by {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "explicit F_a \u2212 F_b"
+ },
+ "Report the three-dimensional difference between the force vector acting on {a} and that acting on {b}, with the sign fixed by treating the first term as the minuend.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "first term (a) is minuend"
+ },
+ "Obtain the net vector difference of the atomic force on {a} relative to the atomic force on {b}, i.e., F_a \u2212 F_b.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "i.e. F_a \u2212 F_b"
+ },
+ "Given the force field, what is the Cartesian vector F_a \u2212 F_b obtained by subtracting the force on {b} from the force on {a}?": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "subtract b from a"
+ },
+ "Yield the 3-vector F_a \u2212 F_b, the force on {a} less the force on {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "force on a less force on b"
+ },
+ "Compute the difference vector between the total force on {a} and the total force on {b}, in that order.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "'in that order' fixes a minus b"
+ },
+ "Calculate the vector displacement in force space given by F_a \u2212 F_b, where F_a acts on {a} and F_b acts on {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "odd 'force space displacement' wording, but F_a \u2212 F_b is explicit"
+ },
+ "Provide the Cartesian components of the force-difference vector F_a \u2212 F_b for the atom {a} minus the atom {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "a minus b, explicit formula"
+ },
+ "Determine the 3D vector obtained by taking the force on {a} and subtracting from it the force on {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "force on a minus force on b"
+ },
+ "In a three-dimensional force basis, what is the vector F_a \u2212 F_b, with F_a denoting the force on {a} and F_b the force on {b}?": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "explicit F_a \u2212 F_b"
+ },
+ "Evaluate the difference of force 3-vectors, with the force on {a} as minuend and the force on {b} as subtrahend.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "minuend a, subtrahend b"
+ },
+ "What is the rank-1 tensor difference F_a \u2212 F_b, where F_a is the force on {a} and F_b the force on {b}?": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "rank-1 tensor is a vector; explicit F_a \u2212 F_b"
+ },
+ "Compute the vector-valued quantity F_a \u2212 F_b, the net force on {a} diminished by the net force on {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "a diminished by b"
+ },
+ "Using the 3D force components, calculate F_a \u2212 F_b for {a} relative to {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "F_a \u2212 F_b, a relative to b"
+ },
+ "What three-component vector represents the force on {a} minus the force on {b}?": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "force on a minus force on b"
+ },
+ "Determine the Cartesian difference vector obtained by subtracting the force acting on {b} from that acting on {a}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "subtract b's force from a's"
+ },
+ "Derive the vector F_a \u2212 F_b from the force balance, where F_a is exerted on {a} and F_b is exerted on {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "'from the force balance' suggests equilibrium or an unrelated derivation"
+ },
+ "Give the force-vector difference F_a \u2212 F_b, computed component by component as the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "a minus b component-wise"
+ },
+ "Calculate the resultant vector of F_a + (\u2212F_b), with F_a the force on {a} and F_b the force on {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "F_a + (\u2212F_b) equals F_a \u2212 F_b"
+ },
+ "Compute the vector F_a \u2212 F_b whose x, y, and z components are the differences of the force components on {a} and {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "component differences, F_a \u2212 F_b"
+ },
+ "What is the directional force contrast vector F_a \u2212 F_b, where F_a is evaluated on {a} and F_b on {b}?": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "vague 'contrast' phrasing but explicit F_a \u2212 F_b"
+ },
+ "Subtract the force vector on {b} from the force vector on {a} and report the resulting 3-vector F_a \u2212 F_b.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "subtract b from a"
+ },
+ "Specify the vector F_a \u2212 F_b in Cartesian components, given that F_a is the force on {a} and F_b is the force on {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "explicit F_a \u2212 F_b"
+ },
+ "How does the force vector on {a} differ from the force vector on {b}, expressed as the vector F_a \u2212 F_b?": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "expressed as F_a \u2212 F_b"
+ },
+ "Calculate the 3D vector F_a \u2212 F_b representing the net force on {a} minus the net force on {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Explicitly asks for F_a \u2212 F_b, the net force on {a} minus the net force on {b}."
+ },
+ "Determine the vector whose components are the force components of {a} minus the corresponding force components of {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Component-wise force on {a} minus force on {b} is the 3D vector F_a \u2212 F_b, and the order is clear."
+ },
+ "Obtain F_a \u2212 F_b as a Cartesian vector, where the subscript a denotes {a} and the subscript b denotes {b}.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for F_a \u2212 F_b as a Cartesian vector and defines both subscripts."
+ },
+ "Compute the vectorial difference of the force acting on {a} and the force acting on {b}, in that order.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "'In that order' fixes {a} minus {b}."
+ },
+ "Given forces on the two sites, what is the 3D vector F_a \u2212 F_b with {a} as the positive term and {b} as the negative term?": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Names {a} as the positive term and {b} as the negative term."
+ },
+ "Evaluate the force-difference vector F_a \u2212 F_b by projecting the net force on {a} minus the net force on {b} onto the x, y, and z axes.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Gives F_a \u2212 F_b through its x, y and z components, with the order stated."
+ },
+ "Provide the Euclidean vector F_a \u2212 F_b, the force on {a} minus the force on {b}, expressed in the laboratory frame.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Clearly F_a \u2212 F_b; the lab-frame wording only sets the coordinate frame."
+ },
+ "Calculate the difference of the force vectors F_a and F_b, where F_a is on {a} and F_b is on {b}, reporting the 3-vector result.": {
+  "task": "diff",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "'Difference of F_a and F_b' does not state which is subtracted, so the order is not explicit."
+ },
+ "Could you tell me the 3D vector obtained by subtracting the force on {b} from the force on {a}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clearly F_a - F_b."
+ },
+ "I would like to know the three-dimensional force vector that results from taking the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicitly force on {a} minus force on {b}."
+ },
+ "Would you be able to compute the 3D vector difference, where the force on {a} comes first and the force on {b} is subtracted from it?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Order and subtraction are explicit."
+ },
+ "I'd appreciate it if you could work out the net difference between the force acting on {a} and the force acting on {b}, as a 3D vector.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "'Net difference between' gives no order, so the subtracted atom is unclear."
+ },
+ "Could you please determine the vector difference of the force on {a} relative to the force on {b}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "'Relative to' is vague and could be read as either order."
+ },
+ "I am curious what the 3D vector is when you subtract the force on {b} from the force on {a}.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Subtract F_b from F_a."
+ },
+ "Would it be possible to share the vector obtained by taking the force on {a} and subtracting the force on {b}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicitly F_a minus F_b."
+ },
+ "May I ask you to calculate the three-component vector equal to the force on {a} minus the force on {b}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicitly F_a minus F_b."
+ },
+ "I would be grateful if you could report the 3D difference vector between the force on {a} and the force on {b}.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "'Difference vector between' has no stated order."
+ },
+ "Could you kindly tell me what vector remains when the force on {b} is subtracted from the force on {a}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "F_b subtracted from F_a."
+ },
+ "I was wondering whether you could give me the 3D force vector for {a} after subtracting the force on {b}.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Slightly loose wording, but it reads as F_a after subtracting F_b."
+ },
+ "Would you mind computing the vector of the force on {a} minus the force on {b} in three dimensions?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicitly F_a minus F_b."
+ },
+ "I'd like to understand the resultant 3D vector from subtracting the force experienced by {b} from that experienced by {a}.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Force on b subtracted from force on a."
+ },
+ "Could you help me find the 3D vector difference between the force on {a} and the force on {b}, in that order?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'In that order' fixes a first and b second."
+ },
+ "Please let me know, if convenient, the vector you get by subtracting the force on {b} from the force on {a}.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "F_b subtracted from F_a."
+ },
+ "I would appreciate knowing the three-dimensional vector obtained when the force on {b} is taken away from the force on {a}.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "F_b taken away from F_a."
+ },
+ "Could you walk me through finding the 3D vector equal to the force on {a} minus the force on {b}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for a walkthrough, but the target is still F_a - F_b."
+ },
+ "Would you be so kind as to provide the vector difference of forces, computed as the force on {a} minus the force on {b}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicitly F_a minus F_b."
+ },
+ "I wonder if you could tell me the 3D result of subtracting the force on {b} from the force on {a}.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "F_b subtracted from F_a."
+ },
+ "May I request the 3D vector that equals the force on {a} less the force on {b}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'Less' means F_a - F_b."
+ },
+ "Could you let me know the vector obtained by computing the force on {a} minus the force on {b} in 3D space?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicitly F_a minus F_b."
+ },
+ "I'd be interested to see the three-dimensional vector resulting from the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicitly F_a minus F_b."
+ },
+ "Would you kindly determine the difference vector when the force on {b} is subtracted from the force on {a}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "F_b subtracted from F_a."
+ },
+ "Could you share the 3D force difference, defined as the force on {a} minus the force on {b}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Defined as F_a minus F_b."
+ },
+ "I am hoping you could compute the vector quantity representing the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicitly F_a minus F_b."
+ },
+ "Could you tell me, in 3D coordinates, what the force on {a} minus the force on {b} amounts to?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicitly F_a minus F_b."
+ },
+ "Would it be too much trouble to find the vector difference between the force on {a} and the force on {b}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "'Vector difference between' has no stated order."
+ },
+ "I would welcome your help determining the three-dimensional vector that results from subtracting the force on {b} from the force on {a}.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "F_b subtracted from F_a."
+ },
+ "Could you please give the components of the vector formed by the force on {a} minus the force on {b}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Components of F_a - F_b."
+ },
+ "I'd like to ask you to calculate the 3D vector difference, taking the force on {a} first and the force on {b} second.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "a first and b second implies F_a - F_b."
+ },
+ "Might you be able to tell me the vector that remains after subtracting the force on {b} from the force on {a}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Subtracts the force on b from the force on a, giving F_a - F_b."
+ },
+ "I was hoping you could work out the three-component force vector for {a} minus the force for {b}.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Reads as F_a minus F_b, with three components."
+ },
+ "Could you kindly provide the 3D difference vector whose minuend is the force on {a} and whose subtrahend is the force on {b}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "The minuend is a and the subtrahend is b, so the order is explicit."
+ },
+ "If it is not too much trouble, could you calculate the force on {a} minus the force on {b} as a vector in three dimensions?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the force on a minus the force on b as a 3D vector."
+ },
+ "I would be pleased to learn the vector difference obtained by subtracting the force on {b} from the force on {a}.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicitly subtracts the force on b from the force on a."
+ },
+ "Could you show me the 3D vector for the force on {a} minus the force on {b}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the 3D vector F_a - F_b."
+ },
+ "I'd be grateful for the vector result of the force on {a} less the force on {b}, expressed in three dimensions.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'Force on a less the force on b' means F_a - F_b."
+ },
+ "Would you be willing to compute the 3D vector given by the force on {a} minus the force on {b}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the 3D vector F_a - F_b."
+ },
+ "Could you please let me have the vector difference between the force experienced by {a} and that experienced by {b}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "'Difference between' gives no order, so it is unclear which atom is subtracted."
+ },
+ "I am interested in the 3D vector you would obtain by subtracting the force on {b} from the force on {a}.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Subtracts the force on b from the force on a, in 3D."
+ },
+ "Would you be kind enough to tell me the vector that gives the force on {a} minus the force on {b}, with components along each axis?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for F_a - F_b with components along each axis."
+ },
+ "Could you help me understand the three-dimensional vector formed when the force on {b} is deducted from the force on {a}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "The force on b is deducted from the force on a, which gives F_a - F_b."
+ },
+ "I would be obliged if you could state the vector difference of the force on {a} and the force on {b}, first minus second.": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'First minus second' fixes the order as F_a - F_b."
+ },
+ "Might you kindly work out the 3D vector representing the force on {a} minus the force on {b}?": {
+  "task": "diff",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the 3D vector F_a - F_b."
+ },
+ "Subtracting the force on {b} from the force on {a}, what vector do you get?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Direct F_a - F_b with clear order."
+ },
+ "Computed as the force acting on {a} less the force acting on {b}, what is the resulting 3D vector?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'a less b' is F_a - F_b."
+ },
+ "Give, as a three-component vector, the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Explicit F_a minus F_b."
+ },
+ "Find the vector obtained by taking the force on {b} away from the force on {a}.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Taking b away from a gives F_a - F_b."
+ },
+ "Relative to the force on {b}, how does the force on {a} differ, as a vector?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ambiguous",
+  "why": "'How does a differ relative to b' does not state the sign or order."
+ },
+ "Starting from the force on {b}, what vector must be added to reach the force on {a}?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "The vector added to F_b to reach F_a is F_a - F_b."
+ },
+ "Which 3D vector equals the force on {a} after the force on {b} has been subtracted from it?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "F_b subtracted from F_a."
+ },
+ "The force on {a}, reduced component by component by the force on {b}, yields what vector?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "F_a reduced by F_b gives F_a - F_b."
+ },
+ "Express as a 3D vector: the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Explicit F_a minus F_b."
+ },
+ "Determine the three-component difference obtained when the force on {b} is deducted from the force on {a}.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "F_b deducted from F_a."
+ },
+ "What three-component vector remains when the force on {b} is taken away from the force on {a}?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "F_b taken away from F_a."
+ },
+ "Vector difference, force on {a} minus force on {b}: what are its components?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Explicitly F_a minus F_b."
+ },
+ "Calculate the difference vector whose minuend is the force on {a} and whose subtrahend is the force on {b}.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Minuend F_a, subtrahend F_b."
+ },
+ "Taking the force on {b} from the force on {a}, what 3D vector results?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Taking F_b from F_a gives F_a - F_b."
+ },
+ "Complete the statement: the force on {a} equals the force on {b} plus what 3D vector?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "F_a = F_b + x gives x = F_a - F_b."
+ },
+ "Report the 3D vector by which the force on {a} exceeds the force on {b}.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "The amount by which F_a exceeds F_b is F_a - F_b."
+ },
+ "By how much, as a vector, does the force on {a} surpass the force on {b}?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "How much F_a surpasses F_b is F_a - F_b."
+ },
+ "Compared with the force on {b}, the force on {a} differs by which vector?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ambiguous",
+  "why": "'Differs by' gives no direction or sign, so it could be read as F_b - F_a."
+ },
+ "Being the force on {a} minus the force on {b}, which three-component vector is it?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Explicit F_a minus F_b."
+ },
+ "Output the vector difference of the force on {a} and the force on {b}, first minus second.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "First minus second, with a first."
+ },
+ "What is the offset vector from the force on {b} to the force on {a}?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Offset from F_b to F_a is F_a - F_b."
+ },
+ "In three dimensions, what vector gives the force on {a} once the force on {b} is removed from it?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "F_a with F_b removed is F_a - F_b."
+ },
+ "The vector that results from subtracting the force on {b} from the force on {a} is what?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "F_b subtracted from F_a."
+ },
+ "Solve for the 3D vector: force on {a} minus force on {b} equals what?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Explicit F_a minus F_b."
+ },
+ "Describe, as a three-component vector, how the force on {a} differs from the force on {b}.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ambiguous",
+  "why": "'How it differs' has no stated order or sign."
+ },
+ "Which vector, when added to the force on {b}, produces the force on {a}?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "The vector added to F_b to give F_a is F_a - F_b."
+ },
+ "Tell me the 3D vector representing the force on {a} with the force on {b} subtracted.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "F_a with F_b subtracted."
+ },
+ "Write down the three components of the force on {a} less the force on {b}.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "F_a less F_b."
+ },
+ "With the force on {b} as the baseline, what vector change leads to the force on {a}?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "The change from baseline F_b to F_a is F_a - F_b."
+ },
+ "Starting from the force acting on {b}, what displacement in force space lands you on the force on {a}?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "The displacement from F_b to F_a is F_a - F_b."
+ },
+ "Find the 3D vector equal to the force on {a} minus the force on {b}, keeping that subtraction order.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Explicitly F_a minus F_b, with the order stated."
+ },
+ "Subtract the force on {b} from the force on {a} and report the resulting vector.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Subtracting F_b from F_a gives F_a - F_b."
+ },
+ "The force on {a} minus the force on {b} amounts to which 3D vector?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Directly F_a minus F_b as a 3D vector."
+ },
+ "Net difference: what three-component vector equals the force on {a} less the force on {b}?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Less' means F_a - F_b. 'Net difference' is slightly odd wording but the order is clear."
+ },
+ "Provide the components of the vector whose value is the force on {a} reduced by the force on {b}.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'F_a reduced by F_b' means F_a - F_b."
+ },
+ "What vector is left of the force on {a} once the force on {b} is subtracted vectorially?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "The awkward 'left of' wording still means F_a with F_b subtracted, i.e. F_a - F_b."
+ },
+ "Determine, component-wise, the force on {a} minus the force on {b}.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "F_a minus F_b, with components requested."
+ },
+ "Obtain the vector that equals the force on {a} after deducting the force on {b}.": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'F_a after deducting F_b' means F_a - F_b."
+ },
+ "A 3D vector equal to the force on {a} minus the force on {b} is what?": {
+  "task": "diff",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clearly F_a minus F_b as a 3D vector."
+ },
+ "Determine the signed vector projection of the net force acting on {a} onto the line joining it with {b}.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Net force on a projected onto the line a\u2013b; vector, signed."
+ },
+ "Compute the signed vector component of the force on {a} along the axis running from it to {b}.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Signed vector component along the axis from a to b."
+ },
+ "What is the force vector acting on {a} projected onto the bond axis extending to {b}, including its sign?": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "wrong",
+  "why": "'Bond axis' wrongly implies a and b are bonded."
+ },
+ "Express, as a vector parallel to the line leading to {b}, the projection of the force acting on {a}.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Vector projection onto the line toward b; a vector projection is inherently signed."
+ },
+ "What vector, parallel to the line running to {b}, represents the projection of the force on {a} onto that axis?": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Vector parallel to the line to b; correct."
+ },
+ "Determine the signed projection vector of the force on {a} along the internuclear axis that joins it to {b}.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Internuclear axis joining the two atoms; signed projection vector."
+ },
+ "Resolve the force acting on {a} into its component along the line from it to {b}, and report that component as a vector.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Component along the line from a to b, reported as a vector."
+ },
+ "Find the vector component of the force on {a} that lies along the axis extending to {b}, with sign included.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Vector component along the axis toward b, with sign."
+ },
+ "Determine the force vector on {a} projected onto the axis that runs from it through {b}.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Projection onto the axis from a through b; fine."
+ },
+ "What is the vector projection of the force on {a} onto the axis oriented from it toward {b}, with positive values read along that orientation?": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Explicit orientation from a toward b, with positive along it."
+ },
+ "In a three-dimensional treatment, find the vector projection of the force on {a} onto the direction defined by {b} relative to it.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Direction of b relative to a is the a\u2192b direction; vector projection."
+ },
+ "Evaluate the axial component, as a vector along the line from it to {b}, of the force acting on {a}.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Axial component as a vector along the line from a to b."
+ },
+ "Given the Cartesian force on {a}, compute its vector projection onto the line leading to {b}, distinguishing attraction from repulsion via sign.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "'Attraction vs repulsion' suggests a pairwise a\u2013b interaction rather than the net force's projection, and sign is attached to a vector."
+ },
+ "What is the signed vector projection of the force on {a} along the line running to {b}?": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Direct statement of the task."
+ },
+ "Obtain the component of the force on {a} parallel to the line from it to {b}, expressed as a vector whose sign reflects the force direction.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Parallel component as a vector, with sign reflecting direction."
+ },
+ "Determine the signed axial force vector on {a} referred to the bond axis extending to {b}.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "wrong",
+  "why": "'Bond axis' wrongly implies a and b are bonded."
+ },
+ "Using vector algebra, compute the projection of the force on {a} onto the direction from it to {b}, returned as a vector.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Vector projection onto the direction from a to b."
+ },
+ "Show that the vector projection of the force on {a} onto the axis to {b} equals (F\u00b7\u00fb)\u00fb, where \u00fb is the unit vector along that axis.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "wrong",
+  "why": "Asks for a proof of a formula, not for the computed projection."
+ },
+ "Project the force vector on {a} onto the axis oriented from it to {b}, retaining the sign to indicate whether the component is parallel or antiparallel to that axis.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Projection onto the a\u2192b axis, with sign for parallel or antiparallel."
+ },
+ "Determine, as a three-component vector, the projection of the force on {a} onto the line running from it to {b}.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Three-component vector projection onto the a\u2192b line."
+ },
+ "Specify the signed vector projection of the force on {a} onto the axis that extends from it toward {b}.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Signed vector projection onto the axis from a toward b."
+ },
+ "In the frame of the molecule, determine the vector projection of the force on {a} along the direction from it to {b}.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Vector projection along the a\u2192b direction; the frame wording is harmless."
+ },
+ "Obtain, as a signed vector, the component of the force on {a} lying along the line leading from it to {b}.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Signed vector component along the line from a to b."
+ },
+ "What is the axial vector projection of the force on {a} onto the line from it to {b}, with the sign preserved?": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Axial vector projection onto the line a\u2192b with sign preserved; 'axial' describes the projection."
+ },
+ "Determine the vector projection of the force experienced by {a} onto the line extending from it through {b}.": {
+  "task": "proj",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Vector projection onto the line from a through b."
+ },
+ "Give the signed force vector on {a} along the line to {b}.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Signed force vector along the line to b, matching the task."
+ },
+ "Compute the force on {a} projected onto its bond axis to {b}.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "wrong",
+  "why": "'Bond axis' implies a and b are bonded, which need not be true."
+ },
+ "State the force on {a} projected along the direction toward {b}.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "Does not say vector, so a scalar component is a plausible reading."
+ },
+ "Calculate the force vector on {a} along the axis joining it to {b}.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the force vector along the axis joining a and b."
+ },
+ "Give the axial force on {a} relative to {b}, as a vector.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "'Axial force relative to b' is vague, and the sign convention is unclear."
+ },
+ "Project {a}'s net force onto the line connecting it to {b}.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Projecting the net force onto the line through a and b gives the vector projection."
+ },
+ "Resolve the force on {a} onto the axis running to {b}.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "'Resolve' often means a scalar component, and vector versus scalar is not stated."
+ },
+ "Find the force on {a} along its line to {b}, keeping the sign.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "'Keeping the sign' suggests a scalar, and it does not say vector."
+ },
+ "Extract the force on {a} along the bond to {b}, signed.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "wrong",
+  "why": "'Along the bond' implies a and b are bonded."
+ },
+ "Give the force on {a} as a vector along the {b} connection.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "Vague: it could be read as the full force or lacks the sign and projection sense."
+ },
+ "Find the signed vector component of {a}'s force toward {b}.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Signed vector component of the force toward b."
+ },
+ "Decompose the force on {a} along the line to {b}, as a vector.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "'Decompose' yields parallel and perpendicular parts, so it is unclear which is wanted."
+ },
+ "Calculate the axial force vector on {a} toward {b}, signed.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Signed axial force vector toward b."
+ },
+ "Project the force on {a} onto the direction pointing to {b}.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "Projection onto a direction could be read as a scalar."
+ },
+ "Show the force on {a} split along the line to {b}, as a vector.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "'Split' is vague about which part is wanted."
+ },
+ "Return the signed force on {a} parallel to the {b} bond.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "wrong",
+  "why": "'The b bond' implies a and b are bonded."
+ },
+ "Find the directional force on {a} along the axis to {b}.": {
+  "task": "proj",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "'Directional force' is vague, with no vector or sign specified."
+ },
+ "Hey, can you give me the signed vector projection of the force on {a} onto the axis running from it to {b}?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the signed vector projection onto the axis from a to b."
+ },
+ "Quick one: how much of the force acting on {a} lies along the bond axis to {b}, as a vector that flips direction when the force reverses?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "wrong",
+  "why": "'bond axis' implies a and b are bonded, which need not be true."
+ },
+ "I'm trying to pin down the force on {a} resolved along the axis that connects it to {b}, as a signed vector rather than a plain number, if you can help.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Force resolved along the a\u2013b axis, as a signed vector."
+ },
+ "Could you project the force on {a} onto the line from it to {b} and tell me the result as a vector, negative if it points the other way?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Projection onto the line to b, as a vector that goes negative when reversed."
+ },
+ "Mind giving me the vector component of the force on {a} that's parallel to the bond between it and {b}, signed so reversals show up?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "wrong",
+  "why": "'the bond between it and {b}' implies the atoms are bonded."
+ },
+ "Need the force on {a} projected onto the line through it and {b}, as a signed vector, please.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Projection onto the line through a and b, as a signed vector."
+ },
+ "Think you could compute the signed projection of the force on {a} onto the direction pointing from it toward {b}, as a vector?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Signed vector projection onto the direction from a toward b."
+ },
+ "Hit me with the vector projection of the net force on {a} along its line to {b}, keeping the sign.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Vector projection along the line to b with the sign kept."
+ },
+ "What does the force on {a} look like once projected onto the axis joining it with {b}, expressed as a signed vector?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Projection onto the axis joining a and b, as a signed vector."
+ },
+ "I'd like the force on {a} split into its part along the axis to {b}, and give me that piece as a vector with a sign.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the part of the force along the axis to b, as a signed vector."
+ },
+ "Could you resolve the force on {a} along the line it shares with {b} and report it as a vector that keeps its sign?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Force resolved along the line shared with b, as a signed vector."
+ },
+ "Quick question: what's the signed vector projection of the force on {a} onto the line between it and {b}?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Direct request for the signed vector projection onto the line between a and b."
+ },
+ "Would you mind computing the component of the force on {a} lying along the line between it and {b}, returned as a vector rather than a scalar?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Vector component along the line between a and b; a vector projection carries its sign by direction."
+ },
+ "For {a}, what's the force projected onto its connection to {b}, as a directional vector with a sign?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Force projected onto the line connecting a and b, as a signed vector."
+ },
+ "Take the force on {a} and project it onto the line to {b}; I want the vector, sign included.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Project onto the line to b, as a signed vector."
+ },
+ "So what's the vector form of the force on {a} resolved along the axis to {b}, signed for push or pull?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Vector form of the force resolved along the axis to b, signed."
+ },
+ "Can you tell me the force on {a} projected onto the axis running from it to {b}, as a vector that can point either way?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Projection onto the axis from a to b, as a vector that can point either way."
+ },
+ "Walk me through the signed projection of the force on {a} onto the axis from it to {b}, and output it as a vector.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Signed projection onto the axis from a to b, output as a vector."
+ },
+ "I keep wondering how the force on {a} aligns with the line to {b}, so could you get me the signed vector projection?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks explicitly for the signed vector projection onto the line to b."
+ },
+ "Give me the force vector on {a} projected onto the axis linking it to {b}, with negative values allowed.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Force projected onto the axis linking a and b, with negative values allowed."
+ },
+ "Any chance you can pull out the signed projection of the force on {a} along its bond vector toward {b}, as a 3D vector?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "wrong",
+  "why": "'bond vector' implies a and b are bonded."
+ },
+ "Let's see the force on {a} broken into the piece parallel to the line to {b}, and I need that as a vector whose sign tells me the direction.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Piece of the force parallel to the line to b, as a signed vector."
+ },
+ "Could you calculate how the force on {a} projects onto the axis between it and {b}, returning a signed vector?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Projection onto the axis between a and b, returned as a signed vector."
+ },
+ "What's the signed vector component of the force on {a} along the line from it to {b}, not just a magnitude?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Signed vector component along the line from a to b, not just a magnitude."
+ },
+ "Hey, when you project the force on {a} onto the axis running to {b}, what vector do you get, sign and all?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Vector from projecting onto the axis toward b, sign included."
+ },
+ "I need the parallel component of the force on {a} with respect to the line from it to {b}, in vector form with its sign preserved.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Parallel component with respect to the line from a to b, as a signed vector."
+ },
+ "How much of the force on {a} is aligned with the line connecting it to {b}? Give it as a signed vector.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Part of the force aligned with the line to b, given as a signed vector."
+ },
+ "Can you find the force on {a} projected onto the axis through it and {b}, keeping the direction it actually points?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Projection onto the axis through a and b, keeping its actual direction."
+ },
+ "Tell me the vector projection of the force on {a} along the line between it and {b}, with a plus or minus depending on which way it's really going.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Vector projection along the line between a and b, with plus or minus for direction."
+ },
+ "Quick favor: signed vector projection of the force on {a} onto the line from it to {b}, please.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Direct request for the signed vector projection onto the line from a to b."
+ },
+ "Looking at the forces on {a}, what's the component along the axis connecting it to {b}, as an honest signed vector?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the component along the a\u2013b axis as a signed vector, which matches the task."
+ },
+ "Could you tell me what the force on {a} looks like when projected onto the line that runs from it to {b}, keeping the sign and giving a vector?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the projection onto the line from a to b, with sign kept and a vector result."
+ },
+ "I'm curious about the force on {a} resolved onto the axis through it and {b}, so express that as a signed 3D vector.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the force resolved onto the axis through a and b, as a signed 3D vector."
+ },
+ "Would you compute the projection of the force on {a} onto its line of centers with {b}, as a vector that's negative when it points away?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the projection onto the a\u2013b line as a vector, with sign tied to pointing toward or away from b. 'Negative vector' is loose wording but the meaning is clear."
+ },
+ "Give me the signed vector projection of the force on {a} onto the direction from it to {b}, please, not just a number.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Explicitly asks for the signed vector projection onto the a-to-b direction, not a scalar."
+ },
+ "Think about the force acting on {a}: what's its vector projection onto the axis joining it with {b}, sign included?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the vector projection onto the axis joining a and b, sign included."
+ },
+ "What does the force on {a} contribute along the line to {b} in vector terms, with its direction kept?": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "'Contribute along the line' never says projection or signed. 'Direction kept' only hints at the sign, so a reader could take it as something looser."
+ },
+ "Fill me in on the signed vector projection of the force on {a} onto the line between it and {b}, since I need the sign to be right.": {
+  "task": "proj",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the signed vector projection onto the a\u2013b line, with correct sign emphasized."
+ },
+ "What is the vector projection of the force on {a} onto the axis passing through that atom and {b}?": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Vector projection onto the axis through a and b."
+ },
+ "Compute the signed vector projection of the net force acting on {a} onto the line connecting it with {b}.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Signed vector projection onto the line connecting a and b."
+ },
+ "Determine the component vector of the force on {a} parallel to the internuclear axis running from it to {b}, retaining its sign.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Parallel component vector with sign retained; internuclear axis does not imply bonding."
+ },
+ "Express, as a signed 3D vector, the projection of the force on {a} along the unit vector pointing from it toward {b}.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Projection along the unit vector from a to b, given as a 3D vector."
+ },
+ "Find the parallel component of the force experienced by {a} along the directed axis from that atom to {b}, expressed as a vector with sign preserved.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Parallel component along the directed axis a\u2192b, as a signed vector."
+ },
+ "Evaluate the signed vector projection of the force acting on {a} onto the unit direction vector defined by it and {b}.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Signed vector projection onto the unit direction from a to b."
+ },
+ "Calculate the 3D vector obtained by projecting the force applied to {a} onto the bond axis joining that atom to {b}, keeping the sign of the component.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "wrong",
+  "why": "'Bond axis joining' implies the two atoms are bonded, which is not necessarily true."
+ },
+ "What vector results from projecting the force on {a} onto the collinear axis established between it and {b}, with negative components retained?": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Projection onto the axis through a and b, with negative components retained."
+ },
+ "Report the signed projection vector of the force on {a} along the line of centers from that atom to {b}.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Signed projection vector along the line of centers from a to b."
+ },
+ "Obtain the vector projection of the force on {a} onto the directional axis from that atom toward {b}, including its sign relative to that direction.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Vector projection onto the direction a\u2192b with sign."
+ },
+ "Using the projection operator P = (d d^T)/(d^T d), where d is the displacement from that atom to {b}, what is P\u00b7F for the force F on {a}?": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Explicit projector d d\u1d40/(d\u1d40d) applied to F, with d from a to b."
+ },
+ "Apply the rank-one projector built from the displacement vector between {b} and the atom in question to the force on {a}.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Rank-one projector from the a\u2013b displacement applied to F on a; it is sign-independent, so unambiguous."
+ },
+ "In a Cartesian frame, what is the signed axial component vector of the force on {a} along the internuclear direction pointing from that atom to {b}?": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Signed axial component vector along a\u2192b."
+ },
+ "Determine the projection of the force on {a} onto the internuclear axis defined by that atom and {b}, as a signed vector quantity.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Signed vector projection onto the internuclear axis."
+ },
+ "With e the unit vector from that atom to {b}, what is the projection of the total force on {a} onto e, expressed as a signed vector?": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Projection onto e, the unit vector from a to b, as a signed vector."
+ },
+ "Resolve the force exerted on {a} into a component along the line toward {b} and report that component as a signed vector.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Component of the force along the line toward b, as a signed vector."
+ },
+ "For the force acting on {a}, what is its vector component directed along the axis from that atom to {b}, retaining a negative sign where the force opposes that direction?": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Vector component along a\u2192b, with negative sign where the force opposes that direction."
+ },
+ "Decompose the force on {a} into components parallel and perpendicular to the axis through it and {b}, and return the parallel component as a signed vector.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Parallel part of the parallel/perpendicular decomposition, as a signed vector."
+ },
+ "What is the parallel part of the force on {a} with respect to the line running through that atom and {b}, expressed as a vector that may point either way?": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Parallel part along the line through a and b, as a vector that may point either way."
+ },
+ "Project the force vector on {a} onto the one-dimensional subspace spanned by the displacement from that atom to {b}, and report the result as a 3D vector.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Projection onto the span of the displacement a\u2192b, as a 3D vector."
+ },
+ "Find the orthogonal projection of the force on {a} onto the span of the direction vector from it to {b}, preserving orientation.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Orthogonal projection onto the span of the direction a\u2192b, preserving orientation."
+ },
+ "Compute the signed projection vector of the force on {a} along the unit vector from that atom to {b}.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Signed projection vector along the unit vector from a to b."
+ },
+ "Find the signed axial vector of the force on {a} referenced to the direction from that atom to {b}, expressed in Cartesian coordinates.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Signed axial vector along a\u2192b in Cartesian coordinates; slightly vague but correct."
+ },
+ "In tensor notation, evaluate (\u00fb \u2297 \u00fb)\u00b7F, where F is the force on {a} and \u00fb is the unit vector from that atom to {b}.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "(\u00fb\u2297\u00fb)\u00b7F with \u00fb from a to b."
+ },
+ "Using the dyadic projector \u00fb\u2297\u00fb built from the unit vector pointing from that atom to {b}, what is the signed vector projection of the force on {a}?": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Dyadic projector \u00fb\u2297\u00fb applied to the force on a."
+ },
+ "Take the force acting on {a} and project it onto the axis joining that atom with {b}, reporting the resulting vector including its sign.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Projection onto the axis joining a and b, with sign."
+ },
+ "What is the component of the force on {a} lying along the line from that atom to {b}, expressed as a signed vector rather than a scalar length?": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Component along the line a\u2192b as a signed vector, explicitly not a scalar."
+ },
+ "Determine the signed collinear force vector acting on {a} along the axis from it to {b}.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "'Signed collinear force vector along the axis' does not clearly say projection; it could be read as a force exerted by b on a."
+ },
+ "Express the projection of the force on {a} onto the bond axis to {b} as a 3D vector whose direction follows the sign of the axial force component.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "wrong",
+  "why": "'Bond axis' implies the two atoms are bonded, which is not necessarily true."
+ },
+ "Evaluate the vector projection of the force on {a} onto the internuclear axis through that atom and {b}, retaining the sign of the parallel component.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Vector projection onto the internuclear axis, with the sign of the parallel component."
+ },
+ "Compute the axial vector part of the force on {a} aligned with the separation vector pointing from that atom to {b}, including its directionality.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the component of the force on {a} along the a\u2192b direction, as a signed vector. The wording 'axial vector part' is slightly loose but still unambiguous."
+ },
+ "What signed vector along the separation from that atom to {b} equals the projection of the force on {a} onto that separation direction?": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the signed vector projection of the force on {a} onto the a\u2192b separation. 'That atom' comes before {a} is named but can only mean {a}."
+ },
+ "Determine the parallel force vector on {a} with respect to the axis connecting that atom and {b}, reporting the signed value as a vector in the same frame as the force.": {
+  "task": "proj",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the force component parallel to the axis through {a} and {b}, as a vector in the force's frame. This matches the intended projection onto the line."
+ },
+ "I'd appreciate it if you could report the force acting on {a} resolved along the axis connecting it to {b}, as a vector with sign.": {
+  "task": "proj",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Force on a resolved along the a\u2013b axis, returned as a signed vector; matches the task."
+ },
+ "I'm trying to understand the force on {a} along the line joining it with {b}; could you give that as a signed 3D vector?": {
+  "task": "proj",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Force on a along the a\u2013b line as a signed 3D vector; matches the task and implies no bonding."
+ },
+ "I would appreciate knowing the vector projection of the force on {a} onto the direction connecting it to {b}, with the sign retained.": {
+  "task": "proj",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "States the vector projection onto the a\u2013b direction with sign retained; matches the task exactly."
+ },
+ "Give the force acting on {a}, resolved as a signed vector along the line running from it to {b}.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Force on a, resolved as a signed vector along the line to b."
+ },
+ "Express, as a directed vector along the axis to {b}, how much of the force on {a} lies along that axis.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Directed vector along the axis to b; 'how much' is clarified by 'directed vector'."
+ },
+ "Along the line from {a} to {b}, the force resolves into a vector whose sign shows direction; what is it?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ambiguous",
+  "why": "'The force' never says which atom it acts on."
+ },
+ "Where the force experienced by {a} is decomposed onto the bond axis to {b}, what vector results, keeping its sign?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "wrong",
+  "why": "'Bond axis' implies a and b are bonded, which need not be true."
+ },
+ "Taking the axis that runs from {a} toward {b}, find the vector projection of the net force felt by that same atom.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Vector projection of the net force on a onto the axis toward b."
+ },
+ "The force on {a} has a component along the direction of {b}; state that component as a signed vector.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Signed vector component of the force on a toward b."
+ },
+ "Reveal the signed projection vector of the force on {a} along the axis defined by the position of {b} relative to it.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Signed projection vector along the axis set by b's position relative to a."
+ },
+ "Pointing along the line toward {b} and carrying a sign, what vector results when the force on {a} is projected onto that line?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Signed vector from projecting the force on a onto the line toward b."
+ },
+ "Determine the projection of the force acting on {a} onto the axis from it to {b}, expressed as a vector whose sign indicates whether it aligns with or opposes that direction.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear: projection vector whose sign shows alignment with or opposition to the direction."
+ },
+ "Find the three-component vector obtained by projecting the force on {a} onto the line joining it with {b}.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Vector projection onto the line joining a and b; a vector projection is inherently signed."
+ },
+ "What vector lies along the line to {b} and equals the force on {a} projected onto that line?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Vector along the line to b equal to the projected force on a."
+ },
+ "Signed and directional, the axial force vector on {a} referenced to {b} is what?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ambiguous",
+  "why": "Too vague: 'axial force vector referenced to b' does not clearly say projection of the force on a."
+ },
+ "Tell me the part of the force on {a} directed along the axis to {b}, as a vector with sign.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Signed vector part of the force on a along the axis to b."
+ },
+ "Given {b} as the reference, the force on {a} resolved along the connecting line gives a vector; name it.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Force on a resolved along the connecting line, with b as reference."
+ },
+ "Supply the vector component of the force on {a} parallel to the direction toward {b}, with negative values for reversed force.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Parallel vector component toward b, with negative meaning reversed."
+ },
+ "How does the force on {a} split along the line to {b}? Give the signed vector part.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Signed vector part of the force along the line to b."
+ },
+ "Along which vector, parallel to the segment running toward {b}, does the force on {a} project, and with what sign?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "wrong",
+  "why": "Asks 'along which vector' and the sign, not for the projected force vector itself."
+ },
+ "Derive the signed vector projection of the force on {a} onto the axis running toward {b}.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Signed vector projection of the force on a onto the axis toward b."
+ },
+ "The force exerted on {a} gets projected onto the line leading to {b}; what is that projected vector including its sign?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Projected vector of the force on a onto the line to b, with sign."
+ },
+ "What is the axial force vector on {a} along the line to {b}, where a negative result means the force points the other way?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Axial force vector along the line to b; negative means the other way."
+ },
+ "Report, as a vector parallel to the line toward {b}, the portion of the force on {a} along that line, signed.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Signed vector parallel to the line toward b."
+ },
+ "Expressed as a directed vector along the axis leading toward {b}, what is the projected force on {a}?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Directed vector along the axis toward b."
+ },
+ "Give the signed projection onto the line to {b} of the force acting on {a}, written as a vector.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Signed projection onto the line to b, written as a vector."
+ },
+ "In vector form, with sign preserved, what is the component of the force on {a} lying on the axis to {b}?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Signed vector component of the force on a on the axis to b."
+ },
+ "Show the vector that results when the force on {a} is projected onto the line connecting it with {b}.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Vector from projecting the force on a onto the line connecting a and b."
+ },
+ "Which vector, aligned with the line toward {b}, represents the force on {a} projected onto it, sign included?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Vector aligned with the line toward b, sign included."
+ },
+ "The projection of the force on {a} onto the direction toward {b}, as a signed 3D vector, equals what?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Signed 3D vector projection toward b."
+ },
+ "Fill in: the force on {a} projected onto the line through it and {b} is the vector ____.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Fill-in: force on a projected onto the line through a and b, as a vector."
+ },
+ "Resolve the force on {a} along the axis toward {b} and state the result as a vector with its sign.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Resolve along the axis toward b and give a signed vector."
+ },
+ "Keeping its sign so that reversal shows an opposite direction, what vector is the force on {a} projected onto the axis to {b}?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Signed vector projection onto the axis to b."
+ },
+ "Along the direction toward {b}, what is the signed vector form of the force acting on {a}?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ambiguous",
+  "why": "It never says 'projection'. 'Signed vector form of the force' could be read as the full force vector, or as its component along the direction toward {b}."
+ },
+ "What vector, lying along the line toward {b}, equals the signed projection of the force on {a}?": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "It asks for the vector along the line toward {b} that equals the signed projection of the force on {a}, which matches the task."
+ },
+ "Provide the signed vector projection of the force on {a} onto the line toward {b}, with sign following the direction of the pull.": {
+  "task": "proj",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "It asks for the signed vector projection of the force on {a} onto the line toward {b}. 'Direction of the pull' is slightly loose but reads as the sign of the force component."
+ },
+ "What is the traceless electric quadrupole tensor of the molecule as a whole?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Directly asks for the molecule's traceless quadrupole tensor."
+ },
+ "Determine the traceless electric quadrupole tensor characterizing the entire molecule.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Could you evaluate the traceless electric quadrupole tensor of the complete molecule?": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Polite phrasing; same request."
+ },
+ "Compute the traceless quadrupole tensor of the molecule taken as a whole.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'Electric' is omitted, but a quadrupole tensor of a molecule is understood as electric."
+ },
+ "What traceless electric quadrupole tensor does the molecule possess in its entirety?": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Derive the traceless electric quadrupole tensor for the full molecular system.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'Derive' still asks for the tensor of the full molecule."
+ },
+ "Please provide the traceless electric quadrupole tensor describing the molecule as a whole.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Obtain the traceless second-moment electric quadrupole tensor of the whole molecule.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'Second-moment' is consistent with a quadrupole tensor."
+ },
+ "What is the traceless quadrupole tensor associated with the total charge distribution of the molecule?": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Total charge distribution means the whole molecule."
+ },
+ "Calculate the traceless electric quadrupole tensor of the molecule considered in its entirety.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "State the traceless electric quadrupole tensor of the molecule as a single, global object.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Clear, if slightly stylized."
+ },
+ "How is the traceless electric quadrupole tensor of the whole molecule evaluated?": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "wrong",
+  "why": "Asks how the tensor is evaluated (a method), not for the tensor itself."
+ },
+ "Find the traceless Cartesian electric quadrupole tensor of the molecule as a whole.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Cartesian form is consistent with the target."
+ },
+ "What are the components of the traceless electric quadrupole tensor of the complete molecule?": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the components of the tensor, which is acceptable."
+ },
+ "Give the traceless electric quadrupole tensor of the molecule with respect to its overall charge distribution.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Overall charge distribution means the whole molecule."
+ },
+ "Establish the traceless electric quadrupole tensor for the entire molecular assembly.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'Molecular assembly' is slightly odd but still the whole molecule."
+ },
+ "Determine, in a suitable frame, the traceless electric quadrupole tensor of the whole molecule.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "'In a suitable frame' leaves the frame or origin unspecified."
+ },
+ "Please report the traceless electric quadrupole tensor that characterizes the molecule globally.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "What traceless quadrupole tensor describes the electric multipole structure of the molecule as a whole?": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the traceless quadrupole tensor of the whole molecule."
+ },
+ "Evaluate the traceless electric quadrupole tensor of the molecule, summed over all of its constituent charges.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Summing over all constituent charges means the whole molecule."
+ },
+ "Specify the traceless electric quadrupole tensor pertaining to the molecule as a complete entity.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Can you determine the traceless electric quadrupole tensor of the molecule in its totality?": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "What is the traceless quadrupole tensor of the molecular charge distribution taken as a whole?": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Express the traceless electric quadrupole tensor of the entire molecule in Cartesian components.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Cartesian components of the whole-molecule tensor."
+ },
+ "Provide an expression for the traceless electric quadrupole tensor of the molecule as a whole.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "'An expression' could mean a general formula or the specific value."
+ },
+ "Find the traceless electric quadrupole tensor that results from summing over all nuclei and electrons of the molecule.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Sum over all nuclei and electrons means the whole molecule."
+ },
+ "Kindly supply the traceless electric quadrupole tensor of the molecule, regarded as one body.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Determine the traceless quadrupole tensor for the total molecular charge density.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Total molecular charge density means the whole molecule."
+ },
+ "What form does the traceless electric quadrupole tensor of the whole molecule take?": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "'What form does it take' is vague: it could mean the formula, the structure or the values."
+ },
+ "Work out the traceless electric quadrupole tensor of the molecule considered as an undivided system.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "What is the symmetric, traceless electric quadrupole tensor of the complete molecule?": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Directly asks for the symmetric, traceless electric quadrupole tensor of the complete molecule."
+ },
+ "Determine the traceless quadrupole tensor that encodes the electric anisotropy of the molecule as a whole.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the traceless quadrupole tensor of the molecule as a whole; the electric-anisotropy wording is loose but still points to the same quantity."
+ },
+ "Please furnish the traceless electric quadrupole tensor of the entire molecular species.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the traceless electric quadrupole tensor of the entire molecule."
+ },
+ "Compute the traceless electric quadrupole tensor for the molecule when treated as a single rigid charge distribution.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the whole-molecule traceless electric quadrupole tensor; 'rigid' is an extra modelling word that does not change the quantity."
+ },
+ "Enumerate the components of the traceless electric quadrupole tensor of the whole molecule.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asking for the components of the whole-molecule tensor amounts to asking for the tensor."
+ },
+ "What traceless electric quadrupole tensor is obtained for the molecule in its full extent?": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the traceless electric quadrupole tensor of the molecule in its full extent."
+ },
+ "Set out the traceless electric quadrupole tensor of the molecule considered globally.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'Considered globally' correctly means the whole molecule."
+ },
+ "Ascertain the traceless electric quadrupole tensor of the molecule as an integral whole.": {
+  "task": "quad",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'As an integral whole' correctly means the whole molecule."
+ },
+ "Compute the molecule's traceless quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the molecule's traceless quadrupole tensor."
+ },
+ "Report the traceless quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "Does not say which system; could refer to a single atom or the whole molecule."
+ },
+ "Give the molecule's traceless electric quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear: the molecule's traceless electric quadrupole tensor."
+ },
+ "Find the traceless quadrupole tensor overall.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Overall' signals the whole-system tensor."
+ },
+ "Calculate the whole-molecule traceless quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Explicitly whole-molecule."
+ },
+ "State the molecule's traceless quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Provide the traceless quadrupole tensor for the molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Derive the molecule's traceless electric quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Determine the traceless quadrupole tensor of this molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Show the traceless quadrupole tensor of the whole molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Explicitly whole molecule."
+ },
+ "Evaluate the molecule's traceless quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Obtain the traceless electric quadrupole tensor for the molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "List the components of the molecule's traceless quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the components of the tensor, which is the same thing."
+ },
+ "Tabulate the traceless quadrupole tensor of the molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks to tabulate the tensor, which is fine."
+ },
+ "Give me the molecule's traceless quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Supply the traceless quadrupole tensor of the entire molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Entire molecule."
+ },
+ "Work out the molecule's traceless quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Compute the traceless electric quadrupole tensor of the molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Return the molecule's traceless quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Give the full traceless quadrupole tensor of the molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Calculate the molecule's traceless electric quadrupole matrix.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Matrix' is equivalent to the tensor."
+ },
+ "Find the traceless quadrupole matrix for the whole molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Matrix form, whole molecule."
+ },
+ "Report the molecule's traceless quadrupole moment tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Moment tensor' is equivalent."
+ },
+ "Give the traceless quadrupole moment tensor of the molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Determine the molecular traceless quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Molecular' means whole molecule."
+ },
+ "Compute the total traceless quadrupole tensor of the molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Total' means whole molecule."
+ },
+ "State the traceless electric quadrupole tensor of the molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Produce the molecule's traceless quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Give the molecule-wide traceless quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Molecule-wide' means whole molecule."
+ },
+ "Calculate the traceless quadrupole tensor for the complete molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Complete molecule."
+ },
+ "Provide the molecule's traceless quadrupole tensor components.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the molecule's traceless quadrupole tensor components; this is the whole-molecule tensor."
+ },
+ "Find the molecule's traceless electric quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clearly asks for the molecule's traceless electric quadrupole tensor."
+ },
+ "Output the traceless quadrupole tensor of the molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Write out the molecule's traceless quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Give the molecule's quadrupole tensor, traceless.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Slightly unusual phrasing, but it still asks for the traceless quadrupole tensor of the molecule."
+ },
+ "Compute the molecular quadrupole tensor, made traceless.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Molecular quadrupole tensor, made traceless' means the traceless tensor of the whole molecule."
+ },
+ "Report the traceless electric quadrupole of the molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Traceless electric quadrupole of the molecule' is the standard way to refer to the tensor."
+ },
+ "Specify the molecule's traceless quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Deliver the traceless quadrupole tensor of the molecule.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Calculate the overall traceless electric quadrupole tensor.": {
+  "task": "quad",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Overall' signals the whole molecule, and it asks for the traceless electric quadrupole tensor."
+ },
+ "What is the traceless electric quadrupole tensor of the whole molecule?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Direct and unambiguous."
+ },
+ "Hey, could you tell me the traceless quadrupole tensor for the entire molecule?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the traceless quadrupole tensor of the entire molecule."
+ },
+ "Do you happen to know the traceless electric quadrupole tensor of the whole molecule?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "I'm curious, what does the traceless quadrupole tensor look like for the full molecule?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Look like' is casual but still asks for the tensor."
+ },
+ "Quick question: what's the traceless electric quadrupole tensor for the whole molecule?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "Mind sharing the traceless quadrupole tensor of the molecule as a whole?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "So what's the traceless electric quadrupole tensor across the entire molecule?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Across the entire molecule' still means the whole molecule."
+ },
+ "Could you run the numbers and give me the traceless quadrupole tensor of the whole molecule?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "What's the traceless quadrupole tensor for the molecule overall, do you think?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "Any idea what the traceless electric quadrupole tensor of the whole molecule comes out to?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "Would you mind walking me through the traceless quadrupole tensor of the complete molecule?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "'Walking me through' could mean an explanation or derivation rather than the tensor itself."
+ },
+ "I need the traceless electric quadrupole tensor for the whole molecule, can you help?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "What would the traceless quadrupole tensor be for the molecule as a single system?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'As a single system' means the whole molecule."
+ },
+ "Got the traceless quadrupole tensor for the whole molecule handy?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "Hey, what's the deal with the traceless electric quadrupole tensor of the entire molecule?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "'What's the deal with' is vague and may not ask for the tensor values."
+ },
+ "Can you pull up the traceless quadrupole tensor of the molecule as a whole?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "Out of curiosity, how does the traceless electric quadrupole tensor of the whole molecule look?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "Do you have the traceless quadrupole tensor for the full molecule on hand?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "Let's figure out the traceless electric quadrupole tensor of the whole molecule, what do you say?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Proposes working it out together, but the target is clear."
+ },
+ "What's the traceless quadrupole tensor of the molecule overall in your calculations?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "Could you give me a rundown of the traceless electric quadrupole tensor for the entire molecule?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "'Rundown' is vague and could mean a general overview rather than the tensor."
+ },
+ "Know offhand what the traceless quadrupole tensor of the whole molecule is?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "I'm trying to pin down the traceless electric quadrupole tensor of the full molecule, any thoughts?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "So, what's the traceless quadrupole tensor for the molecule as a whole?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "Mind telling me the traceless electric quadrupole tensor of the whole molecule?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "What's the traceless quadrupole tensor of the entire molecule looking like?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "Hey, do you recall the traceless electric quadrupole tensor for the whole molecule?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "Could you work out the traceless quadrupole tensor of the molecule overall for me?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "What does the traceless electric quadrupole tensor of the complete molecule come out to?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "I'd love to know the traceless quadrupole tensor of the whole molecule, if you've got it.": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request."
+ },
+ "Quick one: what's the traceless electric quadrupole tensor of the molecule as a whole?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the traceless electric quadrupole tensor of the whole molecule."
+ },
+ "Do you have a value for the traceless quadrupole tensor of the entire molecule?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Says 'quadrupole' without 'electric', but the target is the traceless quadrupole tensor of the entire molecule."
+ },
+ "What's the traceless electric quadrupole tensor for the whole molecule based on your data?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request for the whole-molecule tensor; 'based on your data' does not change the quantity."
+ },
+ "Can you tell me the traceless quadrupole tensor of the molecule in its entirety?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the traceless quadrupole tensor of the molecule in its entirety."
+ },
+ "Just wondering, what's the traceless electric quadrupole tensor of the whole molecule?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear and correct request."
+ },
+ "Could you share the traceless quadrupole tensor for the full molecule when you get a sec?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the full-molecule traceless quadrupole tensor; the politeness framing is harmless."
+ },
+ "What's the traceless quadrupole tensor of the molecule as one whole, as far as you know?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'As one whole' makes clear it is the whole molecule."
+ },
+ "Hey, what's the traceless electric quadrupole tensor for the entire molecule, roughly speaking?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "The request is correct; 'roughly speaking' only relaxes the precision expected."
+ },
+ "Would you know the traceless quadrupole tensor of the whole molecule off the top of your head?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the whole-molecule traceless quadrupole tensor; 'off the top of your head' is only casual framing."
+ },
+ "What traceless electric quadrupole tensor does the whole molecule have?": {
+  "task": "quad",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Direct and unambiguous."
+ },
+ "Could you determine the traceless Cartesian electric quadrupole tensor for the entire molecule?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Same request, with Cartesian form stated."
+ },
+ "Please compute the symmetric, traceless second-moment tensor of the molecule's charge distribution.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The symmetric traceless second-moment tensor of the charge distribution is the quadrupole tensor."
+ },
+ "What are the components of the traceless electric quadrupole tensor describing the molecule's total charge density?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the components of the total traceless quadrupole tensor."
+ },
+ "Evaluate the traceless quadrupole tensor \u0398_ij of the complete molecular system.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for \u0398_ij of the whole molecule."
+ },
+ "Report the traceless electric quadrupole tensor for the molecule, expressed in its laboratory frame of reference.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "A 'laboratory frame' is not defined, and the tensor depends on orientation."
+ },
+ "Provide the matrix of the traceless electric quadrupole tensor obtained by integrating the total charge density of the molecule.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Integrating the total charge density gives the quadrupole tensor."
+ },
+ "Calculate the traceless electric quadrupole tensor for the molecule using the standard 3r_i r_j minus r\u00b2 \u03b4_ij definition.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The 3r_i r_j \u2212 r\u00b2\u03b4_ij form is the standard traceless definition."
+ },
+ "What is the traceless quadrupole tensor of the molecule's net electrostatic charge distribution?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "'Net' charge distribution is read as the total distribution."
+ },
+ "Give the traceless second-rank electric quadrupole tensor that characterizes the molecule's overall charge anisotropy.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The tensor characterizes the overall charge anisotropy."
+ },
+ "What traceless quadrupole tensor describes the aggregate electric field gradient source of the molecule?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The quadrupole sources the field gradient, so this is a loose but valid paraphrase."
+ },
+ "Compute the traceless electric quadrupole tensor of the molecule relative to its center of charge.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "The center of charge is ill-defined for a neutral molecule, so the stated origin is unclear."
+ },
+ "Derive the traceless electric quadrupole tensor for the molecule from its ground-state electron density and nuclear charges.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Electron density plus nuclear charges gives the total quadrupole tensor."
+ },
+ "Please report the full 3\u00d73 traceless electric quadrupole tensor of the molecule in atomic units.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Full 3\u00d73 tensor in atomic units."
+ },
+ "What is the traceless electric quadrupole tensor of the molecule when expressed in Debye \u00e5ngstr\u00f6m units?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Only specifies units (Debye\u00b7\u00c5)."
+ },
+ "Could you state the traceless electric quadrupole tensor of the molecule in its equilibrium geometry?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Specifies the geometry at which the tensor is evaluated."
+ },
+ "What is the traceless quadrupole tensor that results from summing point-charge contributions over the entire molecule?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Point-charge summation over the molecule gives the tensor."
+ },
+ "Express the traceless electric quadrupole tensor of the molecule in terms of its Cartesian coordinates and charge densities.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Expresses the tensor in terms of coordinates and charge density."
+ },
+ "Provide the traceless electric quadrupole tensor of the molecule computed at the Hartree-Fock level of theory.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Specifies the level of theory (Hartree-Fock)."
+ },
+ "Could you evaluate the traceless electric quadrupole tensor of the molecule from its total electrostatic potential expansion?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The quadrupole is the second-order term of the potential expansion."
+ },
+ "What traceless quadrupole tensor corresponds to the overall second-order multipole moment of the molecule?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The second-order multipole moment is the quadrupole."
+ },
+ "Compute the traceless electric quadrupole tensor for the molecule using a density functional theory electron density.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Specifies a DFT density."
+ },
+ "Report the traceless electric quadrupole tensor of the molecule, including its off-diagonal Cartesian elements.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the full tensor including off-diagonal elements."
+ },
+ "What is the traceless quadrupole tensor of the molecule when the charge distribution is taken in its gas-phase conformation?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Specifies the gas-phase conformation."
+ },
+ "Determine the traceless electric quadrupole tensor of the molecule as a rank-two Cartesian tensor with zero trace.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Describes the tensor as rank-two, Cartesian and traceless."
+ },
+ "Please supply the traceless electric quadrupole tensor of the whole molecule in matrix form.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the matrix form."
+ },
+ "What is the traceless electric quadrupole tensor of the molecule obtained from its Mulliken or Hirshfeld charge partitioning?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "'Mulliken or Hirshfeld' leaves the partitioning scheme unspecified, and the two give different results."
+ },
+ "Calculate the traceless electric quadrupole tensor of the molecule, ensuring that its trace vanishes.": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the traceless tensor with vanishing trace."
+ },
+ "What traceless electric quadrupole tensor represents the molecule's total charge distribution in the molecular frame?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Total charge distribution in the molecular frame."
+ },
+ "Could you give the traceless electric quadrupole tensor of the molecule for use in a multipole electrostatics model?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the tensor for use in a multipole model."
+ },
+ "What is the traceless electric quadrupole tensor of the molecule as a whole, in the principal axis system of its inertia tensor?": {
+  "task": "quad",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the traceless electric quadrupole tensor of the whole molecule. The principal inertia axis frame fixes the orientation and the origin at the center of mass, and nothing in the wording is false or reversed."
+ },
+ "Could you tell me the traceless electric quadrupole tensor of the whole molecule?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Directly asks for the traceless quadrupole tensor of the whole molecule."
+ },
+ "I would like to know the traceless electric quadrupole tensor of the entire molecule.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Would you be able to provide the traceless electric quadrupole tensor for the whole molecule?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "I was wondering if you could share the traceless electric quadrupole tensor of the complete molecule.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Please let me know the traceless electric quadrupole tensor describing the molecule as a whole.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'Describing the molecule as a whole' keeps the intended meaning."
+ },
+ "Could you kindly report the traceless electric quadrupole tensor of the molecule overall?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "I'd appreciate it if you could give me the traceless electric quadrupole tensor for the full molecule.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "May I ask for the traceless electric quadrupole tensor that characterizes the whole molecule?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'Characterizes the whole molecule' is equivalent."
+ },
+ "Would it be possible to obtain the traceless electric quadrupole tensor of the molecule as a single entity?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'As a single entity' means the whole molecule."
+ },
+ "I am interested in learning the traceless electric quadrupole tensor of the entire molecular system.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'Entire molecular system' is acceptable."
+ },
+ "Could you please calculate and share the traceless electric quadrupole tensor of the whole molecule?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks to calculate and share the tensor, which matches the task."
+ },
+ "I would be grateful if you could specify the traceless electric quadrupole tensor of the molecule in its entirety.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Might you be able to supply the traceless electric quadrupole tensor for the complete molecule?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "I'm curious to hear the traceless electric quadrupole tensor of the molecule considered as a whole.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Could you walk me through the traceless electric quadrupole tensor of the whole molecular structure?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "'Walk me through' could mean an explanation of the concept rather than the tensor itself."
+ },
+ "Would you mind sharing the traceless electric quadrupole tensor pertaining to the entire molecule?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "I would welcome knowing the traceless electric quadrupole tensor of the molecule as a total system.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Please could you determine the traceless electric quadrupole tensor for the whole molecule and report it?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "I'd like to request the traceless electric quadrupole tensor of the molecule taken in its entirety.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Could you provide information on the traceless electric quadrupole tensor of the molecule overall?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "'Provide information on' is vague and could be read as a general discussion rather than the tensor values."
+ },
+ "I would appreciate your help in identifying the traceless electric quadrupole tensor of the whole molecule.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Would you kindly give me the traceless electric quadrupole tensor that applies to the entire molecule?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "I am hoping you could tell me the traceless electric quadrupole tensor of the complete molecular entity.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Could you help me find the traceless electric quadrupole tensor of the molecule as a whole?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Is it possible for you to share the traceless electric quadrupole tensor of the whole molecule with me?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "I'd be obliged if you could report the traceless electric quadrupole tensor for the molecule in full.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Could you let me know what the traceless electric quadrupole tensor of the entire molecule is?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "I would like you to provide the traceless electric quadrupole tensor describing the whole molecule.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Would you be so kind as to supply the traceless electric quadrupole tensor of the molecule overall?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "I wonder if you could compute the traceless electric quadrupole tensor for the entire molecule.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Could you share, if you would, the traceless electric quadrupole tensor of the whole molecular species?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clearly asks for the traceless electric quadrupole tensor of the whole molecule."
+ },
+ "I would greatly appreciate knowing the traceless electric quadrupole tensor of the molecule as one unit.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear request for the tensor of the molecule as one unit."
+ },
+ "Please tell me, when convenient, the traceless electric quadrupole tensor of the complete molecule.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear request for the tensor of the complete molecule."
+ },
+ "Could you furnish the traceless electric quadrupole tensor that represents the whole molecule?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear request for the tensor representing the whole molecule."
+ },
+ "I'd value your insight into the traceless electric quadrupole tensor of the entire molecule.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "'Your insight into' could mean a discussion or interpretation rather than the tensor values."
+ },
+ "Would you be willing to give the traceless electric quadrupole tensor of the molecule as a whole?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear request for the tensor of the molecule as a whole."
+ },
+ "I am seeking the traceless electric quadrupole tensor of the whole molecule and would be thankful for your assistance.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear request for the whole-molecule traceless quadrupole tensor."
+ },
+ "Could you kindly outline the traceless electric quadrupole tensor for the full molecular structure?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "'Outline' could mean a qualitative summary rather than the tensor itself."
+ },
+ "I would be pleased if you could present the traceless electric quadrupole tensor of the entire molecule.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear request to present the tensor of the entire molecule."
+ },
+ "Might I request the traceless electric quadrupole tensor describing the molecule in its totality?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'In its totality' clearly means the whole molecule."
+ },
+ "Could you please indicate the traceless electric quadrupole tensor of the whole molecule?": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Clear request to indicate the tensor of the whole molecule."
+ },
+ "I would like to see the traceless electric quadrupole tensor of the molecule taken globally.": {
+  "task": "quad",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'Taken globally' reasonably means the whole molecule."
+ },
+ "The traceless electric quadrupole tensor of the whole molecule, what is it?": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Directly asks for the whole-molecule traceless electric quadrupole tensor."
+ },
+ "Of the whole molecule, give the traceless electric quadrupole tensor.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Compute the traceless electric quadrupole tensor for the entire molecule.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear and correct."
+ },
+ "Tensor-wise, the traceless electric quadrupole of the complete molecule is what?": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Awkward wording, but the meaning is unambiguous."
+ },
+ "Complete the statement: the traceless electric quadrupole tensor of the whole molecule equals ...": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear completion prompt."
+ },
+ "Report, as a traceless tensor, the electric quadrupole of the full molecule.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear request for the traceless quadrupole of the full molecule."
+ },
+ "Whole-molecule traceless electric quadrupole tensor: please supply it.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Terse but clear."
+ },
+ "Supply the traceless electric quadrupole tensor that characterizes the molecule as a whole.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Determine the molecule-wide traceless electric quadrupole tensor.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Molecule-wide' means whole molecule."
+ },
+ "Fill in the blank: the molecule's overall traceless electric quadrupole tensor is ______.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear fill-in-the-blank."
+ },
+ "Which traceless electric quadrupole tensor does the entire molecule possess?": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "A complete molecule's traceless electric quadrupole tensor: what value does it take?": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Value' is loose for a tensor, but the meaning is clear."
+ },
+ "Express the traceless electric quadrupole tensor of the whole molecule in matrix form.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for matrix form, which is consistent with a tensor."
+ },
+ "Quadrupole tensor, traceless, electric, for the full molecule: calculate it.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Odd word order, but clear."
+ },
+ "Give me the electric quadrupole tensor, traceless, describing the molecule overall.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "What traceless electric quadrupole tensor describes the molecule as a whole?": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Tell me the whole molecule's traceless electric quadrupole tensor.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Derive the traceless electric quadrupole tensor pertaining to the entire molecular system.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Derive' still targets the same quantity."
+ },
+ "The entire molecule's traceless electric quadrupole tensor is what, exactly?": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Please state the traceless electric quadrupole tensor for the molecule taken in its entirety.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Traceless electric quadrupole tensor of the whole molecule: provide its components.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asking for the components is consistent with the tensor."
+ },
+ "Obtain the traceless electric quadrupole tensor belonging to the molecule as one unit.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Lay out the traceless electric quadrupole tensor of the molecule considered globally.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Summarize the traceless electric quadrupole tensor of the complete molecular structure.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Summarize' is slightly loose, but it still targets the whole-molecule tensor."
+ },
+ "Its traceless electric quadrupole tensor, for the whole molecule, should be stated as what?": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Estimate, then give, the traceless electric quadrupole tensor of the total molecule.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ambiguous",
+  "why": "'Estimate' suggests an approximate answer, which is unclear for a defined quantity."
+ },
+ "Wanted: the traceless electric quadrupole tensor of the molecule in whole.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Specify the molecule-level traceless electric quadrupole tensor.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Molecule-level' means whole molecule."
+ },
+ "Given the molecule as a whole, what is its traceless electric quadrupole tensor?": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Where the entire molecule is concerned, the traceless electric quadrupole tensor is ______; fill it in.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Yield the traceless electric quadrupole tensor of the molecule overall.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Directly asks for the traceless electric quadrupole tensor of the whole molecule."
+ },
+ "Show the traceless electric quadrupole tensor the whole molecule exhibits.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the whole molecule's traceless electric quadrupole tensor."
+ },
+ "Find the molecular traceless electric quadrupole tensor across the entire structure.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the molecular traceless quadrupole tensor over the entire structure; the wording is slightly awkward but clear."
+ },
+ "Traceless quadrupole tensor (electric) of the whole species: what is it?": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the electric traceless quadrupole tensor of the whole species."
+ },
+ "Describe the traceless electric quadrupole tensor carried by the molecule as a complete entity.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Describe' is a little loose, but the target is still the whole-molecule traceless electric quadrupole tensor."
+ },
+ "The question is this: what traceless electric quadrupole tensor does the whole molecule have?": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clearly asks for the whole molecule's traceless electric quadrupole tensor."
+ },
+ "Return the traceless electric quadrupole tensor of the full molecule in Cartesian components.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the full molecule's tensor; 'Cartesian components' only states the usual representation."
+ },
+ "Lacking anything else, give the traceless electric quadrupole tensor of the entire molecule.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Lacking anything else' is odd filler, but the request is the whole molecule's traceless electric quadrupole tensor."
+ },
+ "For the molecule overall, the traceless electric quadrupole tensor reads what?": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the overall molecular traceless electric quadrupole tensor."
+ },
+ "State explicitly the traceless electric quadrupole tensor of the whole molecular entity.": {
+  "task": "quad",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the tensor of the whole molecular entity."
+ }
+}

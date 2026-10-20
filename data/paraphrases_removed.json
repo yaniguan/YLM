@@ -1,0 +1,464 @@
+[
+ {
+  "task": "force",
+  "style": "textbook",
+  "template": "Give the vector sum of all forces acting on {a} in three-dimensional space.",
+  "verdict": "ambiguous",
+  "why": "'Vector sum of all forces' implies summing several separate forces, which may not match a single force-vector question."
+ },
+ {
+  "task": "force",
+  "style": "terse",
+  "template": "Estimate the 3D force on {a}.",
+  "verdict": "ambiguous",
+  "why": "'Estimate' suggests an approximation rather than the exact force vector."
+ },
+ {
+  "task": "force",
+  "style": "chatty",
+  "template": "How's the force on {a} shaping up in 3D?",
+  "verdict": "ambiguous",
+  "why": "'Shaping up' is vague and does not clearly ask for a vector or its components."
+ },
+ {
+  "task": "force",
+  "style": "chatty",
+  "template": "Walk me through the force vector on {a}.",
+  "verdict": "ambiguous",
+  "why": "'Walk me through' asks for an explanation or derivation, not just the vector."
+ },
+ {
+  "task": "force",
+  "style": "technical",
+  "template": "What is the Hellmann\u2013Feynman force vector on {a}?",
+  "verdict": "ambiguous",
+  "why": "Hellmann\u2013Feynman implies a quantum-mechanical calculation, which may not match the underlying potential."
+ },
+ {
+  "task": "force",
+  "style": "technical",
+  "template": "Specify the vector force field value at the position of {a}.",
+  "verdict": "ambiguous",
+  "why": "'Force field value at the position' could be read as a field at a point rather than the force on the atom."
+ },
+ {
+  "task": "force",
+  "style": "indirect",
+  "template": "Do you think you could estimate the 3D force vector affecting {a}?",
+  "verdict": "ambiguous",
+  "why": "'Estimate' suggests an approximate answer rather than the exact force vector."
+ },
+ {
+  "task": "force",
+  "style": "inverted",
+  "template": "What vector quantity describes the force on {a} in three dimensions?",
+  "verdict": "ambiguous",
+  "why": "'What vector quantity describes' could be answered with just 'the force vector' rather than its values."
+ },
+ {
+  "task": "diff",
+  "style": "textbook",
+  "template": "Express, in Cartesian components, the vector difference between the force on {a} and the force on {b}.",
+  "verdict": "ambiguous",
+  "why": "'Difference between' gives no subtraction order."
+ },
+ {
+  "task": "diff",
+  "style": "textbook",
+  "template": "Determine the vector-valued difference between the force on {a} and the force on {b}, retaining the order of subtraction.",
+  "verdict": "ambiguous",
+  "why": "Says to retain the order but never states which atom is subtracted."
+ },
+ {
+  "task": "diff",
+  "style": "textbook",
+  "template": "Obtain the vector difference between the forces on {a} and {b}, giving the result as a directed quantity in space.",
+  "verdict": "ambiguous",
+  "why": "'Difference between' with no order specified."
+ },
+ {
+  "task": "diff",
+  "style": "chatty",
+  "template": "Can you tell me the vector difference between the force on {a} and the force on {b}?",
+  "verdict": "ambiguous",
+  "why": "'Difference between' gives no order, so the sign is unclear."
+ },
+ {
+  "task": "diff",
+  "style": "technical",
+  "template": "Derive the vector F_a \u2212 F_b from the force balance, where F_a is exerted on {a} and F_b is exerted on {b}.",
+  "verdict": "ambiguous",
+  "why": "'from the force balance' suggests equilibrium or an unrelated derivation"
+ },
+ {
+  "task": "diff",
+  "style": "technical",
+  "template": "Calculate the difference of the force vectors F_a and F_b, where F_a is on {a} and F_b is on {b}, reporting the 3-vector result.",
+  "verdict": "ambiguous",
+  "why": "'Difference of F_a and F_b' does not state which is subtracted, so the order is not explicit."
+ },
+ {
+  "task": "diff",
+  "style": "indirect",
+  "template": "I'd appreciate it if you could work out the net difference between the force acting on {a} and the force acting on {b}, as a 3D vector.",
+  "verdict": "ambiguous",
+  "why": "'Net difference between' gives no order, so the subtracted atom is unclear."
+ },
+ {
+  "task": "diff",
+  "style": "indirect",
+  "template": "Could you please determine the vector difference of the force on {a} relative to the force on {b}?",
+  "verdict": "ambiguous",
+  "why": "'Relative to' is vague and could be read as either order."
+ },
+ {
+  "task": "diff",
+  "style": "indirect",
+  "template": "I would be grateful if you could report the 3D difference vector between the force on {a} and the force on {b}.",
+  "verdict": "ambiguous",
+  "why": "'Difference vector between' has no stated order."
+ },
+ {
+  "task": "diff",
+  "style": "indirect",
+  "template": "Would it be too much trouble to find the vector difference between the force on {a} and the force on {b}?",
+  "verdict": "ambiguous",
+  "why": "'Vector difference between' has no stated order."
+ },
+ {
+  "task": "diff",
+  "style": "indirect",
+  "template": "Could you please let me have the vector difference between the force experienced by {a} and that experienced by {b}?",
+  "verdict": "ambiguous",
+  "why": "'Difference between' gives no order, so it is unclear which atom is subtracted."
+ },
+ {
+  "task": "diff",
+  "style": "inverted",
+  "template": "Relative to the force on {b}, how does the force on {a} differ, as a vector?",
+  "verdict": "ambiguous",
+  "why": "'How does a differ relative to b' does not state the sign or order."
+ },
+ {
+  "task": "diff",
+  "style": "inverted",
+  "template": "Compared with the force on {b}, the force on {a} differs by which vector?",
+  "verdict": "ambiguous",
+  "why": "'Differs by' gives no direction or sign, so it could be read as F_b - F_a."
+ },
+ {
+  "task": "diff",
+  "style": "inverted",
+  "template": "Describe, as a three-component vector, how the force on {a} differs from the force on {b}.",
+  "verdict": "ambiguous",
+  "why": "'How it differs' has no stated order or sign."
+ },
+ {
+  "task": "proj",
+  "style": "textbook",
+  "template": "What is the force vector acting on {a} projected onto the bond axis extending to {b}, including its sign?",
+  "verdict": "wrong",
+  "why": "'Bond axis' wrongly implies a and b are bonded."
+ },
+ {
+  "task": "proj",
+  "style": "textbook",
+  "template": "Given the Cartesian force on {a}, compute its vector projection onto the line leading to {b}, distinguishing attraction from repulsion via sign.",
+  "verdict": "ambiguous",
+  "why": "'Attraction vs repulsion' suggests a pairwise a\u2013b interaction rather than the net force's projection, and sign is attached to a vector."
+ },
+ {
+  "task": "proj",
+  "style": "textbook",
+  "template": "Determine the signed axial force vector on {a} referred to the bond axis extending to {b}.",
+  "verdict": "wrong",
+  "why": "'Bond axis' wrongly implies a and b are bonded."
+ },
+ {
+  "task": "proj",
+  "style": "textbook",
+  "template": "Show that the vector projection of the force on {a} onto the axis to {b} equals (F\u00b7\u00fb)\u00fb, where \u00fb is the unit vector along that axis.",
+  "verdict": "wrong",
+  "why": "Asks for a proof of a formula, not for the computed projection."
+ },
+ {
+  "task": "proj",
+  "style": "terse",
+  "template": "Compute the force on {a} projected onto its bond axis to {b}.",
+  "verdict": "wrong",
+  "why": "'Bond axis' implies a and b are bonded, which need not be true."
+ },
+ {
+  "task": "proj",
+  "style": "terse",
+  "template": "State the force on {a} projected along the direction toward {b}.",
+  "verdict": "ambiguous",
+  "why": "Does not say vector, so a scalar component is a plausible reading."
+ },
+ {
+  "task": "proj",
+  "style": "terse",
+  "template": "Give the axial force on {a} relative to {b}, as a vector.",
+  "verdict": "ambiguous",
+  "why": "'Axial force relative to b' is vague, and the sign convention is unclear."
+ },
+ {
+  "task": "proj",
+  "style": "terse",
+  "template": "Resolve the force on {a} onto the axis running to {b}.",
+  "verdict": "ambiguous",
+  "why": "'Resolve' often means a scalar component, and vector versus scalar is not stated."
+ },
+ {
+  "task": "proj",
+  "style": "terse",
+  "template": "Find the force on {a} along its line to {b}, keeping the sign.",
+  "verdict": "ambiguous",
+  "why": "'Keeping the sign' suggests a scalar, and it does not say vector."
+ },
+ {
+  "task": "proj",
+  "style": "terse",
+  "template": "Extract the force on {a} along the bond to {b}, signed.",
+  "verdict": "wrong",
+  "why": "'Along the bond' implies a and b are bonded."
+ },
+ {
+  "task": "proj",
+  "style": "terse",
+  "template": "Give the force on {a} as a vector along the {b} connection.",
+  "verdict": "ambiguous",
+  "why": "Vague: it could be read as the full force or lacks the sign and projection sense."
+ },
+ {
+  "task": "proj",
+  "style": "terse",
+  "template": "Decompose the force on {a} along the line to {b}, as a vector.",
+  "verdict": "ambiguous",
+  "why": "'Decompose' yields parallel and perpendicular parts, so it is unclear which is wanted."
+ },
+ {
+  "task": "proj",
+  "style": "terse",
+  "template": "Project the force on {a} onto the direction pointing to {b}.",
+  "verdict": "ambiguous",
+  "why": "Projection onto a direction could be read as a scalar."
+ },
+ {
+  "task": "proj",
+  "style": "terse",
+  "template": "Show the force on {a} split along the line to {b}, as a vector.",
+  "verdict": "ambiguous",
+  "why": "'Split' is vague about which part is wanted."
+ },
+ {
+  "task": "proj",
+  "style": "terse",
+  "template": "Return the signed force on {a} parallel to the {b} bond.",
+  "verdict": "wrong",
+  "why": "'The b bond' implies a and b are bonded."
+ },
+ {
+  "task": "proj",
+  "style": "terse",
+  "template": "Find the directional force on {a} along the axis to {b}.",
+  "verdict": "ambiguous",
+  "why": "'Directional force' is vague, with no vector or sign specified."
+ },
+ {
+  "task": "proj",
+  "style": "chatty",
+  "template": "Quick one: how much of the force acting on {a} lies along the bond axis to {b}, as a vector that flips direction when the force reverses?",
+  "verdict": "wrong",
+  "why": "'bond axis' implies a and b are bonded, which need not be true."
+ },
+ {
+  "task": "proj",
+  "style": "chatty",
+  "template": "Mind giving me the vector component of the force on {a} that's parallel to the bond between it and {b}, signed so reversals show up?",
+  "verdict": "wrong",
+  "why": "'the bond between it and {b}' implies the atoms are bonded."
+ },
+ {
+  "task": "proj",
+  "style": "chatty",
+  "template": "Any chance you can pull out the signed projection of the force on {a} along its bond vector toward {b}, as a 3D vector?",
+  "verdict": "wrong",
+  "why": "'bond vector' implies a and b are bonded."
+ },
+ {
+  "task": "proj",
+  "style": "chatty",
+  "template": "What does the force on {a} contribute along the line to {b} in vector terms, with its direction kept?",
+  "verdict": "ambiguous",
+  "why": "'Contribute along the line' never says projection or signed. 'Direction kept' only hints at the sign, so a reader could take it as something looser."
+ },
+ {
+  "task": "proj",
+  "style": "technical",
+  "template": "Calculate the 3D vector obtained by projecting the force applied to {a} onto the bond axis joining that atom to {b}, keeping the sign of the component.",
+  "verdict": "wrong",
+  "why": "'Bond axis joining' implies the two atoms are bonded, which is not necessarily true."
+ },
+ {
+  "task": "proj",
+  "style": "technical",
+  "template": "Determine the signed collinear force vector acting on {a} along the axis from it to {b}.",
+  "verdict": "ambiguous",
+  "why": "'Signed collinear force vector along the axis' does not clearly say projection; it could be read as a force exerted by b on a."
+ },
+ {
+  "task": "proj",
+  "style": "technical",
+  "template": "Express the projection of the force on {a} onto the bond axis to {b} as a 3D vector whose direction follows the sign of the axial force component.",
+  "verdict": "wrong",
+  "why": "'Bond axis' implies the two atoms are bonded, which is not necessarily true."
+ },
+ {
+  "task": "proj",
+  "style": "inverted",
+  "template": "Along the line from {a} to {b}, the force resolves into a vector whose sign shows direction; what is it?",
+  "verdict": "ambiguous",
+  "why": "'The force' never says which atom it acts on."
+ },
+ {
+  "task": "proj",
+  "style": "inverted",
+  "template": "Where the force experienced by {a} is decomposed onto the bond axis to {b}, what vector results, keeping its sign?",
+  "verdict": "wrong",
+  "why": "'Bond axis' implies a and b are bonded, which need not be true."
+ },
+ {
+  "task": "proj",
+  "style": "inverted",
+  "template": "Signed and directional, the axial force vector on {a} referenced to {b} is what?",
+  "verdict": "ambiguous",
+  "why": "Too vague: 'axial force vector referenced to b' does not clearly say projection of the force on a."
+ },
+ {
+  "task": "proj",
+  "style": "inverted",
+  "template": "Along which vector, parallel to the segment running toward {b}, does the force on {a} project, and with what sign?",
+  "verdict": "wrong",
+  "why": "Asks 'along which vector' and the sign, not for the projected force vector itself."
+ },
+ {
+  "task": "proj",
+  "style": "inverted",
+  "template": "Along the direction toward {b}, what is the signed vector form of the force acting on {a}?",
+  "verdict": "ambiguous",
+  "why": "It never says 'projection'. 'Signed vector form of the force' could be read as the full force vector, or as its component along the direction toward {b}."
+ },
+ {
+  "task": "quad",
+  "style": "textbook",
+  "template": "How is the traceless electric quadrupole tensor of the whole molecule evaluated?",
+  "verdict": "wrong",
+  "why": "Asks how the tensor is evaluated (a method), not for the tensor itself."
+ },
+ {
+  "task": "quad",
+  "style": "textbook",
+  "template": "Determine, in a suitable frame, the traceless electric quadrupole tensor of the whole molecule.",
+  "verdict": "ambiguous",
+  "why": "'In a suitable frame' leaves the frame or origin unspecified."
+ },
+ {
+  "task": "quad",
+  "style": "textbook",
+  "template": "Provide an expression for the traceless electric quadrupole tensor of the molecule as a whole.",
+  "verdict": "ambiguous",
+  "why": "'An expression' could mean a general formula or the specific value."
+ },
+ {
+  "task": "quad",
+  "style": "textbook",
+  "template": "What form does the traceless electric quadrupole tensor of the whole molecule take?",
+  "verdict": "ambiguous",
+  "why": "'What form does it take' is vague: it could mean the formula, the structure or the values."
+ },
+ {
+  "task": "quad",
+  "style": "terse",
+  "template": "Report the traceless quadrupole tensor.",
+  "verdict": "ambiguous",
+  "why": "Does not say which system; could refer to a single atom or the whole molecule."
+ },
+ {
+  "task": "quad",
+  "style": "chatty",
+  "template": "Would you mind walking me through the traceless quadrupole tensor of the complete molecule?",
+  "verdict": "ambiguous",
+  "why": "'Walking me through' could mean an explanation or derivation rather than the tensor itself."
+ },
+ {
+  "task": "quad",
+  "style": "chatty",
+  "template": "Hey, what's the deal with the traceless electric quadrupole tensor of the entire molecule?",
+  "verdict": "ambiguous",
+  "why": "'What's the deal with' is vague and may not ask for the tensor values."
+ },
+ {
+  "task": "quad",
+  "style": "chatty",
+  "template": "Could you give me a rundown of the traceless electric quadrupole tensor for the entire molecule?",
+  "verdict": "ambiguous",
+  "why": "'Rundown' is vague and could mean a general overview rather than the tensor."
+ },
+ {
+  "task": "quad",
+  "style": "technical",
+  "template": "Report the traceless electric quadrupole tensor for the molecule, expressed in its laboratory frame of reference.",
+  "verdict": "ambiguous",
+  "why": "A 'laboratory frame' is not defined, and the tensor depends on orientation."
+ },
+ {
+  "task": "quad",
+  "style": "technical",
+  "template": "Compute the traceless electric quadrupole tensor of the molecule relative to its center of charge.",
+  "verdict": "ambiguous",
+  "why": "The center of charge is ill-defined for a neutral molecule, so the stated origin is unclear."
+ },
+ {
+  "task": "quad",
+  "style": "technical",
+  "template": "What is the traceless electric quadrupole tensor of the molecule obtained from its Mulliken or Hirshfeld charge partitioning?",
+  "verdict": "ambiguous",
+  "why": "'Mulliken or Hirshfeld' leaves the partitioning scheme unspecified, and the two give different results."
+ },
+ {
+  "task": "quad",
+  "style": "indirect",
+  "template": "Could you walk me through the traceless electric quadrupole tensor of the whole molecular structure?",
+  "verdict": "ambiguous",
+  "why": "'Walk me through' could mean an explanation of the concept rather than the tensor itself."
+ },
+ {
+  "task": "quad",
+  "style": "indirect",
+  "template": "Could you provide information on the traceless electric quadrupole tensor of the molecule overall?",
+  "verdict": "ambiguous",
+  "why": "'Provide information on' is vague and could be read as a general discussion rather than the tensor values."
+ },
+ {
+  "task": "quad",
+  "style": "indirect",
+  "template": "I'd value your insight into the traceless electric quadrupole tensor of the entire molecule.",
+  "verdict": "ambiguous",
+  "why": "'Your insight into' could mean a discussion or interpretation rather than the tensor values."
+ },
+ {
+  "task": "quad",
+  "style": "indirect",
+  "template": "Could you kindly outline the traceless electric quadrupole tensor for the full molecular structure?",
+  "verdict": "ambiguous",
+  "why": "'Outline' could mean a qualitative summary rather than the tensor itself."
+ },
+ {
+  "task": "quad",
+  "style": "inverted",
+  "template": "Estimate, then give, the traceless electric quadrupole tensor of the total molecule.",
+  "verdict": "ambiguous",
+  "why": "'Estimate' suggests an approximate answer, which is unclear for a defined quantity."
+ }
+]

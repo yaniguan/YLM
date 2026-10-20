@@ -24,8 +24,9 @@ from src.irreps_to_text import invariants
 
 class CompModel(nn.Module):
     def __init__(self, text_dim, hidden_irreps="64x0e + 8x0o + 32x1o + 8x1e + 16x2e", n_layers=3, d=256, key=64,
-                 n_heads=2, token_dropout=0.0):
+                 n_heads=2, token_dropout=0.0, parity="so3"):
         super().__init__()
+        self.parity = parity
         self.token_dropout = token_dropout
         self.encoder = Encoder(hidden_irreps=hidden_irreps, n_layers=n_layers)
         irreps = self.encoder.irreps_out
@@ -44,7 +45,7 @@ class CompModel(nn.Module):
             text_mask = text_mask & keep
         h = self.text_proj(text.to(self.text_proj[1].weight.dtype))                                            # (B, T, d) invariant
         x = self.encoder(Z, pos, atom_mask)
-        keys = self.k(invariants(x, self.encoder.irreps_out))               # (B, N, key)
+        keys = self.k(invariants(x, self.encoder.irreps_out, self.parity))               # (B, N, key)
         v = self.value(x) * atom_mask[..., None]                            # (B, N, 3) equivariant
         centered = (pos - (pos * atom_mask[..., None]).sum(1, keepdim=True)
                     / atom_mask.sum(1)[:, None, None]) * atom_mask[..., None]

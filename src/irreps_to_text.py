@@ -28,13 +28,18 @@ def channel_index(irreps):
     return torch.tensor(idx, dtype=torch.long)
 
 
-def invariants(x, irreps):
-    """Scalars as they are; for l>=1, the length of each channel. (..., dim) -> (..., n_inv)"""
+def invariants(x, irreps, parity="so3"):
+    """Scalars as they are; for l>=1, the length of each channel. (..., dim) -> (..., n_inv)
+
+    parity="so3": odd scalars (0o) are kept with their sign. The features are then invariant under rotations only,
+                  and the model can tell a molecule from its mirror image (a chirality leak for true-vector answers).
+    parity="o3" : odd scalars enter as |x|, so the features are invariant under rotations AND reflections and the
+                  whole readout is exactly O(3)-equivariant. Pseudoscalar sign information is dropped on purpose."""
     parts = []
     for (mul, ir), sl in zip(irreps, irreps.slices()):
         block = x[..., sl]
         if ir.l == 0:
-            parts.append(block)
+            parts.append(block.abs() if (parity == "o3" and ir.p == -1) else block)
         else:
             block = block.reshape(*block.shape[:-1], mul, ir.dim)
             parts.append((block.pow(2).sum(-1) + 1e-8).sqrt())
@@ -42,8 +47,9 @@ def invariants(x, irreps):
 
 
 class IrrepsToText(nn.Module):
-    def __init__(self, text_dim, atom_irreps, out_irreps, key_dim=64):
+    def __init__(self, text_dim, atom_irreps, out_irreps, key_dim=64, parity="so3"):
         super().__init__()
+        self.parity = parity
         self.atom_irreps = o3.Irreps(atom_irreps)
         self.out_irreps = o3.Irreps(out_irreps)
         n_inv = self.atom_irreps.num_irreps
@@ -59,7 +65,7 @@ class IrrepsToText(nn.Module):
         """h: (B, T, text_dim)  x: (B, N, atom_irreps.dim)  atom_mask: (B, N)
         returns e: (B, T, out_irreps.dim), attn: (B, T, N)"""
         q = self.q(h)                                                  # (B, T, K)
-        k = self.k(invariants(x, self.atom_irreps))                    # (B, N, K)
+        k = self.k(invariants(x, self.atom_irreps, self.parity))                    # (B, N, K)
         scores = torch.einsum("btk,bnk->btn", q, k) / math.sqrt(self.key_dim)
         scores = scores.masked_fill(~atom_mask[:, None, :], float("-inf"))
         attn = scores.softmax(dim=-1)                                  # (B, T, N)  invariant
