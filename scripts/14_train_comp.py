@@ -2,6 +2,7 @@
 
   python scripts/14_train_comp.py --model bc   --name comp_bc_s0      # Option B/C-lite (src/option_bc.py)
   python scripts/14_train_comp.py --model optA --name comp_optA_s0    # Option A only (single pointer)
+  python scripts/14_train_comp.py --model pipeline --name comp_pipe_s0  # rule parser + encoder (needs scripts/16_parse_comp.py)
 
 Same rotation protocol as scripts/04_train.py. Needs data/text_comp_<text>.pt (03_embed_text.py --out ...).
 """
@@ -18,6 +19,7 @@ import torch
 from e3nn import o3
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.baselines import PipelineComp  # noqa: E402
 from src.model import YLM  # noqa: E402
 from src.option_bc import CompModel  # noqa: E402
 
@@ -25,10 +27,17 @@ TASKS = {"diff": 0, "proj": 1}
 N_MAX = 29
 
 
-def load(labels_path, qpath, tpath):
+def load(labels_path, qpath, tpath, parsed_path=None):
     labels = pickle.load(open(labels_path, "rb"))
     qs = json.load(open(qpath))
-    cache = torch.load(tpath)
+    if tpath is None:  # the parser baseline reads no text embeddings
+        cache = {"dim": 1, "states": {q["question"]: torch.zeros(1, 1) for q in qs}}
+    else:
+        cache = torch.load(tpath)
+    if parsed_path:
+        for q, p in zip(qs, json.load(open(parsed_path))):
+            q["ptask"] = TASKS.get(p["task"], -1)
+            q["patoms"] = p["atoms"]
     strings = sorted(cache["states"])
     T = max(s.shape[0] for s in cache["states"].values())
     text = torch.zeros(len(strings), T, cache["dim"])
@@ -55,6 +64,9 @@ def load(labels_path, qpath, tpath):
                           task=torch.tensor([TASKS[q["task"]] for q in sel]),
                           atoms=torch.tensor([q["atoms"] for q in sel]),
                           target=torch.tensor([q["target"] for q in sel], dtype=torch.float32))
+        if parsed_path:
+            splits[sp]["ptask"] = torch.tensor([q["ptask"] for q in sel])
+            splits[sp]["patoms"] = torch.tensor([q["patoms"] for q in sel])
     return dict(Z=Z, pos=pos, mask=mask, text=text, tmask=tmask, dim=cache["dim"]), splits
 
 
@@ -64,11 +76,16 @@ def batch(data, sp, idx, device, R=None):
     if R is not None:
         pos, tgt = pos @ R.T, tgt @ R.T
     t = sp["text"][idx]
+    if "ptask" in sp:  # parser baseline: (Z, pos, mask, parsed task, parsed atoms)
+        return (data["Z"][m].to(device), pos.to(device), data["mask"][m].to(device),
+                sp["ptask"][idx].to(device), sp["patoms"][idx].to(device)), tgt.to(device), sp["task"][idx].to(device)
     return (data["Z"][m].to(device), pos.to(device), data["mask"][m].to(device),
             data["text"][t].to(device), data["tmask"][t].to(device)), tgt.to(device), sp["task"][idx].to(device)
 
 
 def forward(model, kind, inputs, task):
+    if kind == "pipeline":
+        return model(*inputs)
     if kind == "optA":  # YLM takes a task id only in "taskid" mode; here it reads the text
         return model(*inputs, task)[0]
     return model(*inputs)[0]
@@ -138,7 +155,7 @@ def diagnose(model, data, sp, device, bs=512):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--model", choices=["bc", "optA"], required=True)
+    p.add_argument("--model", choices=["bc", "optA", "pipeline"], required=True)
     p.add_argument("--text", default="matscibert")
     p.add_argument("--data", default="tensorqa_comp", help="questions file data/<data>.json; text cache data/text_<data>_<text>.pt")
     p.add_argument("--token_dropout", type=float, default=0.0, help="bc only: drop this fraction of text tokens in training")
@@ -164,11 +181,16 @@ def main():
         log.write(s + "\n")
         log.flush()
 
-    data, splits = load("data/qm9_xtb.pkl", f"data/{args.data}.json", f"data/text_{args.data.replace('tensorqa_', '')}_{args.text}.pt")
+    pipe = args.model == "pipeline"
+    tag = args.data.replace("tensorqa_", "")
+    data, splits = load("data/qm9_xtb.pkl", f"data/{args.data}.json",
+                        None if pipe else f"data/text_{tag}_{args.text}.pt",
+                        f"data/parsed_{tag}.json" if pipe else None)
     train = splits["train"]
     scale = torch.stack([train["target"][train["task"] == k].pow(2).mean().sqrt() for k in TASKS.values()])
     sd = scale.to(device)
-    model = (CompModel(data["dim"], token_dropout=args.token_dropout) if args.model == "bc" else YLM(text_dim=data["dim"])).to(device)
+    model = (PipelineComp() if pipe else CompModel(data["dim"], token_dropout=args.token_dropout) if args.model == "bc"
+             else YLM(text_dim=data["dim"])).to(device)
     say("device", device, "| params", sum(q.numel() for q in model.parameters()), "| scale", scale.tolist())
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-5)
     total = args.epochs * math.ceil(len(train["mol"]) / args.batch_size)
