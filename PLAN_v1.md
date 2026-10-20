@@ -40,3 +40,23 @@ Related work to cite: GeoMFormer (arXiv 2406.16853), GEM (arXiv 2406.15677); see
 4. exp/dataset2: second dataset.
 5. exp/ablations: data-fraction sweep + ablation grid.
 6. paper/: LaTeX draft, figures from scripts, reproduction table. Tag v1.0.0 and release checkpoints.
+
+## Second review (2026-10-19), triage
+Done on exp/free-form (commit "Fix pipeline loss-scale bias..."):
+- PipelineComp shares one per-atom vector across diff (RMS 0.092) and proj (0.043); the loss scaled targets per task, so it could not fit both. Fixed (physical units, scaled in the loss). The earlier cpipe_* runs are void.
+- T5 was labelled with the signed axis projection (F.u)u but worded "points toward B". Reworded as "vector projection ... onto the direction toward B"; hand-written and LLM templates regenerated. bch_* proj numbers (old wording) are not comparable; diff numbers stand.
+
+To do, in order:
+1. Fair interface table, same backbone/labels/tuning: (a) B/C-lite, (b) scalar-conditioned interface that keeps directions (Gram/dot-product features, not the old ScalarCollapse), (c) learned parser + same heads + exact executor; oracle parser as diagnostic only.
+2. 2x2 diagnostic: true/predicted physical quantity x correct/learned query program. First main figure.
+3. Separate heads for atom force and molecular dipole in PipelineForce (v0 shared one vector head).
+4. Splits: canonical-graph de-duplication (review reports 2 shared graphs) and a scaffold split (review reports 86.1% of test Bemis-Murcko scaffolds seen in training; verify locally). Four OOD tests: new wording, unseen entity x operator pair, program depth 1/2/3, unseen scaffold/conformer. Paired bootstrap by molecule.
+5. Controlled wording-coverage study: fix structure, labels, steps, total examples; vary only wording coverage. Separate curves for number of physical labels vs number of language examples (train_fraction currently subsamples question rows).
+6. Counterfactual identities: D(A,B)=-D(B,A), D(A,C)=D(A,B)+D(B,C), P_{-u}F=P_uF, P_uF+P_perp F=F; atom permutation, role swap.
+7. Human audit of 200 free-form paraphrases (semantic error rate; "bond" wording).
+8. Parity: the 0o channel goes through a plain MLP, so SO(3) tests do not imply an O(3) guarantee; test reflections explicitly.
+9. One real tensor task: full polarisability (QM7b/AlphaML, l=0+2); needs S/Cl (n_elements=10 now) and atom-count limit.
+10. Units/precision: 0.0064 Eh/bohr ~ 0.33 eV/A against xTB; report as interface capability, not electronic-structure accuracy.
+
+Literature to read and cite (from the review; not yet verified by me): EquiLLM (ICML 2025), EquAct (arXiv 2505.21351), Villar et al. "Scalars are universal" (NeurIPS 2021), NS-CL (arXiv 1904.12584), AlphaML polarisability data (Sci. Data 2019). Villar et al. weakens the motivation "scalars cannot choose directions"; our Option A is already that construction, so the question is which interface generalises better, not whether one is possible.
+Stop rule: if a strong pipeline matches us on the OOD tests, drop the architecture-superiority claim and decide whether the benchmark/negative result is enough.
