@@ -1,0 +1,130 @@
+\documentclass[10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs,graphicx,hyperref,xcolor,natbib,microtype}
+\newtheorem{proposition}{Proposition}
+\newcommand{\TODO}[1]{\textcolor{red}{[TODO: #1]}}
+\newcommand{\R}{\mathbb{R}}
+\title{Language Selects, Geometry Computes:\\ Systematic Generalization in Language-Conditioned Molecular Observables}
+\author{Anonymous Authors}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+A chemist asks a model ``what is the force on the carbon bonded to two hydrogens, minus the force on the oxygen?'' and expects a
+vector that rotates with the molecule. We study which \emph{interface} between language and an $\mathrm{O}(3)$-equivariant molecular
+model produces such answers and, above all, which one keeps working when the question is worded in a new way, asks about a new
+scaffold, or combines an entity with an operator never seen together. We introduce \textsc{TensorQA-v1}, a benchmark of
+force, difference and projection questions with leak-aware splits (canonical-graph de-duplication, scaffold hold-out, held-out
+wording families written by an LLM and audited by a second model), counterfactual consistency checks, and exact tests under rotations
+\emph{and} reflections; and \textsc{TensorQA-pol}, language-chosen contractions of coupled-cluster polarizability tensors ($\ell=0\oplus2$).
+We compare end-to-end text-to-coefficient readouts, a learned parser with an exact executor, and a hand-written rule parser with
+an exact executor, and decompose every error into a \emph{physical-quantity} part and a \emph{program} part. \TODO{one-sentence headline result once the runs finish.}
+We also report two negative findings that change how such models should be motivated: with perfect per-atom forces a single convex
+combination already reaches cosine 0.97--0.99 on our compositional targets, so the gap is not one of expressivity; and the common
+practice of feeding signed odd-parity scalars to a scalar network silently breaks reflection equivariance of vector outputs.
+\end{abstract}
+
+\section{Introduction}
+Equivariant networks give exact transformation laws for geometric outputs, and language models give flexible access to what a user
+wants. Putting them together raises a question that is not about symmetry at all: when the question is stated in words, who decides
+\emph{which} physical observable, on \emph{which} atoms, combined \emph{how}? Three answers are in use. The language may produce a
+program that a classical parser or an exact executor runs on equivariant features; the text may be mapped directly to the
+coefficients of a readout over equivariant vectors; or a large language model may take the geometry as invariant context and let an
+equivariant adapter produce directions \citep{equillm}. Related mechanisms exist: invariant queries that attend to equivariant
+values \citep{geomformer}, language-conditioned $\mathrm{SE}(2)$ and $\mathrm{SE}(3)$ policies in robotics \citep{gem,equact}, and the
+observation that equivariant functions can be written with scalar coefficients on geometric generators \citep{villar}. None of them
+asks the question we ask: \emph{which interface generalizes systematically in a scientific question-answering setting, and where does
+its error come from?}
+
+\paragraph{Contributions.} (1) \textsc{TensorQA-v1} and \textsc{TensorQA-pol}, with leak audits of the earlier split, held-out
+wording families, scaffold and combination splits, counterfactual identities and reflection tests (Section~\ref{sec:bench}).
+(2) A controlled comparison of four interfaces on the same equivariant backbone and the same label budget, with a 2$\times$2 error
+decomposition (Section~\ref{sec:exp}). (3) Two corrections to common beliefs, with proofs and measurements (Section~\ref{sec:theory}).
+(4) Code, data generators, audited templates and checkpoints.
+
+\section{Related work}
+\textbf{Equivariant readouts and cross-attention.} GeoMFormer \citep{geomformer} exchanges information between an invariant and an
+equivariant stream with cross-attention; our attention heads are of the same family, with the query coming from text. NequIP-style
+message passing \citep{nequip,e3nn} supplies our encoder. \textbf{Language and equivariance.} EquiLLM \citep{equillm} keeps all
+directional computation outside the language model; GEM \citep{gem} and EquAct \citep{equact} condition equivariant policies on text
+in the plane and in $\mathrm{SE}(3)$. We differ in the object studied (scientific observables with typed outputs, atoms referred to
+in words) and in the evaluation (out-of-distribution wording, entity, operator and scaffold). \textbf{Scalars suffice.}
+\citet{villar} show that equivariant functions can be expressed through scalar contractions; hence ``a text model only sees scalars''
+is not a limitation by itself, and we do not use it as motivation. \textbf{Molecular tensors.} Polarizability tensors from
+coupled-cluster theory exist for QM7b \citep{qm7bpol,alphaml}; we turn them into language-addressed contractions.
+
+\section{Benchmark}\label{sec:bench}
+\paragraph{TensorQA-v1.} The molecules are the 20k QM9 \citep{qm9} geometries with GFN2-xTB \citep{xtb} forces; the labels therefore
+test the \emph{interface}, not electronic-structure accuracy ($0.0064$\,Eh/bohr $\approx 0.33$\,eV/\AA). A question names atoms by
+element, ring membership and neighbour counts, and asks for one of three vector answers: \texttt{force} $F_A$; \texttt{diff}
+$F_A-F_B$; \texttt{proj} $(F_A\!\cdot\!u)u$ with $u=(r_B-r_A)/\|r_B-r_A\|$. \texttt{proj} is the \emph{signed axis projection}:
+it points away from $B$ when $F_A\!\cdot\!u<0$.
+\paragraph{Splits and what they test.} The random molecule split of an earlier version shared 4 canonical heavy-atom graphs between
+splits and 86.1\% of its test molecules had a Bemis--Murcko scaffold seen in training (1710/1986), so it could not support an
+out-of-distribution claim. \textsc{v1} therefore (i) groups molecules by canonical graph, (ii) holds out whole scaffold groups
+(\texttt{scaf}), (iii) re-words test questions in two \emph{held-out style families} (\texttt{test\_heldout}, \texttt{scaf\_heldout}),
+(iv) holds out the combinations (\texttt{proj}, A is O) and (\texttt{diff}, A is N) from all training data (\texttt{comb}), and
+(v) adds counterfactual groups (\texttt{cf}) on which a correct answerer must satisfy $D(A,B)=-D(B,A)$ and $D(A,C)=D(A,B)+D(B,C)$.
+\paragraph{Wording.} Six style families (textbook, terse, technical, indirect, chatty, inverted) of templates with atom
+placeholders were written by \texttt{claude-haiku-5-5}, filtered by a second call, and audited by \texttt{claude-sonnet-5-5};
+66 templates were removed (e.g.\ ``bond axis'' for two atoms that need not be bonded, or an unspecified order of subtraction).
+This is not a human audit; a 198-question sheet for one is released. Chatty and inverted appear only in held-out splits.
+\paragraph{TensorQA-pol.} 7211 QM7b molecules with LR-CCSD/d-aug-cc-pVDZ static polarizability tensors \citep{qm7bpol}. Questions ask for
+$\alpha_{\rm iso}$ ($\ell=0$), the traceless part ($\ell=2$, five coefficients), $u^\top\alpha u$ along the direction from atom $A$ to atom $B$,
+and the induced dipole $\alpha u$ ($\ell=1$). The B3LYP tensor of the same molecule is reported as a classical reference.
+\paragraph{Symmetry tests.} Every model is tested on random rotations \emph{and} reflections (improper orthogonal maps), with outputs
+transformed by the matching representation ($R$ for vectors, the Wigner matrix for $\ell=2$, trivially for scalars).
+
+\section{Interfaces}\label{sec:interfaces}
+All models share the encoder: a three-layer NequIP-style network ($\ell\le2$) on atomic numbers and positions, giving irreps
+features $x_i$ per atom, and a frozen text encoder (MatSciBERT \citep{matscibert}) run online. Write $V_i=W x_i\in\R^3$ for the per-atom vector readout.
+\begin{itemize}
+\item \textbf{Option A.} One attention head: $a=\mathrm{softmax}(q(\text{text})\cdot k(I(X)))$, $y=\sum_i a_iV_i$ (+ a gated sum).
+\item \textbf{B/C-lite.} Two pointer heads give $F_k=\sum_i a_{ki}V_i$ and positions $P_k$; with $u=(P_2-P_1)/\|P_2-P_1\|$,
+$y=c_1F_1+c_2F_2+c_3(F_1\!\cdot\!u)u+c_4(F_2\!\cdot\!u)u$ and $c=c(\text{text})$ invariant.
+\item \textbf{Learned parser + exact executor.} Heads predict the task and two atom pointers (supervised by the program), and the
+executor applies $F_1$, $F_1-F_2$ or $(F_1\!\cdot\!u)u$. Hard decisions at test time.
+\item \textbf{Rule parser + exact executor.} A hand-written parser maps the question to (task, A, B). We wrote its rules in two rounds,
+reading failures on the \emph{train} split only; its accuracy on held-out families is reported.
+\item \textbf{Oracle program} (diagnostic): the true program with the same executor.
+\end{itemize}
+The O(3) variants use $|x|$ for odd scalar channels in $I(X)$ (Section~\ref{sec:theory}); the ``so3'' variant keeps their sign.
+
+\section{Theory: three small statements}\label{sec:theory}
+\begin{proposition}[closure]
+Let $V_i(X)$ be $\mathrm{O}(3)$-equivariant vectors, $I(X)$ any $\mathrm{O}(3)$-invariant features of $X$, $q$ any text features and
+$a=\mathrm{softmax}(f(q,I(X)))$. Then $y=\sum_ia_iV_i$ is $\mathrm{O}(3)$-equivariant, as is any fixed polynomial in dot products and
+sums of such $y$'s (difference, axis projection $(F\cdot u)u$, contraction of a tensor with $u$).
+\end{proposition}
+\begin{proposition}[parity leak]
+If $I(X)$ contains an odd scalar channel $s$ with its sign ($s(PX)=-s(X)$ for a reflection $P$), then in general
+$y(PX)\neq Py(X)$ although $y(RX)=Ry(X)$ for all rotations $R$. Replacing $s$ by $|s|$ restores exact $\mathrm{O}(3)$-equivariance.
+\end{proposition}
+\emph{Sketch.} The first statement is composition of equivariant maps. For the second take $f=\tanh(s)$ and $a$ over two atoms
+related by $P$; the weights differ between $X$ and $PX$ so $y(PX)$ is not the reflection of $y(X)$. \hfill$\square$
+\begin{proposition}[ceiling of one pointer]
+For any weights $a_i\ge0$, $\sum_ia_i=1$: $y\in\mathrm{conv}\{V_i\}$. With the exact forces $V_i=F_i$ the best achievable answer to a
+question with target $t$ is the Euclidean projection of $t$ onto $\mathrm{conv}\{F_i\}$.
+\end{proposition}
+Prop.~3 is a computable ceiling (Section~\ref{sec:exp}); it turns out to be high, so the difference between interfaces is about what is
+\emph{learnable} from text and invariants, not what is \emph{representable}.
+\begin{proposition}[error decomposition]
+For an executor $E_p$ that is Lipschitz in the per-atom field and programs $p$ (true), $\hat p$ (predicted), fields $V$ (true), $\hat V$:
+$\|E_{\hat p}(\hat V)-E_p(V)\|\le\|E_{\hat p}(\hat V)-E_{\hat p}(V)\|+\|E_{\hat p}(V)-E_p(V)\|$.
+\end{proposition}
+The first term is the \emph{quantity error} (right program, imperfect field), the second the \emph{program error} (perfect field,
+wrong program); the 2$\times$2 table reports both.
+
+\section{Experiments}\label{sec:exp}
+\TODO{filled from \texttt{results\_v1.md} and \texttt{results\_pol.md} after the runs finish: interface table; 2x2; wording families; reflection and parity; counterfactual; budget curves; wording coverage; polarizability.}
+
+\section{Limitations}
+The wording is LLM-generated and only audited by another LLM; the sheet for a human audit is released. Labels are GFN2-xTB forces
+(an interface test, not DFT accuracy) and CCSD polarizabilities for small molecules (up to 7 heavy atoms). Atoms are referred to by
+unique descriptions, so ambiguous atoms are never asked about. The rule parser was developed by us and could be improved; we report
+its accuracy and the exact rounds of development. Program depth beyond two operators, new operators at test time, crystals and
+generation are not studied.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+\end{document}
