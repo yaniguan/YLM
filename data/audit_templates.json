@@ -4966,5 +4966,4751 @@
   "style": "inverted",
   "verdict": "ok",
   "why": "Asks for the tensor of the whole molecular entity."
+ },
+ "What is the isotropic polarizability of the molecule?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the isotropic polarizability as one scalar. It gives no units and does not say 'static', but neither changes the quantity."
+ },
+ "What is the orientation-averaged static dipole polarizability of the molecule, expressed in atomic units?": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Orientation-averaged static dipole polarizability in a.u. matches the task."
+ },
+ "Determine the mean static dipole polarizability of the molecule, obtained by averaging over all orientations, in atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Mean static polarizability averaged over orientations; matches the task."
+ },
+ "Evaluate the isotropic dipole polarizability of the molecule under a static, uniform electric field, reporting the result in atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Isotropic polarizability in a static uniform field; the same quantity."
+ },
+ "Provide the rotationally averaged static dipole polarizability of the molecule in atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Rotationally averaged static polarizability is the isotropic value."
+ },
+ "Report the isotropic static electric dipole polarizability of the molecule in atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Directly asks for the isotropic static polarizability."
+ },
+ "Compute the orientationally averaged static dipole polarizability of the molecule as a single number in atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Orientation-averaged static polarizability as a single number; matches the task."
+ },
+ "What value, in atomic units, does the isotropic dipole polarizability of the molecule possess in the static limit?": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "The static-limit isotropic polarizability is the same quantity."
+ },
+ "State the isotropic static dipole polarizability of the molecule, expressed in atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Direct and clear."
+ },
+ "Determine the isotropic (orientation-averaged) static dipole polarizability of the molecule in atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Direct and clear."
+ },
+ "What is the average of the three principal static dipole polarizability components of the molecule, in atomic units?": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "The mean of the three principal components equals the isotropic value."
+ },
+ "Find the isotropic static dipole polarizability of the molecule, reported in atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Direct and clear."
+ },
+ "What is the molecule's isotropic static dipole polarizability when expressed in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic static dipole polarizability in atomic units."
+ },
+ "Obtain the static dipole polarizability of the molecule averaged over all spatial orientations, in atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Averaged over all spatial orientations; matches the task."
+ },
+ "How large is the isotropic static dipole polarizability of the molecule, measured in atomic units?": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'How large' still asks for the scalar value."
+ },
+ "What is the one-third trace of the static dipole polarizability tensor of the molecule, in atomic units?": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "One-third of the trace is the isotropic polarizability."
+ },
+ "Specify the isotropic dipole polarizability of the molecule in the static field limit, using atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Static-limit isotropic polarizability; same quantity."
+ },
+ "Derive the isotropic static dipole polarizability of the molecule and express it in atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'Derive' still asks for the isotropic static value."
+ },
+ "What is the isotropic static dipole polarizability, in atomic units, of the molecule considered as a whole?": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'Molecule as a whole' is fine and implies nothing false."
+ },
+ "Calculate, in atomic units, the isotropic static dipole polarizability of the molecule as a whole.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Same quantity, clearly stated."
+ },
+ "Provide the value of the isotropic static dipole polarizability of the molecule, given in atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Direct and clear."
+ },
+ "What is the isotropic static electric polarizability of the molecule, reported in atomic units?": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'Electric polarizability' here means the dipole polarizability; fine."
+ },
+ "Give the isotropic static dipole polarizability of the molecule after averaging over molecular orientations, in atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Isotropic value after orientation averaging; consistent."
+ },
+ "Please report, in atomic units, the isotropic static dipole polarizability of the molecule.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Direct and clear."
+ },
+ "Kindly provide the isotropic static dipole polarizability of the molecule in atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Direct and clear."
+ },
+ "Establish the value of the isotropic static dipole polarizability of the molecule in atomic units.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Direct and clear."
+ },
+ "What is the spherically averaged static dipole polarizability of the molecule, expressed in atomic units?": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Spherical averaging is equivalent to orientation averaging."
+ },
+ "Determine, in atomic units, the isotropic static dipole polarizability characterizing the molecule as a whole.": {
+  "task": "pol_iso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Direct and clear."
+ },
+ "Give the isotropic polarizability of the molecule.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Isotropic polarizability is the requested scalar."
+ },
+ "Report the molecule's isotropic static polarizability.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Direct request for the isotropic static polarizability."
+ },
+ "Compute the orientation-averaged dipole polarizability.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Orientation-averaged dipole polarizability is the isotropic value, and static is the default."
+ },
+ "State the mean static dipole polarizability in atomic units.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Mean static dipole polarizability equals the isotropic value, with units given."
+ },
+ "Calculate the whole-molecule isotropic polarizability.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Whole-molecule isotropic polarizability is a single scalar."
+ },
+ "Provide the averaged static dipole polarizability (a.u.).": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Averaged static dipole polarizability in a.u. is the isotropic value."
+ },
+ "Find the isotropic dipole polarizability of this molecule.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Isotropic dipole polarizability of the molecule."
+ },
+ "Output the orientation-averaged polarizability value.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Orientation-averaged polarizability is the isotropic value."
+ },
+ "Tell me the molecule's isotropic static polarizability.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Direct request for the isotropic static polarizability."
+ },
+ "Determine the isotropic polarizability in atomic units.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Isotropic polarizability in a.u."
+ },
+ "Evaluate the isotropic static dipole polarizability.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Isotropic static dipole polarizability."
+ },
+ "Report the averaged dipole polarizability in a.u.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Averaged dipole polarizability in a.u. is the isotropic value."
+ },
+ "Estimate the molecule's orientation-averaged static polarizability.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Orientation-averaged static polarizability; 'estimate' is acceptable."
+ },
+ "List the isotropic polarizability, in atomic units.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Isotropic polarizability in atomic units."
+ },
+ "Supply the isotropic static dipole polarizability.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Isotropic static dipole polarizability."
+ },
+ "Compute the molecular isotropic polarizability (atomic units).": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Molecular isotropic polarizability in atomic units."
+ },
+ "Give me the isotropic dipole polarizability.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Isotropic dipole polarizability."
+ },
+ "State the isotropic polarizability for the whole molecule.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Isotropic polarizability for the whole molecule."
+ },
+ "Calculate the rotationally averaged static polarizability.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Rotationally averaged static polarizability is the isotropic value."
+ },
+ "Return the molecule's mean dipole polarizability in atomic units.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Mean dipole polarizability in a.u. is the isotropic value."
+ },
+ "Work out the orientation-averaged static dipole polarizability.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Orientation-averaged static dipole polarizability."
+ },
+ "Give the total isotropic polarizability of the molecule.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "'Total' could be read as the trace (the sum of the diagonal components, 3\u00d7 the mean) rather than the average."
+ },
+ "Report the isotropic static polarizability in a.u.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability in a.u."
+ },
+ "Find the averaged dipole polarizability of the molecule.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Averaged dipole polarizability of the molecule."
+ },
+ "Determine the orientation-averaged polarizability as one number.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Orientation-averaged polarizability as a single number."
+ },
+ "Obtain the isotropic static dipole polarizability value.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Isotropic static dipole polarizability value."
+ },
+ "Produce the molecule's isotropic polarizability in atomic units.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Isotropic polarizability in atomic units."
+ },
+ "Tell the isotropic dipole polarizability of this structure.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Isotropic dipole polarizability of the structure."
+ },
+ "Calculate the static isotropic dipole polarizability.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Static isotropic dipole polarizability."
+ },
+ "Report the mean polarizability of the molecule (a.u.).": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Mean polarizability in a.u. is the isotropic value."
+ },
+ "Compute the orientation-averaged static polarizability of the molecule.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Orientation-averaged static polarizability is the isotropic scalar."
+ },
+ "Provide the molecular isotropic static polarizability.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Directly asks for the isotropic static polarizability."
+ },
+ "Give the isotropic polarizability value in atomic units.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Static' is not stated, but the default reading is the static isotropic value; atomic units are fine."
+ },
+ "Find the rotationally averaged dipole polarizability.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Rotationally averaged dipole polarizability is the isotropic mean; static is implied by default."
+ },
+ "State the molecule's isotropic static dipole polarizability in a.u.": {
+  "task": "pol_iso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Explicitly asks for the isotropic static dipole polarizability in a.u."
+ },
+ "Hey, do you happen to know the isotropic static dipole polarizability of this molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic static dipole polarizability in a.u."
+ },
+ "Could you give me the orientation-averaged dipole polarizability for the whole molecule, in a.u.?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Orientation-averaged dipole polarizability, the same quantity."
+ },
+ "What's the average static dipole polarizability of the molecule, in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Average static dipole polarizability' is the standard name for the isotropic value."
+ },
+ "Quick question: what value do you get for the isotropic polarizability of the full molecule in a.u.?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic polarizability of the full molecule in a.u."
+ },
+ "Do you have the mean static dipole polarizability for this molecule handy, in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Mean static dipole polarizability' is the isotropic value."
+ },
+ "So what's the isotropic dipole polarizability for the whole molecule, expressed in a.u.?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic dipole polarizability of the whole molecule."
+ },
+ "I'm curious, what's the orientationally averaged static polarizability of the molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Orientationally averaged static polarizability."
+ },
+ "Could you tell me the isotropic static polarizability of the entire molecule as a single number in a.u.?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability as a single number."
+ },
+ "What does the molecule's isotropic dipole polarizability come out to in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic dipole polarizability in atomic units."
+ },
+ "Mind sharing the isotropic static polarizability of this molecule? I need it in a.u.": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability with the unit given."
+ },
+ "What's the rotationally averaged static dipole polarizability of the molecule, in a.u.?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Rotationally averaged equals orientation averaged."
+ },
+ "Got a number for the isotropic polarizability of the whole molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic polarizability of the whole molecule."
+ },
+ "How polarizable is the molecule overall? I want the isotropic static dipole value in a.u.": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "The loose phrasing is pinned down by 'isotropic static dipole value in a.u.'."
+ },
+ "Can you pull up the isotropic static dipole polarizability of the molecule in a.u., please?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic static dipole polarizability in a.u."
+ },
+ "What's the orientation-averaged static dipole polarizability for this molecule, given in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Orientation-averaged static dipole polarizability."
+ },
+ "I'd love to know the isotropic polarizability of the molecule, in a.u., if you have it.": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic polarizability in a.u."
+ },
+ "Roughly what is the isotropic static polarizability of the whole molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Roughly' only loosens the precision; the quantity is still the isotropic polarizability."
+ },
+ "What value would you assign to the isotropic dipole polarizability of this molecule in a.u.?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic dipole polarizability in a.u."
+ },
+ "Do you know the isotropic static polarizability for the molecule as a whole, in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability of the molecule as a whole."
+ },
+ "Could you report the isotropic static dipole polarizability of the molecule, in a.u.?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic static dipole polarizability."
+ },
+ "What's the trace-averaged static dipole polarizability of the molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Trace-averaged (one third of the trace) equals the isotropic value."
+ },
+ "Tell me the isotropic polarizability of this molecule, please, in a.u.": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic polarizability in a.u."
+ },
+ "Hey, what's the average static polarizability of the whole molecule in a.u.?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Average ... of the whole molecule' is the isotropic value."
+ },
+ "Can you give me the isotropic dipole polarizability of the molecule as one number in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic dipole polarizability as one number."
+ },
+ "What's the isotropic static polarizability of the molecule, reported in a.u.?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability in a.u."
+ },
+ "Do you have the orientation-averaged polarizability for this molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Orientation-averaged polarizability in atomic units."
+ },
+ "I need the isotropic static dipole polarizability of the molecule, in a.u. What is it?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic static dipole polarizability in a.u."
+ },
+ "What isotropic polarizability does the molecule have overall, in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Overall isotropic polarizability in atomic units."
+ },
+ "Could you estimate or compute the isotropic static dipole polarizability of the molecule in a.u.?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the isotropic static dipole polarizability of the molecule in a.u."
+ },
+ "What's the mean static dipole polarizability of this molecule, expressed in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Mean' static dipole polarizability is the orientation average, i.e. the isotropic value."
+ },
+ "Any idea what the isotropic polarizability of the whole molecule is in a.u.?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic polarizability of the whole molecule in a.u.; 'static' is omitted but is the default reading."
+ },
+ "Would you mind telling me the isotropic static polarizability of the molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Direct request for the isotropic static polarizability in atomic units."
+ },
+ "What's the isotropic polarizability value for the molecule, in a.u., averaged over orientations?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic value averaged over orientations, in a.u.; 'static' is implied."
+ },
+ "Hit me with the isotropic static dipole polarizability of the molecule in a.u.": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Casual wording, but it asks for the correct scalar quantity and units."
+ },
+ "What is the orientationally averaged static polarizability of the molecule, given in a.u.?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Orientationally averaged static polarizability in a.u. is the isotropic value."
+ },
+ "So, what's the isotropic dipole polarizability of this molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic dipole polarizability in atomic units; 'static' is implied."
+ },
+ "Can you share the isotropic static polarizability of the whole molecule, in a.u.?": {
+  "task": "pol_iso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability of the whole molecule in a.u."
+ },
+ "Compute the isotropic static dipole polarizability of the whole molecule, reported as a single number in atomic units.": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Clearly asks for the isotropic static polarizability as one scalar."
+ },
+ "Report the isotropic dipole polarizability of the molecule, defined as one third of the trace of its static polarizability tensor, in atomic units.": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "One third of the trace is the standard definition."
+ },
+ "What is the rotationally averaged static dipole polarizability of the entire molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Rotational average is the isotropic value."
+ },
+ "How large is the mean static dipole polarizability of the molecule, obtained by averaging the diagonal elements of its polarizability tensor, in atomic units?": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The mean of the diagonal elements equals the trace divided by 3."
+ },
+ "Calculate the average of the three principal values of the static dipole polarizability tensor of the molecule, in atomic units.": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The mean of the principal values is the isotropic polarizability."
+ },
+ "What is the isotropic invariant of the second-rank static dipole polarizability tensor of the molecule, in atomic units?": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "'Isotropic invariant' could mean the trace (the invariant itself) or the trace divided by 3, which differ by a factor of 3."
+ },
+ "What value in atomic units does the isotropic static dipole polarizability of the molecule take?": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Direct request for the isotropic static polarizability."
+ },
+ "Derive the isotropic static dipole polarizability of the whole molecule from its polarizability tensor, in atomic units.": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Isotropic polarizability derived from the tensor."
+ },
+ "What is the one-third trace of the static dipole polarizability tensor for the molecule, in atomic units?": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "One-third trace is the isotropic polarizability."
+ },
+ "What is the orientation-averaged linear electric response coefficient of the molecule under a static field, in atomic units?": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Orientation-averaged linear static response is the isotropic polarizability, though the wording is indirect."
+ },
+ "What is the average static dipole polarizability of the molecule over all spatial orientations, given in atomic units?": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Orientation average is the isotropic value."
+ },
+ "What is the isotropic static dipole polarizability of the molecule, i.e. the mean eigenvalue of its polarizability tensor, in atomic units?": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The mean eigenvalue is the isotropic polarizability."
+ },
+ "Obtain the rotationally invariant static dipole polarizability of the molecule as a single number in atomic units.": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "'Rotationally invariant polarizability' could also refer to the anisotropy or to the trace, not specifically the mean."
+ },
+ "What is the spherical average of the static dipole polarizability tensor of the molecule, expressed in atomic units?": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The spherical average of the tensor is the isotropic polarizability."
+ },
+ "Give the isotropic static electric dipole polarizability of the whole molecule, computed from its tensor components and reported in atomic units.": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Isotropic polarizability computed from the tensor components."
+ },
+ "What is the mean of the diagonal components of the static dipole polarizability tensor of the molecule in its principal frame, in atomic units?": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The mean of the diagonal components in the principal frame is the isotropic value."
+ },
+ "What is the isotropic average of the static dipole polarizability tensor for the molecule, given in atomic units?": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The isotropic average of the tensor is the intended scalar."
+ },
+ "Determine the isotropic polarizability \u03b1\u0305 of the molecule, defined as one third of the trace of the static polarizability tensor, in atomic units.": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Explicitly defined as one third of the trace."
+ },
+ "What is the isotropic static dipole polarizability of the molecule, computed as the mean of its three principal polarizabilities, in atomic units?": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The mean of the three principal polarizabilities is the isotropic value."
+ },
+ "Calculate, in atomic units, the isotropic static dipole polarizability of the molecule from its full second-rank polarizability tensor.": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Isotropic polarizability from the full tensor."
+ },
+ "What is the isotropic electric dipole polarizability of the molecule in the static limit, expressed in atomic units?": {
+  "task": "pol_iso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Static-limit isotropic dipole polarizability."
+ },
+ "Could you tell me the orientation-averaged static dipole polarizability of the molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Orientation-averaged static dipole polarizability in atomic units."
+ },
+ "Would you be able to provide the isotropic static dipole polarizability of the whole molecule, in atomic units?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability of the whole molecule."
+ },
+ "Could you please calculate the isotropic, orientation-averaged static dipole polarizability of the entire molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic, orientation-averaged static polarizability; the two terms are consistent."
+ },
+ "I'd appreciate it if you could report the molecule's isotropic static dipole polarizability in atomic units.": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability in atomic units."
+ },
+ "Would it be possible to obtain the orientation-averaged static dipole polarizability of the whole molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Orientation-averaged static polarizability of the whole molecule."
+ },
+ "I am interested in knowing the isotropic static dipole polarizability of the molecule, reported in atomic units.": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability in atomic units."
+ },
+ "I would be grateful if you could determine the orientation-averaged static dipole polarizability of the molecule in atomic units.": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Orientation-averaged static polarizability."
+ },
+ "Please let me know the isotropic static dipole polarizability of the molecule, expressed in atomic units.": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability in atomic units."
+ },
+ "I'm curious about the isotropic static dipole polarizability of the molecule; could you supply that value in atomic units?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability value requested."
+ },
+ "Could you help me find the molecule's orientation-averaged static dipole polarizability, given in atomic units?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Orientation-averaged static polarizability."
+ },
+ "Might you be able to tell me the isotropic static dipole polarizability of the molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability in atomic units."
+ },
+ "Could you share the value of the molecule's isotropic static dipole polarizability, averaged over all orientations, in atomic units?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic polarizability averaged over all orientations."
+ },
+ "Would you kindly compute the orientation-averaged static dipole polarizability of the entire molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Orientation-averaged static polarizability of the entire molecule."
+ },
+ "I hope you can provide the isotropic static dipole polarizability for the molecule, given in atomic units.": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability in atomic units."
+ },
+ "Could you let me know what the isotropic polarizability of the molecule is, in atomic units?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic polarizability in atomic units; 'static' is omitted but implied."
+ },
+ "Would you be so kind as to report the isotropic polarizability of the molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic polarizability in atomic units; 'static' is omitted but implied."
+ },
+ "I am hoping you could supply the molecule's isotropic static dipole polarizability in atomic units.": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability in atomic units."
+ },
+ "Please tell me the orientation-averaged static dipole polarizability of the molecule, in atomic units.": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Orientation-averaged static polarizability."
+ },
+ "I would welcome the isotropic static dipole polarizability of the molecule, reported in atomic units.": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability in atomic units."
+ },
+ "Could you estimate the isotropic, orientation-averaged static dipole polarizability of the molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'Estimate' is slightly loose but still asks for the same scalar."
+ },
+ "Could you kindly state the isotropic static dipole polarizability of the molecule in atomic units?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic static polarizability in atomic units."
+ },
+ "I would be obliged if you could furnish the orientation-averaged static dipole polarizability of the molecule in atomic units.": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Orientation-averaged static polarizability."
+ },
+ "Would you please supply the orientation-averaged static dipole polarizability of the molecule, given in atomic units?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Orientation-averaged static polarizability."
+ },
+ "Could you tell me, in atomic units, the isotropic polarizability of the molecule?": {
+  "task": "pol_iso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Isotropic polarizability in atomic units; 'static' is omitted but implied."
+ },
+ "Of the molecule as a whole, the orientation-averaged static dipole polarizability in atomic units is what?": {
+  "task": "pol_iso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the orientation-averaged static dipole polarizability of the whole molecule in atomic units."
+ },
+ "Tell me the isotropic static dipole polarizability of the entire molecule, a single number in atomic units.": {
+  "task": "pol_iso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks directly for the isotropic static polarizability as a single number in atomic units."
+ },
+ "The isotropic static dipole polarizability of the full molecule, in atomic units, equals what?": {
+  "task": "pol_iso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear request for the isotropic static polarizability of the full molecule in atomic units."
+ },
+ "Supply the isotropic static dipole polarizability of the molecule overall, given as a single value in atomic units.": {
+  "task": "pol_iso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for a single isotropic static polarizability value in atomic units."
+ },
+ "Determine, as one atomic-unit number, the static dipole polarizability of the whole molecule averaged over orientations.": {
+  "task": "pol_iso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Orientation-averaged static polarizability of the whole molecule as one number, which matches the isotropic quantity."
+ },
+ "Report in atomic units the orientation-averaged static dipole polarizability characterizing the entire molecular system.": {
+  "task": "pol_iso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Orientation-averaged static dipole polarizability of the whole system in atomic units."
+ },
+ "Whole-molecule static dipole polarizability, isotropically averaged and expressed in atomic units: what is it?": {
+  "task": "pol_iso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Isotropically averaged whole-molecule static polarizability in atomic units."
+ },
+ "Convey the isotropic dipole polarizability for the complete molecule under a static field, as one number in atomic units.": {
+  "task": "pol_iso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Isotropic dipole polarizability of the molecule in a static field, one number in atomic units."
+ },
+ "Obtain the orientation-averaged static dipole polarizability of the entire molecule and state it in atomic units.": {
+  "task": "pol_iso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the orientation-averaged static polarizability of the molecule in atomic units."
+ },
+ "What numerical value, in atomic units, does the isotropic static dipole polarizability of the full molecule take?": {
+  "task": "pol_iso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the numerical value of the isotropic static polarizability in atomic units."
+ },
+ "The molecule's isotropic static dipole polarizability, when considered globally and given in atomic units, is what number?": {
+  "task": "pol_iso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Globally' just means the whole molecule; asks for the isotropic static polarizability in atomic units."
+ },
+ "Reveal the orientation-averaged static dipole polarizability of the complete molecule in atomic units, a single number.": {
+  "task": "pol_iso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Orientation-averaged static polarizability of the complete molecule as a single number in atomic units."
+ },
+ "Determine the traceless, symmetric anisotropic component of the static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the traceless symmetric anisotropic part of the static polarizability tensor."
+ },
+ "Compute the anisotropic part of the molecular static polarizability tensor, excluding its isotropic average.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Anisotropic part with the isotropic average excluded."
+ },
+ "Evaluate the symmetric traceless contribution to the static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Symmetric traceless contribution is the anisotropic part."
+ },
+ "State the anisotropic component of the molecule's static dipole polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "The anisotropic part of the static dipole polarizability tensor is the traceless part."
+ },
+ "Derive the traceless part of the static polarizability tensor characterizing the molecule's linear electric response.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Traceless part of the static polarizability tensor."
+ },
+ "Provide the 3\u00d73 symmetric traceless tensor that represents the anisotropic static polarizability of the molecule.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Explicitly asks for the 3\u00d73 symmetric traceless anisotropic tensor."
+ },
+ "Find the anisotropic part of the static electric-dipole polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Anisotropic part of the static polarizability tensor."
+ },
+ "Report the traceless anisotropic component of the molecule's static polarizability, with the isotropic mean subtracted.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Traceless anisotropic part with the isotropic mean subtracted."
+ },
+ "Calculate the deviatoric part of the static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Deviatoric part is the traceless part."
+ },
+ "Obtain the anisotropic static polarizability tensor of the molecule, free of its isotropic trace.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Anisotropic tensor with the trace removed."
+ },
+ "Specify the anisotropic portion of the static polarizability tensor associated with the molecule.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Anisotropic portion of the static polarizability tensor."
+ },
+ "Determine the symmetric, traceless second-rank tensor describing the anisotropy of the molecule's static polarizability.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Symmetric traceless second-rank tensor describing the anisotropy."
+ },
+ "Write down the anisotropic component of the molecular polarizability tensor in the static limit.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Anisotropic component of the polarizability tensor in the static limit."
+ },
+ "Give the traceless part of the static polarizability tensor that quantifies the molecule's directional response to a uniform electric field.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Traceless part of the static polarizability tensor, described by its directional response."
+ },
+ "Establish the deviatoric static polarizability tensor of the molecule, having removed its isotropic component.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Deviatoric tensor with the isotropic component removed."
+ },
+ "Compute the anisotropy tensor of the molecule's static electric polarizability.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Says 'anisotropy tensor', so the tensor is requested rather than the scalar \u0394\u03b1."
+ },
+ "Supply the anisotropic part of the molecule's static polarizability tensor as a symmetric traceless matrix.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Anisotropic part as a symmetric traceless matrix."
+ },
+ "Determine, in tensorial form, the anisotropic contribution to the static polarizability of the molecule.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Anisotropic contribution in tensorial form."
+ },
+ "Obtain the traceless symmetric tensor that constitutes the anisotropic static polarizability of the molecule.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Traceless symmetric anisotropic static polarizability tensor."
+ },
+ "Evaluate the anisotropic component of the static polarizability tensor for the molecule under consideration.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Anisotropic component of the static polarizability tensor."
+ },
+ "Give the anisotropic static polarizability of the molecule as a traceless second-order tensor.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Traceless second-order tensor for the anisotropic static polarizability."
+ },
+ "Deduce the traceless part of the molecule's static polarizability tensor from its electric-field response.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Traceless part of the static polarizability tensor, deduced from the field response."
+ },
+ "Express the anisotropic part of the static polarizability tensor of the molecule in Cartesian components.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Anisotropic part in Cartesian components."
+ },
+ "Specify the traceless, symmetric anisotropic polarizability tensor of the molecule in the static limit.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Traceless symmetric anisotropic tensor in the static limit."
+ },
+ "Calculate the anisotropic static polarizability tensor of the molecule by removing its mean polarizability.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Anisotropic tensor obtained by removing the mean polarizability."
+ },
+ "Determine the anisotropic polarizability of the molecule as the traceless component of its static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Anisotropic polarizability defined as the traceless component of the static tensor."
+ },
+ "Provide the traceless anisotropic static polarizability tensor for the molecule, expressed in atomic units.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Traceless anisotropic static tensor, with atomic units only specifying the unit."
+ },
+ "Give the anisotropic component of the molecule's polarizability tensor at zero frequency.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Zero frequency means static, so this is the anisotropic component."
+ },
+ "Report the symmetric traceless tensor representing the static anisotropic polarizability of the molecule.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Symmetric traceless tensor of the static anisotropic polarizability."
+ },
+ "Derive the anisotropic part of the static electric polarizability tensor for the molecule as a whole.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Anisotropic part of the static electric polarizability tensor for the whole molecule."
+ },
+ "Compute the traceless, anisotropic static polarizability tensor of the molecule from its ground-state electronic structure.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks directly for the traceless anisotropic static polarizability tensor."
+ },
+ "Give the deviatoric component of the static polarizability tensor that characterizes the molecule's anisotropy.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'Deviatoric' means the traceless part, and it is tied to the anisotropy."
+ },
+ "Determine the anisotropic polarizability tensor of the molecule, defined as the static polarizability minus its isotropic average times the identity.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Defines the anisotropic part explicitly as \u03b1 minus the isotropic average times the identity."
+ },
+ "Find the traceless symmetric part of the static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "The traceless symmetric part of \u03b1 is the anisotropic tensor. \u03b1 is already symmetric, so this is harmless."
+ },
+ "State the anisotropic static polarizability tensor of the molecule with zero trace.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic static polarizability tensor with zero trace."
+ },
+ "Compute, for the molecule, the anisotropic component of the static response tensor relating induced dipole moment to applied field.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "It never says 'traceless'. 'Anisotropic component' could be read as a scalar anisotropy or as a single component rather than the full traceless tensor."
+ },
+ "Give the symmetric traceless contribution to the molecule's static electric polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "The symmetric traceless contribution to the static polarizability tensor is the intended quantity."
+ },
+ "Give the anisotropic part of the polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "Omits 'static' and 'traceless', so it could refer to a frequency-dependent polarizability."
+ },
+ "Return the traceless polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "The traceless polarizability tensor is the requested quantity."
+ },
+ "Compute the anisotropic polarizability tensor for this molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "The anisotropic polarizability tensor is the traceless part."
+ },
+ "Report the traceless part of the molecule's polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks directly for the traceless part."
+ },
+ "Provide the anisotropic component of the static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic component of the static polarizability tensor."
+ },
+ "Calculate the traceless static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the traceless static polarizability tensor."
+ },
+ "Output the anisotropic polarizability matrix of the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Matrix' is equivalent to tensor here, and 'anisotropic' signals the traceless part."
+ },
+ "State the traceless 3x3 polarizability tensor of this molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the traceless 3x3 tensor."
+ },
+ "Derive the anisotropic polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic tensor; 'derive' is fine."
+ },
+ "Find the traceless part of the static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the traceless part of the static tensor."
+ },
+ "Supply the anisotropic polarizability tensor for the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic tensor."
+ },
+ "List the traceless polarizability tensor components of the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the components of the traceless tensor."
+ },
+ "Give the symmetric traceless polarizability tensor of this molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the symmetric traceless tensor, which matches the task exactly."
+ },
+ "Show the anisotropic polarizability tensor of the compound.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic tensor; 'compound' is fine."
+ },
+ "Evaluate the traceless polarizability tensor for the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the traceless tensor."
+ },
+ "Produce the anisotropic part of the molecular polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic part of the tensor."
+ },
+ "Tell me the traceless polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the traceless tensor."
+ },
+ "Write out the anisotropic polarizability tensor of this molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic tensor."
+ },
+ "Compute the traceless static polarizability matrix of the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the traceless static matrix."
+ },
+ "Give the non-isotropic polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "'Non-isotropic' is unusual wording and could be read as the full tensor rather than the traceless part."
+ },
+ "Report the anisotropic polarizability of the molecule as a tensor.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic polarizability as a tensor, so the form is clear."
+ },
+ "Calculate the deviatoric polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Deviatoric' means traceless."
+ },
+ "Return the anisotropic tensor of the static polarizability.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic tensor of the static polarizability."
+ },
+ "Give the traceless polarizability tensor for this structure.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the traceless tensor."
+ },
+ "Obtain the anisotropic polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic tensor."
+ },
+ "Provide the traceless 3x3 static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the traceless 3x3 static tensor."
+ },
+ "State the anisotropic part of the molecule's polarizability.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "No tensor is specified, so it could be read as the scalar anisotropy \u0394\u03b1."
+ },
+ "Give the deviatoric static polarizability tensor for the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the deviatoric (traceless) static tensor."
+ },
+ "Report the traceless tensor of the molecular static polarizability.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the traceless tensor of the static polarizability."
+ },
+ "Calculate the anisotropic polarizability tensor of this compound.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic tensor."
+ },
+ "Output the traceless symmetric polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks directly for the symmetric traceless tensor."
+ },
+ "Give me the anisotropic polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Anisotropic polarizability tensor' is the standard name for the traceless part."
+ },
+ "Determine the traceless polarizability tensor of the given molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "The traceless polarizability tensor is exactly the requested quantity."
+ },
+ "Return the anisotropic component of the molecule's polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Anisotropic component' clearly means the traceless part."
+ },
+ "Provide the symmetric traceless part of the polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Explicitly the symmetric traceless part."
+ },
+ "Solve for the anisotropic static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "The wording is odd ('solve for'), but it asks for the anisotropic static tensor."
+ },
+ "List the anisotropic polarizability tensor of this molecular system.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'List' is an unusual verb, but it asks for the anisotropic tensor."
+ },
+ "Give the traceless polarizability tensor, not the isotropic average.": {
+  "task": "pol_aniso",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the traceless tensor and explicitly excludes the isotropic average."
+ },
+ "Hey, could you work out the anisotropic part of the molecule's static polarizability tensor for me?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic part of the static polarizability tensor, which is traceless by definition."
+ },
+ "Quick question: what's the traceless anisotropic component of the static polarizability tensor for this molecule?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks directly for the traceless anisotropic component."
+ },
+ "Could you pull together the anisotropic polarizability tensor of the molecule, the traceless part rather than the average?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the traceless part rather than the average. It omits 'static', which is a minor gap."
+ },
+ "Mind giving me the traceless anisotropic piece of the static polarizability tensor for this structure?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear request for the traceless anisotropic piece."
+ },
+ "I'm curious what the anisotropic portion of the molecule's static polarizability tensor looks like, so can you compute it?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Anisotropic portion of the static tensor, which implies the traceless part."
+ },
+ "Can you tell me the anisotropic component of the static dipole polarizability tensor here, with the isotropic part removed?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Anisotropic component with the isotropic part removed."
+ },
+ "Would you mind sharing the symmetric traceless anisotropic polarizability tensor for this molecule?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Symmetric traceless anisotropic tensor, as the task defines it."
+ },
+ "So what does the anisotropic static polarizability tensor come out to for this one?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Anisotropic static polarizability tensor, which implies the traceless part."
+ },
+ "Could you run the numbers and give me the traceless part of the molecule's static polarizability tensor?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Traceless part of the static polarizability tensor."
+ },
+ "I need the anisotropic polarizability tensor for this compound, not just the mean polarizability, so can you help?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic tensor and explicitly not the mean."
+ },
+ "Got a sec to compute the anisotropic piece of the static polarizability tensor for this molecule?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Anisotropic piece of the static tensor."
+ },
+ "What's the traceless anisotropy tensor of the static polarizability for this system?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Traceless anisotropy tensor of the static polarizability."
+ },
+ "Can you derive the anisotropic part of the static polarizability tensor I'm looking at?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Anisotropic part of the static polarizability tensor."
+ },
+ "Please give me the zero-trace anisotropic polarizability tensor of this molecule in the static limit.": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Zero-trace anisotropic tensor in the static limit."
+ },
+ "Hey, do you have the anisotropic static polarizability tensor for this molecule handy?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Anisotropic static polarizability tensor."
+ },
+ "Could you list the traceless part of the static polarizability tensor for this molecule as a 3x3 matrix?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Traceless part as a 3x3 matrix."
+ },
+ "I'd love to see the anisotropic polarizability tensor for this molecule, with the isotropic average subtracted out.": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Anisotropic tensor with the isotropic average subtracted."
+ },
+ "Would you be able to work out the static, traceless anisotropic polarizability for this compound?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Static, traceless anisotropic polarizability. 'Traceless' implies a tensor."
+ },
+ "Can you break down the static polarizability tensor here and hand me just its anisotropic, traceless component?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Only the anisotropic, traceless component."
+ },
+ "What would the anisotropic part of the molecule's static polarizability tensor be? Just the traceless piece, please.": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Anisotropic part, traceless piece only."
+ },
+ "Mind running a quick calculation for the traceless anisotropic static polarizability tensor of this molecule?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Traceless anisotropic static tensor."
+ },
+ "Could you provide the anisotropic polarizability tensor for this molecule at the static limit, minus the trace?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "'Minus the trace' could mean subtracting the trace itself rather than the isotropic part (trace/3 times the identity), which would not give a traceless tensor."
+ },
+ "I'm trying to get the anisotropic polarizability of this molecule, so can you give me the traceless tensor?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Anisotropic polarizability as the traceless tensor."
+ },
+ "Need the anisotropic static polarizability tensor for this one, the traceless version, whenever you get a chance.": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Anisotropic static tensor, traceless version."
+ },
+ "Can you figure out the traceless anisotropic component of the static polarizability tensor for this molecule?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Traceless anisotropic component of the static tensor."
+ },
+ "Would you share the symmetric, traceless anisotropic static polarizability tensor for this structure?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Symmetric, traceless anisotropic static tensor."
+ },
+ "What's the anisotropic static polarizability tensor for this molecule once you strip out the isotropic part?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Anisotropic tensor once the isotropic part is stripped out."
+ },
+ "Could you get me the anisotropic portion of the polarizability tensor in the static regime for this molecule?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Anisotropic portion of the tensor in the static regime."
+ },
+ "Hey buddy, what's the traceless anisotropic static polarizability for this molecule?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Traceless anisotropic static polarizability. Casual wording, but the request is clear."
+ },
+ "Can you work through the static polarizability tensor and report only its anisotropic, trace-free part?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Only the anisotropic, trace-free part of the static tensor."
+ },
+ "I'm after the anisotropic polarizability tensor of this molecule, specifically the traceless static component.": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the traceless static anisotropic tensor explicitly."
+ },
+ "Could you crunch the static polarizability and give me the anisotropic traceless tensor?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic traceless tensor from the static polarizability."
+ },
+ "Do you know the anisotropic static polarizability tensor for this molecule off the top of your head?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "Never says traceless, so 'anisotropic tensor' could mean the full tensor. It is also phrased as a yes/no recall question."
+ },
+ "Would it be possible to get the traceless anisotropic part of the molecule's static polarizability tensor?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the traceless anisotropic part of the static polarizability tensor."
+ },
+ "Can you compute the anisotropic static polarizability tensor for this molecule and leave out the isotropic average?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asking to leave out the isotropic average means the traceless remainder."
+ },
+ "Let's see the anisotropic part of the static polarizability tensor for this compound, traceless of course.": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic part and says 'traceless of course'."
+ },
+ "Could you give the deviatoric part of the static polarizability tensor for this molecule?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Deviatoric part' is the traceless part of the tensor."
+ },
+ "Please report the anisotropic polarizability tensor (traceless) for this molecule in the static limit.": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic, traceless tensor in the static limit."
+ },
+ "Any chance you could pull up the anisotropic static polarizability tensor for this molecule?": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "Never says traceless, so it could be read as the full polarizability tensor."
+ },
+ "I'd like the traceless anisotropic component of the static polarizability tensor for this molecule, please, as a quick favor.": {
+  "task": "pol_aniso",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the traceless anisotropic component of the static tensor."
+ },
+ "Report the symmetric traceless component of the static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Symmetric traceless part of the static polarizability."
+ },
+ "Compute the traceless anisotropic contribution to the static dipole polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Traceless anisotropic part of the static dipole polarizability."
+ },
+ "Provide the symmetric, zero-trace 3x3 tensor obtained by subtracting the isotropic average from the static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Subtracting the isotropic average gives the symmetric traceless tensor."
+ },
+ "What is the deviatoric part of the static electric-dipole polarizability tensor of the molecule?": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Deviatoric part is the traceless part."
+ },
+ "Determine the anisotropic polarizability tensor of the molecule, defined as the traceless part of its static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Defined explicitly as the traceless part of the static tensor."
+ },
+ "Return the traceless symmetric second-rank tensor that represents the anisotropy of the static polarizability of the molecule.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Traceless symmetric tensor for the anisotropy of the static polarizability."
+ },
+ "Calculate the anisotropy tensor of the static polarizability of the molecule, excluding its isotropic scalar component.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The anisotropy tensor is the tensor without its isotropic scalar part."
+ },
+ "Please supply the traceless part of the rank-2 static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Traceless part of the static polarizability tensor."
+ },
+ "Specify the anisotropic component of the molecular static polarizability tensor, with the trace removed.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Anisotropic component with the trace removed."
+ },
+ "Evaluate the deviatoric tensor associated with the static polarizability of the molecule.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Deviatoric tensor of the static polarizability."
+ },
+ "Derive the anisotropic part of the static dipole polarizability tensor of the molecule as a symmetric 3x3 matrix with vanishing trace.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Anisotropic part as a symmetric, traceless 3x3 matrix."
+ },
+ "Furnish the zero-trace symmetric tensor describing the directional dependence of the static polarizability of the molecule.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Zero-trace symmetric tensor for the directional dependence of the static polarizability."
+ },
+ "Obtain the traceless anisotropic tensor of the molecule's static electric polarizability.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Traceless anisotropic tensor of the static polarizability."
+ },
+ "Give the 3x3 symmetric traceless matrix that constitutes the anisotropic portion of the molecular static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Symmetric traceless 3x3 anisotropic portion."
+ },
+ "Could you report the anisotropic part of the molecule's static polarizability tensor, excluding the isotropic mean?": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Anisotropic part with the isotropic mean excluded."
+ },
+ "State the traceless component of the static polarizability tensor of the molecule in Cartesian coordinates.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Traceless component of the static tensor in Cartesian coordinates."
+ },
+ "Produce the anisotropic polarizability tensor of the molecule by removing one third of the trace from its static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Removing one third of the trace (times the identity) gives the traceless part."
+ },
+ "Give the symmetric traceless second-order tensor that quantifies the anisotropy of the static polarizability of the molecule.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Symmetric traceless second-order anisotropy tensor."
+ },
+ "Compute the deviator of the static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Deviator is the traceless part."
+ },
+ "Report the anisotropic tensor component of the static electric-field response of the molecule, namely its traceless polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The phrase 'static electric-field response' is wordy but clearly means the traceless static polarizability tensor."
+ },
+ "What are the components of the traceless anisotropic static polarizability tensor of the molecule?": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the components of the traceless anisotropic static tensor."
+ },
+ "Determine the zero-trace part of the static polarizability tensor of the molecule, expressed as a symmetric 3x3 matrix.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Zero-trace part as a symmetric 3x3 matrix."
+ },
+ "Give the anisotropic static polarizability tensor of the molecule after subtraction of its isotropic average.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Anisotropic tensor after subtracting the isotropic average."
+ },
+ "Calculate the traceless symmetric polarizability tensor that describes the orientation-dependent static polarizability of the molecule.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Traceless symmetric tensor describing the orientation-dependent static polarizability."
+ },
+ "Provide the anisotropic part of the molecular static polarizability tensor as a traceless rank-2 tensor.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Anisotropic part as a traceless rank-2 tensor."
+ },
+ "Supply the traceless anisotropy tensor of the static dipole polarizability of the molecule.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Traceless anisotropy tensor of the static dipole polarizability."
+ },
+ "Obtain the symmetric, traceless, second-rank static polarizability anisotropy tensor for the molecule.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Symmetric traceless second-rank anisotropy tensor."
+ },
+ "Express the anisotropic component of the static polarizability tensor of the molecule as a traceless symmetric matrix.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Anisotropic component as a traceless symmetric matrix."
+ },
+ "Determine the anisotropic polarizability tensor of the molecule in its static limit, with zero trace.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Static-limit anisotropic tensor with zero trace."
+ },
+ "Give the traceless tensorial part of the static polarizability of the molecule, excluding the scalar isotropic polarizability.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the traceless part and excludes the isotropic scalar."
+ },
+ "Report the deviatoric static polarizability tensor of the molecule as a symmetric matrix with zero trace.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Deviatoric means traceless, and symmetric zero-trace is stated."
+ },
+ "What is the traceless anisotropic static polarizability tensor of the molecule in the molecular frame?": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Traceless anisotropic tensor; naming the molecular frame is a harmless specification."
+ },
+ "Calculate the symmetric traceless tensor of anisotropic static polarizability for the molecule.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Symmetric traceless anisotropic tensor, as required."
+ },
+ "Present the anisotropic part of the static polarizability tensor of the molecule, ensuring the trace is zero.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Anisotropic part with zero trace, as required."
+ },
+ "Provide the zero-trace, symmetric anisotropic component of the molecule's static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Zero-trace symmetric anisotropic component, as required."
+ },
+ "Give the traceless anisotropic polarizability matrix of the molecule under a static electric field.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Traceless anisotropic matrix; 'under a static field' just restates the static response."
+ },
+ "Compute the anisotropic static polarizability tensor of the molecule by isolating its traceless symmetric part.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Isolating the traceless symmetric part gives the anisotropic tensor."
+ },
+ "Return the anisotropic part of the static polarizability tensor of the molecule, free of any isotropic contribution.": {
+  "task": "pol_aniso",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The anisotropic part with no isotropic contribution is the traceless part."
+ },
+ "I would like to know the anisotropic part of the molecule's static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic part of the tensor is conventionally the traceless part"
+ },
+ "Could you tell me the traceless anisotropic component of the static polarizability tensor for this molecule?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "explicitly traceless anisotropic component"
+ },
+ "Would you be able to provide the anisotropic part of the molecule's static polarizability tensor?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic part of the tensor, standard meaning"
+ },
+ "I am curious what the symmetric traceless anisotropic portion of the static polarizability tensor is for this molecule.": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "symmetric traceless anisotropic portion"
+ },
+ "Could you kindly share the anisotropic part of the molecule's static polarizability tensor, excluding the isotropic average?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "excludes the isotropic average"
+ },
+ "I was wondering if you might calculate the traceless anisotropic component of the molecule's static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "traceless anisotropic component"
+ },
+ "Please let me know the anisotropic part of the static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic part of the tensor"
+ },
+ "Would it be possible to obtain the anisotropic (traceless) portion of this molecule's static polarizability tensor?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic (traceless) portion"
+ },
+ "I'd appreciate it if you could report the anisotropic part of the static polarizability tensor for the molecule.": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic part of the tensor"
+ },
+ "Might you be able to determine the traceless anisotropic part of the molecule's static polarizability tensor?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "traceless anisotropic part"
+ },
+ "Could you help me find the anisotropic component of the static polarizability tensor of this molecule, with the isotropic average removed?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "isotropic average removed"
+ },
+ "I'm hoping you can supply the anisotropic part of the molecular static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic part of the tensor"
+ },
+ "Would you mind giving me the traceless anisotropic part of the static polarizability tensor for the molecule?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "traceless anisotropic part"
+ },
+ "I need the anisotropic portion of the molecule's static polarizability tensor, not its isotropic average; could you provide it?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "explicitly not the isotropic average"
+ },
+ "I would appreciate knowing the anisotropic part of the static polarizability tensor of this molecule.": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic part of the tensor"
+ },
+ "May I ask you to compute the traceless anisotropic component of the molecule's static polarizability tensor?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "traceless anisotropic component"
+ },
+ "Is it possible for you to share the anisotropic part of the static polarizability tensor of the molecule?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic part of the tensor"
+ },
+ "Could you please provide the symmetric traceless anisotropic part of the molecule's static polarizability tensor?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "symmetric traceless anisotropic part"
+ },
+ "I'd be grateful if you could tell me the anisotropic part of the molecule's static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic part of the tensor"
+ },
+ "Would you kindly report the anisotropic, traceless component of the static polarizability tensor for this molecule?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic, traceless component"
+ },
+ "I wonder whether you could give the anisotropic part of the static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic part of the tensor"
+ },
+ "Could you let me have the traceless anisotropic portion of the molecular static polarizability tensor?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "traceless anisotropic portion"
+ },
+ "I would like you to determine the anisotropic part of the static polarizability tensor for the molecule.": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic part of the tensor"
+ },
+ "Please could you furnish the anisotropic part of the molecule's static polarizability tensor?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic part of the tensor"
+ },
+ "Would you be willing to provide the traceless anisotropic component of this molecule's static polarizability tensor?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "traceless anisotropic component"
+ },
+ "I am interested in the anisotropic part of the static polarizability tensor of the molecule; could you supply it?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic part of the tensor"
+ },
+ "Could you indicate the anisotropic part of the molecule's static polarizability tensor, leaving out the isotropic average?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "isotropic average left out"
+ },
+ "I hope you can share the traceless anisotropic part of the static polarizability tensor of this molecule.": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "traceless anisotropic part"
+ },
+ "Would it be feasible for you to calculate the anisotropic component of the molecule's static polarizability tensor?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "anisotropic component of the tensor"
+ },
+ "Could you show me the anisotropic part of the static polarizability tensor for the molecule, with trace removed?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "trace removed, which gives the traceless part"
+ },
+ "I'd like to request the anisotropic part of the molecule's static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'Anisotropic part of the tensor' standardly means the traceless part, with the isotropic average removed."
+ },
+ "Might I trouble you for the traceless anisotropic part of the static polarizability tensor of this molecule?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicitly asks for the traceless anisotropic part."
+ },
+ "Could you spell out the anisotropic part of the molecule's static polarizability tensor?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'Spell out' just means write out the tensor, and the anisotropic part is the traceless part."
+ },
+ "I would be glad to receive the anisotropic, traceless part of the static polarizability tensor for the molecule.": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicitly says anisotropic and traceless."
+ },
+ "Would you please compute and give me the anisotropic part of the static polarizability tensor of this molecule?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic part of the tensor, which is the traceless part."
+ },
+ "Could you put together the traceless anisotropic component of the molecule's static polarizability tensor for me?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicitly asks for the traceless anisotropic component."
+ },
+ "I'm wondering if you can report the anisotropic part of the static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic part of the tensor, which is the traceless part."
+ },
+ "If it's not too much trouble, could you provide the anisotropic part of this molecule's static polarizability tensor?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic part of the tensor, which is the traceless part."
+ },
+ "Could you tell me, please, the traceless anisotropic portion of the static polarizability tensor of the molecule?": {
+  "task": "pol_aniso",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicitly asks for the traceless anisotropic portion."
+ },
+ "The traceless anisotropic component of the static polarizability tensor, for this molecule, is what I'd like you to provide.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the traceless anisotropic part of the static polarizability tensor."
+ },
+ "Provide, for this molecule, the symmetric traceless part of its static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Symmetric traceless part of the static polarizability tensor."
+ },
+ "Anisotropic polarizability tensor (traceless, 3x3) of the molecule: please supply it.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Traceless 3x3 anisotropic polarizability. 'Static' is omitted but is the default reading."
+ },
+ "Compute and report the traceless anisotropic portion of the molecule's static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Traceless anisotropic portion of the static tensor."
+ },
+ "Of the molecule's static polarizability tensor, the part left after subtracting its isotropic average is what I want; state it.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "The tensor minus its isotropic average is exactly the traceless part."
+ },
+ "Could you work out the anisotropic component of the static polarizability tensor for the molecule in question?": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Anisotropic component of the tensor' means the traceless part; no scalar is implied."
+ },
+ "State the traceless symmetric 3x3 tensor that represents the anisotropic polarizability of this molecule.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Traceless symmetric 3x3 anisotropic tensor."
+ },
+ "Report, as a matrix, the anisotropic part of the static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Anisotropic part of the static tensor, given as a matrix."
+ },
+ "Please return the anisotropic (zero-trace) piece of the molecule's static dipole polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Zero-trace anisotropic piece of the static dipole polarizability tensor."
+ },
+ "The anisotropic polarizability tensor, with its trace removed, of the molecule should be given by you.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Anisotropic tensor with its trace removed. 'Static' is omitted but implied."
+ },
+ "Deliver the traceless component of the static polarizability tensor characterizing this molecule's anisotropy.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Traceless component of the static tensor."
+ },
+ "Anisotropic static polarizability tensor (zero trace) of the molecule: write it out, please.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Zero-trace anisotropic static tensor."
+ },
+ "Output the symmetric, trace-free part of the molecular static polarizability tensor.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Symmetric trace-free part of the static tensor."
+ },
+ "What is the traceless anisotropic static polarizability tensor for the molecule under consideration?": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Direct request for the traceless anisotropic static tensor."
+ },
+ "For the molecule under study, the anisotropic part of its static polarizability tensor is to be calculated and presented.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Anisotropic part of the static tensor, calculated and presented."
+ },
+ "Give me the trace-free portion of the polarizability tensor at zero frequency for this molecule.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Trace-free part of the zero-frequency (static) tensor."
+ },
+ "Calculate the anisotropic polarizability tensor of the molecule, excluding the isotropic average.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Anisotropic tensor excluding the isotropic average. 'Static' is omitted but implied."
+ },
+ "The molecule's static polarizability tensor, minus its isotropic part, should be what you return.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Tensor minus its isotropic part is the traceless part."
+ },
+ "Present the deviatoric part of the static polarizability tensor of the molecule.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Deviatoric part means the traceless part."
+ },
+ "Obtain the anisotropic polarizability (traceless) tensor of the molecule and list its components.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Traceless anisotropic tensor with its components listed."
+ },
+ "Give, in matrix form, the anisotropic component of the molecule's static electric polarizability.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Anisotropic component of the static polarizability in matrix form."
+ },
+ "Show the traceless anisotropic tensor associated with the static polarizability of this molecule.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Traceless anisotropic tensor of the static polarizability."
+ },
+ "Anisotropy of the static polarizability: the traceless tensor for the molecule is what's needed.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the traceless tensor, not a scalar anisotropy."
+ },
+ "Supply the zero-trace symmetric tensor describing the anisotropic static polarizability of the molecule.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Zero-trace symmetric anisotropic static tensor."
+ },
+ "The traceless part of the static polarizability tensor of the molecule, in anisotropic form, is requested here.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Traceless, anisotropic part of the static tensor."
+ },
+ "Determine and state the anisotropic static polarizability tensor (no isotropic contribution) of this molecule.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Anisotropic static tensor with no isotropic contribution."
+ },
+ "Report the deviatoric static polarizability tensor for the molecule as a 3x3 matrix.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Deviatoric static tensor as a 3x3 matrix."
+ },
+ "In matrix form, the traceless anisotropic static polarizability of the molecule is what I ask you to give.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Traceless anisotropic static polarizability in matrix form."
+ },
+ "Please complete: the anisotropic part of the molecule's static polarizability tensor equals ...": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Anisotropic part of the static tensor, as a completion prompt."
+ },
+ "Fill in the blank: the traceless anisotropic polarizability tensor of this molecule is ______.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Traceless anisotropic tensor, as a fill-in-the-blank prompt."
+ },
+ "Given the molecule, produce its anisotropic static polarizability tensor with zero trace.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the anisotropic static polarizability tensor with zero trace, which matches the task."
+ },
+ "Tell me the anisotropic, trace-removed static polarizability tensor for the molecule.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Anisotropic, trace-removed static polarizability tensor, as required."
+ },
+ "A symmetric traceless 3x3 tensor, namely the anisotropic static polarizability of the molecule, is requested.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Explicitly asks for the symmetric traceless 3x3 anisotropic static polarizability."
+ },
+ "Derive the anisotropic component of the molecular static polarizability tensor, traceless by construction.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Anisotropic traceless component of the static polarizability tensor; the wording is fine."
+ },
+ "Complete the statement: the anisotropic part of the static polarizability tensor for the molecule is given by the following traceless matrix.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Completion-style phrasing, but it still asks for the traceless anisotropic static polarizability matrix."
+ },
+ "Compute the traceless polarizability anisotropy tensor of the molecule in its static limit.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Polarizability anisotropy' alone can mean a scalar, but 'tensor', 'traceless' and 'static limit' make the intent clear."
+ },
+ "From the molecule's static polarizability tensor, extract the anisotropic traceless component and report it.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Extracts the anisotropic traceless part of the static polarizability tensor, which is the task."
+ },
+ "The anisotropic static polarizability of this molecule, expressed as a traceless 3x3 tensor, is to be returned.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Anisotropic static polarizability as a traceless 3x3 tensor, as required."
+ },
+ "Provide the anisotropic polarizability tensor, with the isotropic mean subtracted, for the molecule.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ambiguous",
+  "why": "It never says 'static', so the polarizability could be frequency-dependent. Subtracting the isotropic mean does give the traceless part."
+ },
+ "Report the static, traceless anisotropic polarizability tensor of the molecule under investigation.": {
+  "task": "pol_aniso",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Static, traceless anisotropic polarizability tensor, as required."
+ },
+ "What is the static polarizability of the molecule projected onto the unit vector directed from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "'projected onto' a vector could mean the vector \u03b1u rather than the scalar u\u1d40\u03b1u"
+ },
+ "Evaluate the directional static polarizability u\u00b7\u03b1\u00b7u for the unit vector u running from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "explicit u\u00b7\u03b1\u00b7u with u from a to b"
+ },
+ "Determine the value of the molecular static polarization tensor contracted with the unit vector pointing from {a} to {b}, that is, u\u1d40\u03b1u.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "explicit u\u1d40\u03b1u; 'polarization tensor' is loose wording but the intent is clear"
+ },
+ "Find the static response of the molecular electric dipole to a field applied along the axis joining {a} and {b}, expressed as u\u1d40\u03b1u.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "field along the a\u2013b axis, explicitly expressed as u\u1d40\u03b1u"
+ },
+ "Given the static polarizability tensor \u03b1, what is the projection u\u1d40\u03b1u when u denotes the normalized displacement vector from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "explicit projection u\u1d40\u03b1u with u from a to b"
+ },
+ "Report the anisotropic polarizability of the molecule in the direction defined by the unit vector extending from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "'anisotropic polarizability' could mean the anisotropy \u0394\u03b1 rather than the directional value"
+ },
+ "Obtain the quadratic form u\u1d40\u03b1u for the unit vector u oriented from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "explicit quadratic form u\u1d40\u03b1u"
+ },
+ "Consider a uniform static electric field applied parallel to the vector from {a} to {b}; what is the resulting polarizability coefficient per unit field?": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "polarizability per unit field along the a\u2192b direction, which is u\u1d40\u03b1u"
+ },
+ "Derive the directional polarizability of the molecule for the unit vector pointing from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "directional polarizability along u from a to b"
+ },
+ "What value does the directional polarizability u\u1d40\u03b1u assume when u is the unit vector drawn from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "explicit u\u1d40\u03b1u"
+ },
+ "Compute the polarizability of the system when probed by a static field oriented along the line from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "polarizability for a field along the line from a to b"
+ },
+ "Calculate the quadratic form of the static polarizability tensor with respect to the normalized vector pointing from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "quadratic form of \u03b1 with the normalized a\u2192b vector"
+ },
+ "What is the induced dipole moment per unit applied field, along the direction from {a} to {b}, for this molecule in the static limit?": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "induced dipole per unit field along a\u2192b, which is u\u1d40\u03b1u"
+ },
+ "Evaluate the linear response coefficient of the molecular charge distribution to a static field directed from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "'linear response of the charge distribution' is vague and does not clearly name the scalar u\u1d40\u03b1u"
+ },
+ "Determine the static polarizability of the molecule measured along the unit vector whose direction runs from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "static polarizability along the unit vector from a to b"
+ },
+ "For the molecule's static polarizability tensor, what is the component along the normalized direction from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "component along the normalized direction a\u2192b, which is u\u1d40\u03b1u"
+ },
+ "Find the directional polarizability in the direction of the chord joining {a} and {b}.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "directional polarizability along the a\u2013b chord; sign does not matter for a quadratic form"
+ },
+ "Quantify the static polarizability of the molecule in the orientation defined by {a} and {b}, using the unit vector from the former to the latter.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "directional polarizability with u from a to b"
+ },
+ "How large is the static electric response, per unit field strength, of the molecule when the field is aligned from {a} toward {b}?": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "response per unit field for a field aligned from a toward b"
+ },
+ "Compute the projection of the static polarizability tensor onto the unit vector pointing from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "'projection onto the unit vector' could mean the vector \u03b1u rather than the scalar"
+ },
+ "Give the value of u\u1d40\u03b1u for the unit vector u directed from {a} to {b}, where \u03b1 is the static polarizability tensor.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "explicit u\u1d40\u03b1u"
+ },
+ "In a static field along the direction from {a} to {b}, what is the molecule's polarizability?": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "polarizability in a static field along a\u2192b"
+ },
+ "Establish the directional static polarizability along the line segment from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "directional static polarizability along the a\u2013b segment"
+ },
+ "Calculate the polarizability component associated with the normalized inter-atomic direction from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "component for the normalized a\u2192b direction, i.e. u\u1d40\u03b1u"
+ },
+ "What is the anisotropic static polarizability of the molecule resolved along the unit vector extending from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "'anisotropic polarizability' could be read as the anisotropy rather than the directional value"
+ },
+ "Determine how strongly the molecule polarizes under a static field oriented from {a} to {b}, expressed as u\u1d40\u03b1u.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "explicit u\u1d40\u03b1u for a field from a to b"
+ },
+ "Evaluate the scalar polarizability u\u1d40\u03b1u, with u the unit vector from {a} to {b}, for the molecular static response.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "explicit scalar u\u1d40\u03b1u"
+ },
+ "Report the static polarizability tensor element combination yielding the response along the direction from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "the tensor element combination giving the response along a\u2192b, i.e. u\u1d40\u03b1u"
+ },
+ "Provide the directional static polarizability of the molecule along the unit vector oriented from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "directional static polarizability along u from a to b"
+ },
+ "What is the molecule's linear static polarizability when the applied field is parallel to the unit vector from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "polarizability for a field parallel to u from a to b"
+ },
+ "Compute the polarizability along the direction from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Directly asks for the polarizability along the a-to-b direction, which is the scalar u^T alpha u."
+ },
+ "Find the directional polarizability from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Directional polarizability from a to b is the intended scalar."
+ },
+ "Give the molecule's polarizability projected from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Polarizability projected along a\u2192b is the scalar quadratic form."
+ },
+ "Report the static polarizability along the {a}-to-{b} axis.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Polarizability along the a-to-b axis is the intended scalar."
+ },
+ "Calculate the polarizability component pointing from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Component along a\u2192b means the scalar u^T alpha u."
+ },
+ "Determine u^T alpha u for the unit vector from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "States u^T alpha u explicitly for the unit vector from a to b."
+ },
+ "What is the polarizability in the {a}-to-{b} direction?": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the polarizability in the a-to-b direction."
+ },
+ "Get the directional static polarizability from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Directional static polarizability from a toward b is the intended scalar."
+ },
+ "Return the polarizability measured along the line from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Polarizability measured along the line from a to b is the intended scalar."
+ },
+ "Derive the polarizability in the direction running from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Polarizability in the direction from a to b is the intended scalar."
+ },
+ "Quantify the molecular polarizability along the {a}-{b} vector.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Polarizability along the a-b vector is the intended scalar. u^T alpha u does not depend on the sign of u."
+ },
+ "Provide the static polarizability component from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Static polarizability component from a toward b is the intended scalar."
+ },
+ "Find the polarizability projected onto the vector from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Polarizability projected onto the a\u2192b vector is the scalar u^T alpha u."
+ },
+ "Obtain the polarizability along the direction pointing from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Polarizability along the direction from a to b is the intended scalar."
+ },
+ "State the polarizability in the direction from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Polarizability in the direction from a toward b is the intended scalar."
+ },
+ "Determine the static polarizability oriented from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Static polarizability oriented from a to b is the intended scalar."
+ },
+ "Work out the polarizability along the {a}\u2192{b} direction.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Polarizability along the a\u2192b direction is the intended scalar."
+ },
+ "Calculate the axial polarizability running from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Axial polarizability from a to b is the intended scalar. It does not imply the atoms are bonded."
+ },
+ "Report u^T alpha u with u pointing from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Explicitly asks for u^T alpha u with u pointing from a to b."
+ },
+ "Give the polarizability component aligned with {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Component aligned with a to b is the intended scalar."
+ },
+ "Find how polarizable the molecule is from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Informal wording, but it still asks how polarizable the molecule is along a\u2192b."
+ },
+ "Provide the directional polarizability for the vector {a} \u2192 {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Directional polarizability for the vector a\u2192b is the intended scalar."
+ },
+ "Calculate the polarizability component in the {a}-to-{b} orientation.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Component in the a-to-b orientation is the intended scalar."
+ },
+ "Give the polarizability value for the direction from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Polarizability value for the direction from a to b is the intended scalar."
+ },
+ "How polarizable is the molecule along the direction from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the polarizability along a\u2192b. It is less formal but still scalar."
+ },
+ "Hey, could you tell me how easily the electron cloud distorts along the line running from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Casual wording, but still the scalar polarizability along a\u2192b."
+ },
+ "What's the directional polarizability of this molecule when you measure from {a} toward {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Directional polarizability from a toward b."
+ },
+ "If I applied a field pointing from {a} to {b}, how much would the molecule's dipole respond?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "Asks about the dipole response, which could be read as the induced dipole vector or its magnitude, not u^T alpha u."
+ },
+ "Quick question: what is the static polarizability component along the {a}-to-{b} axis?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Static polarizability component along the a-to-b axis is the scalar."
+ },
+ "Can you work out the polarizability projected onto the vector pointing from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Projection onto the a\u2192b vector is the scalar."
+ },
+ "What value do you get for u^T alpha u when u points from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Explicitly u^T alpha u with u from a to b."
+ },
+ "Mind estimating the static polarizability in the direction that runs from {a} over to {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Static polarizability along a\u2192b."
+ },
+ "How much does this molecule polarize along the line joining {a} and {b}, going from the first to the second?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Polarization along the line, with the order a to b stated."
+ },
+ "Could you compute the polarizability along the unit vector that heads from {a} toward {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Polarizability along the unit vector from a toward b."
+ },
+ "Roughly how polarizable is the molecule if you probe it along the {a}-to-{b} direction?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Polarizability probed along a\u2192b."
+ },
+ "So what's the response of the molecule's polarizability when the field lines up from {a} toward {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "'Response of the molecule's polarizability' is muddled and could be read as a derivative or change, not the value."
+ },
+ "Would you mind giving me the polarizability component pointing from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Polarizability component along a\u2192b."
+ },
+ "How does the molecule's polarizability look when projected onto the direction starting at {a} and ending at {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Projection onto the direction from a to b."
+ },
+ "What's the anisotropic polarizability value if you look along the {a}\u2192{b} direction?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "'Anisotropic polarizability' could mean the anisotropy (a difference) rather than the directional value."
+ },
+ "Could you evaluate how strongly the molecule responds to a field applied from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Strength of response to a field along a\u2192b amounts to the directional polarizability."
+ },
+ "I'm wondering how polarizable this thing is in the {a}-to-{b} direction. Got a number?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for a number for the polarizability in the a-to-b direction."
+ },
+ "When you go from {a} to {b}, how polarizable does the molecule appear along that line?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Polarizability along the line from a to b."
+ },
+ "Would you run a quick calculation of the polarizability projected along the {a}\u2013{b} direction?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Polarizability projected along the a\u2013b direction; the scalar is symmetric in sign."
+ },
+ "What's the static polarizability of the molecule resolved along the direction from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Static polarizability resolved along a\u2192b."
+ },
+ "Hey, how much does the electron cloud shift along the vector connecting {a} to {b}, in terms of polarizability?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Loosely worded, but it says 'in terms of polarizability' along a\u2192b."
+ },
+ "Can you get me the directional polarizability for the axis pointing from {a} toward {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Directional polarizability along a\u2192b."
+ },
+ "Across the molecule from {a} to {b}, what's the polarizability component in that direction?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Polarizability component in the a\u2192b direction."
+ },
+ "I'd love to know the polarizability you'd measure looking from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Polarizability measured looking from a toward b."
+ },
+ "What's the u-projected polarizability when u points from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "u-projected polarizability with u from a to b."
+ },
+ "How polarizable would this molecule be if the external field ran from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Polarizability for a field running from a to b."
+ },
+ "Could you report the static polarizability component along the {a}-to-{b} unit vector?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Static polarizability component along the a-to-b unit vector."
+ },
+ "Think you could estimate the polarizability along the straight line from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Polarizability along the line from a to b."
+ },
+ "For a field oriented from {a} to {b}, what polarizability value should I expect?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Polarizability value for a field oriented from a to b."
+ },
+ "Hey, mind checking how polarizable the molecule is along the {a}\u2192{b} vector?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Polarizability along the a\u2192b vector."
+ },
+ "I'm trying to characterize anisotropy here; what's the polarizability heading from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the polarizability along the a\u2192b direction. The anisotropy remark fits the directional scalar u^T alpha u."
+ },
+ "Would you calculate the polarizability along the path that starts at {a} and points to {b}?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the polarizability along the direction from a to b. 'Path' is loose wording, but 'starts at a and points to b' fixes the direction."
+ },
+ "Quick one: what's the molecule's polarizability in the {a}-to-{b} direction?": {
+  "task": "pol_dir",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks plainly for the molecule's polarizability in the a-to-b direction, which is the directional scalar. It does not imply the atoms are bonded."
+ },
+ "What is the static polarizability projected onto the unit direction running from {a} toward {b}, i.e., the quadratic form u^T \u03b1 u?": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for u^T \u03b1 u along a\u2192b."
+ },
+ "Given the static polarization tensor \u03b1, what is the value of u^T \u03b1 u when u is the unit vector oriented from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for u^T \u03b1 u with u from a to b. 'Polarization tensor' is a loose name but harmless."
+ },
+ "Determine the quadratic form u^T \u03b1 u of the static polarizability tensor, taking u as the unit vector pointing from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the quadratic form with u from a to b."
+ },
+ "Find the static polarizability component along the unit bond-like vector drawn from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the component along the unit vector a\u2192b. 'Bond-like' does not claim the atoms are bonded."
+ },
+ "For the static dipole polarizability \u03b1, compute the directional response u^T \u03b1 u with u the unit vector from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the directional response u^T \u03b1 u."
+ },
+ "Quantify the static linear response of the molecular charge distribution to a field applied along the line from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The response to a field along a\u2192b is vague but reads as the directional polarizability."
+ },
+ "What is the induced dipole per unit field component along u when u is the unit vector from {a} to {b} and the response is governed by the static tensor \u03b1?": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "'Induced dipole per unit field component' could mean the vector \u03b1 u or the projection u^T \u03b1 u."
+ },
+ "Obtain the rank-two tensor contraction u^T \u03b1 u for the unit vector oriented from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the contraction u^T \u03b1 u."
+ },
+ "Determine how strongly the electron cloud responds, in static linear response, to a field aligned from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Vague wording, but it is the directional static response along a\u2192b."
+ },
+ "Evaluate the static polarizability along the chord from {a} to {b}, normalized to unit length and expressed as u^T \u03b1 u.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The chord from a to b is the a\u2192b direction, normalized and given as u^T \u03b1 u."
+ },
+ "Give the static polarizability value obtained by evaluating the quadratic form of \u03b1 at the unit vector pointing from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the quadratic form evaluated at u from a to b."
+ },
+ "Compute the static polarizability component \u03b1_uu along the unit vector from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "\u03b1_uu is u^T \u03b1 u."
+ },
+ "What is the anisotropic polarizability along the line of centers from {a} to {b}, expressed as u^T \u03b1 u?": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "'Line of centers' is the a\u2192b direction and u^T \u03b1 u is stated."
+ },
+ "Evaluate the polarizability tensor's projection onto the unit direction from {a} to {b} using the quadratic form.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the projection via the quadratic form."
+ },
+ "Calculate the static response coefficient u^T \u03b1 u for u the normalized vector pointing from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for u^T \u03b1 u with u normalized from a to b."
+ },
+ "How does the static polarizability tensor project onto the unit vector running from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "'How does the tensor project onto the vector' could mean the vector \u03b1 u rather than the scalar."
+ },
+ "What is the polarizability in the direction from {a} to {b}, defined as the unit-vector quadratic form of the static tensor?": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the unit-vector quadratic form of the static tensor."
+ },
+ "Provide the directional static polarizability of this molecule for an applied field parallel to the unit vector from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the directional polarizability for a field parallel to u."
+ },
+ "Derive the value of u^T \u03b1 u with u the unit vector from {a} to {b}, given the molecule's static polarizability tensor.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for u^T \u03b1 u with u from a to b."
+ },
+ "Estimate the static linear polarizability when the external electric field is oriented along the unit vector pointing from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the polarizability for a field along the unit vector a\u2192b."
+ },
+ "Report u^T \u03b1 u for the molecule, where u is the normalized vector from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for u^T \u03b1 u with u from a to b."
+ },
+ "What is the projected static polarizability along the axis from {a} to {b}, i.e., the value of u^T \u03b1 u?": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the projected polarizability u^T \u03b1 u along a\u2192b."
+ },
+ "Find the directional polarizability obtained by taking u as the unit vector from {a} to {b} in the quadratic form u^T \u03b1 u.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for u^T \u03b1 u with u from a to b."
+ },
+ "Compute the static polarizability sampled along the unit line segment from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The polarizability along the a\u2192b unit direction is the scalar."
+ },
+ "Assess the static dipolar response along the unit direction extending from {a} to {b} using the polarizability tensor.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "'Assess the dipolar response' names no scalar quantity and could mean the vector \u03b1 u or a qualitative judgement."
+ },
+ "What is the component of the static polarizability tensor in the direction defined by the unit vector from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The tensor component along the unit vector is \u03b1_uu = u^T \u03b1 u."
+ },
+ "Given the 3\u00d73 static polarizability matrix \u03b1, evaluate the bilinear form u^T \u03b1 u with u pointing from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the bilinear form u^T \u03b1 u."
+ },
+ "Determine the static polarizability scalar along the normalized separation vector whose tail is {a} and whose head is {b}.": {
+  "task": "pol_dir",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the scalar along the a\u2192b normalized vector, with tail a and head b."
+ },
+ "I would like to know how polarizable the molecule is along the direction pointing from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for polarizability along the a\u2192b direction, which is the scalar."
+ },
+ "Could you tell me the static polarizability of the molecule measured along the axis running from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Static polarizability along the axis from a to b."
+ },
+ "Would you be able to calculate the molecule's static polarizability projected onto the direction from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Static polarizability projected onto the a\u2192b direction."
+ },
+ "I'm curious how strongly the molecule responds to an electric field applied along the line from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "Asks how strongly the molecule responds to a field, without naming polarizability. This could be read as the induced dipole vector or its magnitude."
+ },
+ "Could you help me determine the directional static polarizability of the molecule for the vector pointing from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Directional static polarizability for the a\u2192b vector."
+ },
+ "Would it be possible to find the static polarizability of the molecule when the field is aligned with the vector from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Static polarizability with the field aligned along a\u2192b."
+ },
+ "Could you let me know the polarizability component of the molecule taken along the direction from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Polarizability component along the a\u2192b direction. Slightly loose wording, but it reads as the directional scalar."
+ },
+ "I would be grateful if you could work out the molecule's static polarizability along the line joining {a} to {b}, oriented from the first to the second.": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Explicit about the a\u2192b orientation and asks for the static polarizability."
+ },
+ "Please could you provide the directional static polarizability of the molecule for the orientation pointing from {a} toward {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Directional static polarizability for the a\u2192b orientation."
+ },
+ "I'm hoping you can tell me how polarizable the molecule is when probed along the direction from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Polarizability probed along a\u2192b."
+ },
+ "Would you mind computing the static polarizability of the molecule in the unit direction going from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Static polarizability along the unit direction a\u2192b."
+ },
+ "Could you share the value of the molecule's polarizability projected along the vector from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Polarizability projected along the a\u2192b vector."
+ },
+ "I'd like to understand the molecule's static response to a field oriented from {a} toward {b}; could you calculate that?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "Asks for the 'static response' to a field along a\u2192b without naming polarizability. This could mean the induced dipole vector."
+ },
+ "Could you kindly evaluate the static polarizability of the molecule resolved along the path from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Static polarizability resolved along a\u2192b. 'Path' is slightly loose but acceptable."
+ },
+ "I am interested in knowing the molecule's polarizability when measured in the direction extending from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Polarizability measured along a\u2192b."
+ },
+ "Could you give me the static polarizability of the molecule for an applied field pointing from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Static polarizability for a field pointing from a to b."
+ },
+ "I would appreciate knowing the molecule's directional polarizability when measured from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Directional polarizability from a toward b."
+ },
+ "I would appreciate knowing the molecule's static polarizability along the unit vector that points from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Static polarizability along the unit vector from a to b."
+ },
+ "Could you please calculate the polarizability of the molecule in the direction starting at {a} and ending at {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Polarizability in the direction from a to b."
+ },
+ "If you can, please share the static polarizability of this molecule projected onto the direction from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Static polarizability projected onto a\u2192b."
+ },
+ "I'm wondering whether you might report the molecule's electric-field response along the line from {a} to {b}, expressed as a static polarizability.": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Field response along the line a\u2192b, explicitly expressed as a static polarizability."
+ },
+ "Might you be able to determine how polarizable the molecule is when the probing direction runs from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Polarizability with the probing direction from a to b."
+ },
+ "I would welcome your calculation of the static polarizability of the molecule along the vector extending from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Static polarizability along the a\u2192b vector."
+ },
+ "I'd be glad if you could compute the molecule's directional polarizability for the orientation from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Directional polarizability for the a\u2192b orientation."
+ },
+ "Could you help me find the static polarizability of this molecule along the line leading from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Static polarizability along the line from a to b."
+ },
+ "I would like your estimate of the polarizability of the molecule in the direction that points from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Polarizability in the direction from a to b. 'Estimate' is fine."
+ },
+ "Is it possible for you to supply the static polarizability of the molecule along the unit direction from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Static polarizability along the unit direction a\u2192b."
+ },
+ "I am keen to learn the molecule's static polarizability when projected onto the direction from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Static polarizability projected onto a\u2192b."
+ },
+ "Could you walk me through computing the molecule's static polarizability along the direction from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "Asks to be walked through the computation rather than for the value, so it does not clearly request the scalar."
+ },
+ "I'd be obliged if you could determine the molecule's polarization response along the direction from {a} to {b}, given as a static polarizability.": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Polarization response along a\u2192b, explicitly given as a static polarizability."
+ },
+ "Could you perhaps tell me the static polarizability of the molecule taken along the direction pointing from {a} toward {b}?": {
+  "task": "pol_dir",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the molecule's polarizability along the unit direction from {a} to {b}, which is the scalar u^T alpha u. The direction is correct, it does not imply the atoms are bonded, and 'static' is a harmless qualifier."
+ },
+ "Along the line running from {a} toward {b}, what is the molecule's static polarizability?": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the static polarizability along the a\u2192b line, which is the scalar."
+ },
+ "Static polarizability, measured along the direction pointing from {a} to {b}: what value does the molecule show?": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the value measured along the a\u2192b direction."
+ },
+ "Complete the statement: the molecule's static polarizability projected onto the unit vector drawn from {a} to {b} equals ___.": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Projection onto the unit vector from a to b is u^T alpha u."
+ },
+ "Reveal the static polarizability component taken along the vector running from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Component along the vector a\u2192b' is the directional scalar. The wording is slightly loose but acceptable."
+ },
+ "Its static polarizability, resolved along the axis from {a} to {b}, amounts to what?": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Polarizability resolved along the a\u2192b axis, which is the scalar."
+ },
+ "Within the molecule, what is the static polarizability measured in the direction from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Static polarizability in the direction from a to b."
+ },
+ "Tell me the value of the static polarizability projected along the path from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Static polarizability projected along the a\u2192b path."
+ },
+ "Determine u^T alpha u for the unit vector pointing from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Explicitly asks for u^T alpha u with u pointing from a to b."
+ },
+ "Report the directional static polarizability of the molecule for the vector joining {a} and {b}, oriented from the former to the latter.": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Directional polarizability for the vector oriented from a to b."
+ },
+ "Projected onto the axis that starts at {a} and ends at {b}, what is the static polarizability?": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Projection onto the axis from a to b."
+ },
+ "The static polarizability along the unit vector from {a} to {b} is what?": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Static polarizability along the unit vector from a to b."
+ },
+ "Would you estimate the molecule's static polarizability in the direction from {a} to {b}, and what is it?": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Would you estimate' is awkward, but it asks for the value along a\u2192b."
+ },
+ "Evaluate the static polarizability component, u^T alpha u, where u points from {a} toward {b}.": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Explicitly gives u^T alpha u with u from a toward b."
+ },
+ "What is the molecule's polarizability, as seen along the vector from {a} to {b}, in static conditions?": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Polarizability along the a\u2192b vector under static conditions."
+ },
+ "Find the static polarizability of this molecule projected onto the direction going from {a} to {b}.": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Static polarizability projected onto the a\u2192b direction."
+ },
+ "Express the molecule's static polarizability in the direction beginning at {a} and ending at {b}.": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Static polarizability in the direction from a to b."
+ },
+ "The molecule's static polarizability, measured between {a} and {b} along their connecting direction, comes to what?": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Connecting direction' with 'between a and b' is fine. The scalar is sign-invariant and nothing implies bonding."
+ },
+ "What numeric polarizability does the molecule exhibit statically in the orientation pointing from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Numeric polarizability in the orientation from a to b."
+ },
+ "Given {a} and {b}, supply the static polarizability of the molecule along the direction from the first toward the second.": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Direction goes from the first atom toward the second."
+ },
+ "Measured along the line of sight from {a} to {b}, the static polarizability of the molecule equals what?": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Line of sight' from a to b means the direction a\u2192b."
+ },
+ "What static polarizability value does the molecule have along the unit vector heading from {a} to {b}?": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Static polarizability along the unit vector from a to b."
+ },
+ "Within a static field, the molecule's polarizability projected onto the {a}-to-{b} direction is what?": {
+  "task": "pol_dir",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Polarizability projected onto the a-to-b direction."
+ },
+ "What dipole is induced when a unit electric field points from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Dipole is a vector; direction a\u2192b is clear."
+ },
+ "Determine the induced dipole moment vector for a unit electric field directed from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Explicit vector, direction a\u2192b."
+ },
+ "Compute the dipole moment induced in the molecule by a unit field oriented along the line running from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Field direction runs from a to b; the induced dipole is a vector."
+ },
+ "Evaluate the polarization response, as a three-dimensional vector, to a unit electric field whose direction points from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "'Polarization response' is vague and could mean polarization (dipole per volume) rather than the dipole."
+ },
+ "What induced dipole vector arises when a field of unit strength is applied with its direction running from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Induced dipole vector, direction a\u2192b."
+ },
+ "Find the vector dipole moment produced in the molecule when a unit electric field is aligned from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Vector dipole, field aligned a\u2192b."
+ },
+ "Given a unit electric field pointing from {a} to {b}, what is the resulting induced dipole moment, expressed as a 3D vector?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Explicit 3D vector, direction a\u2192b."
+ },
+ "Calculate the induced electric dipole of the molecule under a unit-magnitude field directed from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Induced dipole under a unit field a\u2192b; dipole is a vector."
+ },
+ "What is the three-dimensional induced dipole vector when the applied unit field points from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Explicit 3D induced dipole vector."
+ },
+ "Using the polarizability tensor, determine the dipole induced by a unit field along the direction from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Polarizability tensor times the unit direction a\u2192b."
+ },
+ "Obtain the induced dipole moment vector for a unit electric field whose orientation runs from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Induced dipole vector, orientation a\u2192b."
+ },
+ "Derive the dipole moment, as a vector quantity, induced in the molecule by a unit field directed from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Vector dipole, field a\u2192b."
+ },
+ "Report the induced dipole vector corresponding to a unit electric field pointing from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Induced dipole vector, direction a\u2192b."
+ },
+ "For a unit electric field oriented from {a} toward {b}, what dipole moment does the molecule acquire?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Dipole acquired under a unit field a\u2192b."
+ },
+ "Determine the linear induced dipole response vector when a unit field is applied in the direction from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Linear induced dipole response vector, direction a\u2192b."
+ },
+ "What is the induced molecular dipole, in vector form, under a unit electric field pointing from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Vector form, direction a\u2192b."
+ },
+ "Specify the dipole moment vector induced by a field of unit amplitude directed from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Dipole vector, unit amplitude, a\u2192b."
+ },
+ "Evaluate the molecular dipole induced when a unit electric field is oriented along the vector from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Field along the vector from a to b."
+ },
+ "How large and in which direction is the dipole induced by a unit electric field pointing from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ambiguous",
+  "why": "Asks for size and direction separately, not the 3D vector."
+ },
+ "Calculate the 3D dipole vector that results from polarization by a unit field whose direction is from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "3D dipole vector, direction a\u2192b."
+ },
+ "Identify the induced dipole moment for a unit-strength electric field pointing from {a} to {b}, reported as a vector.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Reported as a vector, direction a\u2192b."
+ },
+ "What dipole vector does the molecule develop in response to a unit electric field aimed from {a} toward {b}?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Dipole vector, field a\u2192b."
+ },
+ "Consider a unit electric field directed from {a} to {b}; what is the corresponding induced dipole moment vector?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Induced dipole moment vector, field a\u2192b."
+ },
+ "Compute, in three dimensions, the dipole induced by a unit field pointing from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "3D dipole, direction a\u2192b."
+ },
+ "What is the vector dipole moment induced when the molecule is subjected to a unit electric field along the axis from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Vector dipole, along the axis a\u2192b."
+ },
+ "Given the molecular polarizability tensor, find the induced dipole for a unit field whose direction points from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Uses the polarizability tensor, direction a\u2192b."
+ },
+ "Express the induced dipole moment vector produced by a unit electric field oriented from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Induced dipole vector, orientation a\u2192b."
+ },
+ "Determine the dipole induced in the molecule when a field of unit intensity is applied from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Induced dipole for a unit field applied a\u2192b; the dipole is a vector."
+ },
+ "What induced dipole vector emerges from a unit electric field pointing from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Induced dipole vector, field a\u2192b."
+ },
+ "A unit electric field is directed from {a} toward {b}; find the resulting induced dipole vector.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Unit field a\u2192b, find the induced dipole vector."
+ },
+ "State the induced electric dipole moment, as a vector, for a unit field pointing from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the induced dipole as a vector, with the field direction a\u2192b stated clearly."
+ },
+ "What is the response dipole vector of the molecule to a unit electric field whose direction runs from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the response dipole vector for a unit field running from a to b."
+ },
+ "Work out the dipole moment induced by a unit-magnitude electric field oriented from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "'Dipole moment' is inherently a vector, and the field direction a\u2192b is clear."
+ },
+ "Find the induced dipole vector that corresponds to applying a unit electric field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the induced dipole vector for a unit field from a to b."
+ },
+ "When a unit electric field points from {a} to {b}, which induced dipole vector does the molecule exhibit?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the induced dipole vector, with the direction a\u2192b clear."
+ },
+ "Obtain the three-component induced dipole moment for a unit field directed along the line from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the three-component dipole, and the field direction a\u2192b along the line is clear. It does not imply bonding."
+ },
+ "What dipole moment, as a vector, is induced by a unit electric field whose direction is set by {a} pointing toward {b}?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Direction is set by a pointing toward b, and a vector is requested."
+ },
+ "Establish the induced dipole vector arising from a unit field pointing from {a} to {b} in the molecular frame.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the induced dipole vector for a field a\u2192b. 'Molecular frame' is harmless."
+ },
+ "Quantify the induced dipole moment vector for a unit electric field aligned from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the induced dipole moment vector for a field aligned a\u2192b."
+ },
+ "Under a unit electric field pointing from {a} to {b}, what is the molecular dipole moment induced, expressed vectorially?": {
+  "task": "pol_ind",
+  "style": "textbook",
+  "verdict": "ok",
+  "why": "Asks for the induced dipole expressed vectorially for a field a\u2192b."
+ },
+ "Compute the induced dipole for a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Induced dipole for a unit field a\u2192b; direction and unit field are clear."
+ },
+ "Give the dipole vector when a unit field runs {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Dipole vector for a unit field running a to b."
+ },
+ "Find the induced dipole: unit field directed from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Unit field explicitly directed from a toward b."
+ },
+ "Determine the induced dipole vector, field axis {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "No unit field is stated, and 'field axis a to b' does not clearly fix a direction and sign."
+ },
+ "Give the response dipole for a unit field, {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Response dipole for a unit field a to b; this is alpha u."
+ },
+ "Predict the induced dipole along a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "'Along a unit field' could be read as the scalar component along the field rather than the full vector."
+ },
+ "Show the dipole induced by a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Dipole induced by a unit field from a to b."
+ },
+ "Evaluate the induced dipole for a unit field {a}-to-{b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'a-to-b' fixes the direction of the unit field."
+ },
+ "State the dipole vector when the unit field points from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Dipole vector for a unit field pointing from a to b."
+ },
+ "Derive the induced dipole for a unit field directed {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Induced dipole for a unit field directed a toward b."
+ },
+ "Obtain the 3D induced dipole, unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Explicitly asks for the 3D induced dipole for a unit field a to b."
+ },
+ "Work out the dipole produced by a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Dipole produced by a unit field from a to b."
+ },
+ "Find the induced dipole moment for a field running from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "The field is not stated to be unit strength."
+ },
+ "Compute the dipole vector induced by a unit field pointing from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Dipole vector induced by a unit field pointing from a toward b."
+ },
+ "Give the induced dipole when the unit field goes from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Induced dipole for a unit field going from a to b."
+ },
+ "Calculate the induced dipole vector for a field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "The field is not stated to be unit strength."
+ },
+ "Describe the induced dipole for a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Describe' is vague but still asks for the induced dipole for a unit field a to b."
+ },
+ "Quantify the dipole induced by a unit field, {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Quantify the dipole induced by a unit field a to b."
+ },
+ "Find the response dipole vector for a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Response dipole vector for a unit field a to b."
+ },
+ "Give the molecular dipole induced by a unit field aimed from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "'Molecular dipole' suggests the atoms are in one molecule, but they need not be bonded."
+ },
+ "Determine the 3D dipole for a unit field from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "3D dipole for a unit field from a toward b."
+ },
+ "Compute the vector dipole with a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Vector dipole with a unit field from a to b."
+ },
+ "Provide the induced dipole for a field of unit strength from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Field of unit strength from a to b."
+ },
+ "Tell me the dipole induced by a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Dipole induced by a unit field from a to b."
+ },
+ "Solve for the induced dipole, unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Solve for the induced dipole with a unit field a to b."
+ },
+ "Give the polarizability-based dipole for a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "The polarizability-based dipole is alpha u for a unit field a to b."
+ },
+ "Find the dipole vector elicited by a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Dipole vector elicited by a unit field a to b."
+ },
+ "Estimate the induced dipole for a unit field directed from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Estimate' is acceptable; the field is a unit field directed a to b."
+ },
+ "State the induced dipole under a unit field running {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Induced dipole under a unit field running a to b."
+ },
+ "Compute the dipole induced when a unit field points {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Dipole induced when a unit field points a to b."
+ },
+ "Find the 3D induced dipole for a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Asks for the 3D induced dipole for a unit field from a to b, with direction and vector nature clear."
+ },
+ "Give the vector dipole response to a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "'Vector dipole response' to a unit field from a to b matches alpha u."
+ },
+ "Determine the dipole induced by a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "The dipole induced by a unit field from a to b is naturally the vector alpha u, though 'vector' is not stated."
+ },
+ "Calculate the induced dipole vector along the {a}-to-{b} unit field.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "'Along the a-to-b unit field' could mean only the component parallel to the field (a scalar) rather than the full vector alpha u."
+ },
+ "Provide the dipole moment induced by a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "The dipole moment induced by a unit field from a to b is the vector alpha u."
+ },
+ "Name the induced dipole for a unit field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ambiguous",
+  "why": "'Name' suggests giving a label rather than computing the 3D vector, and 'vector' is not stated."
+ },
+ "Give the induced dipole vector for a unit field pointing from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "terse",
+  "verdict": "ok",
+  "why": "Clearly asks for the induced dipole vector for a unit field pointing from a to b."
+ },
+ "Hey, what dipole gets induced if I apply a unit electric field pointing from {a} toward {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the induced dipole for a unit field from a toward b."
+ },
+ "If I put a unit field along the line running from {a} to {b}, what 3D dipole vector do you expect in the molecule?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Field along the line from a to b, with the 3D dipole vector requested."
+ },
+ "Could you work out the induced dipole vector for a unit field directed from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear: induced dipole vector for a unit field from a to b."
+ },
+ "What's the molecular dipole you'd see if a unit electric field runs from {a} toward {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "Says 'molecular dipole you'd see' without 'induced', so it could mean the total dipole including any permanent part."
+ },
+ "Mind telling me the polarization response, as a vector, when the unit field points from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Polarization response as a vector, with the direction a to b stated."
+ },
+ "I'm curious what induced dipole comes out when the field is unit strength and aimed from {a} at {b}.": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Induced dipole for a unit field aimed from a at b."
+ },
+ "So if we shine a unit field pointing from {a} to {b}, which dipole vector does the molecule develop?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Dipole vector the molecule develops for the stated field."
+ },
+ "What's the induced dipole vector you'd get for a unit field oriented from {a} toward {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Can you give me the induced dipole, as a 3D vector, for a unit electric field going from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Explicit 3D induced dipole, with the direction stated."
+ },
+ "Imagine a unit field heading from {a} straight to {b}; what dipole does the molecule pick up?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Dipole picked up under a unit field from a to b."
+ },
+ "What dipole vector results when I apply a unit field whose direction points from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Let's say the field is one unit and points from {a} to {b}, so what induced dipole should we expect?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Buddy, what's the induced dipole if a unit field is aimed from {a} across to {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Casual wording, but the meaning and direction are correct."
+ },
+ "How would the molecule's dipole respond to a unit electric field pointing from {a} to {b}, in vector form?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Dipole response in vector form for a field from a to b."
+ },
+ "For a unit field running from {a} toward {b}, what's the resulting induced dipole vector?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Could you tell me the 3D induced dipole when the unit field is directed from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "I need the induced dipole vector for a unit-strength field pointing from {a} to {b}, any idea?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "What induced moment shows up if I orient a unit field from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Induced moment' means the induced dipole moment."
+ },
+ "Walk me through the induced dipole vector for a unit field that points from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "When a unit electric field is pointed from {a} to {b}, what dipole does the molecule acquire?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Got a guess for the induced dipole vector under a unit field going from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "What's the polarization-induced dipole, as a vector, for a unit field along the direction from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Suppose a unit field is applied pointing from {a} to {b}; what dipole vector should I report?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Out of curiosity, what dipole does a unit field from {a} to {b} induce in the molecule?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Could you estimate the induced dipole vector when a unit electric field is aimed from {a} at {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "If the external field is a unit vector pointing from {a} toward {b}, what dipole is induced?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "What's the induced dipole vector you'd compute for a unit field directed from {a} to {b} through the molecule?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Through the molecule' is harmless, and no bonding is implied."
+ },
+ "Hit me with the induced dipole vector for a unit field heading from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "What dipole vector does the molecule show when we push a unit field from {a} over toward {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Does a unit field pointing from {a} to {b} induce a dipole, and if so what's the 3D vector?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Yes/no framing, but it still asks for the 3D vector."
+ },
+ "Think about a unit electric field pointing from {a} to {b}: what induced dipole vector comes out?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Clearly asks for the induced dipole vector for a unit field pointing from {a} to {b}."
+ },
+ "I'm wondering about the induced dipole vector for a field of unit magnitude oriented from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the induced dipole vector for a unit-magnitude field oriented from {a} to {b}; direction and vector nature are both clear."
+ },
+ "What's the dipole moment induced by a unit field marching from {a} to {b}, given as a vector?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "'Marching' is odd phrasing, but it still means a unit field going from {a} to {b}, and the answer is requested as a vector."
+ },
+ "Would you mind giving the induced dipole vector for a unit field that points from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Direct request for the induced dipole vector for a unit field pointing from {a} to {b}."
+ },
+ "Quick one: induced dipole vector, unit field, direction from {a} to {b}, what do you get?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Terse, but it specifies the induced dipole vector, a unit field, and the direction from {a} to {b}."
+ },
+ "For a unit electric field aligned from {a} toward {b}, what molecular dipole is induced?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "Does not say the answer should be a vector, and 'molecular dipole' could be read as a scalar or magnitude."
+ },
+ "Can you calculate the induced dipole as a 3D vector when a unit field is sent from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ok",
+  "why": "Asks for the induced dipole as a 3D vector for a unit field sent from {a} to {b}; 'sent' is slightly informal but the meaning is clear."
+ },
+ "What dipole vector would be induced if a unit electric field pointed from {a} to {b}, roughly speaking?": {
+  "task": "pol_ind",
+  "style": "chatty",
+  "verdict": "ambiguous",
+  "why": "'Roughly speaking' hints at an approximate answer, which clashes with an exact alpha u; otherwise the direction and vector are right."
+ },
+ "Evaluate the induced dipole vector alpha\u00b7u, where u is the unit vector pointing from {a} to {b} and alpha is the molecular polarizability tensor, for a unit field applied along that direction.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for alpha\u00b7u with u from a to b."
+ },
+ "Given a unit electric field whose direction runs from {a} toward {b}, what dipole vector does the polarizability tensor produce?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Direction a to b and a vector result are clear."
+ },
+ "Determine the 3D dipole moment vector p = alpha u induced by a field of unit strength oriented along the line joining {a} (origin) to {b} (terminus).": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Gives p = alpha u, with a as origin and b as terminus."
+ },
+ "Compute the resulting induced dipole, as a Cartesian vector, when the unit-amplitude field vector is aligned with the displacement from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Field aligned with the displacement a to b; asks for a Cartesian vector."
+ },
+ "What is the linear-response dipole, p = alpha u, for a unit field whose direction runs from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for p = alpha u with direction a to b."
+ },
+ "Express the induced dipole moment as the product of the static polarizability tensor and the unit direction vector pointing from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Alpha times the unit vector a to b gives the induced dipole."
+ },
+ "Using the 3\u00d73 polarizability tensor, what is the induced dipole vector when a unit field is applied in the direction from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Clear direction and a vector result."
+ },
+ "Calculate the Cartesian components of the molecular dipole induced by a unit-magnitude electric field oriented from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Cartesian components of the induced dipole for a field from a to b."
+ },
+ "What induced dipole vector arises from contracting the polarizability tensor with the unit vector drawn from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Contracts alpha with the unit vector a to b."
+ },
+ "Find the dipole vector p such that p equals alpha times the normalized displacement from {a} to {b}, under a unit applied field.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "p = alpha times the normalized a-to-b displacement."
+ },
+ "Report the induced dipole moment, a vector quantity, produced by a unit electric field whose direction is that of the straight line from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Direction is that of the line from a to b, with a vector result."
+ },
+ "For a field of unit intensity directed from {a} to {b}, what is the resulting induced dipole, expressed through the polarizability tensor and the corresponding unit direction?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Unit field a to b, result through alpha and the unit direction."
+ },
+ "Describe the induced dipole vector obtained by applying the polarizability tensor to a unit vector pointing from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Applies alpha to the unit vector a to b."
+ },
+ "What is the response dipole vector when the applied unit field is oriented along the vector from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Field along the vector from a to b; asks for the dipole vector."
+ },
+ "Provide the induced molecular dipole, as a three-component vector, for a unit electric field pointing from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Three-component dipole for a field from a to b."
+ },
+ "Obtain the vector p = \u03b1 \u00fb, where \u00fb is the unit direction from {a} to {b}, for a field of unit magnitude.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "p = alpha \u00fb with \u00fb from a to b."
+ },
+ "In linear response theory, what induced dipole vector corresponds to a unit field applied from {a} toward {b}?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Linear-response dipole vector for a field from a toward b."
+ },
+ "Determine the dipole moment vector generated when a unit field is imposed along the direction connecting {a} with {b}, using the polarizability tensor.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "'Connecting a with b' gives no order, so the direction could be a to b or b to a."
+ },
+ "How does the polarizability tensor map a unit field directed from {a} to {b} onto an induced dipole vector?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "Asks how the tensor maps the field, which reads as a description of the mapping rather than the vector."
+ },
+ "What is the image of the unit vector from {a} to {b} under the molecular polarizability tensor, interpreted as an induced dipole?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Image of the unit vector a to b under alpha, read as the induced dipole."
+ },
+ "Compute the matrix-vector product of the polarizability tensor and the unit vector pointing from {a} to {b}, giving the induced dipole.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Matrix-vector product of alpha and the unit vector a to b."
+ },
+ "Specify the induced dipole vector for a unit-strength field whose orientation is the normalized vector from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Unit-strength field along the normalized a-to-b vector."
+ },
+ "Given the polarizability tensor, what dipole vector results when a unit electric field is aligned with the separation from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Field aligned with the separation a to b."
+ },
+ "What dipole vector is induced in the molecule under a unit electric field directed from {a} to {b}, reported in Cartesian coordinates?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Dipole vector in Cartesian coordinates for a field from a to b."
+ },
+ "Evaluate the linear dipole response alpha times the unit separation vector from {a} to {b} for a field of unit amplitude.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "alpha times the unit a-to-b vector for a unit-amplitude field."
+ },
+ "If a unit electric field points from {a} toward {b}, what is the induced dipole moment vector in the laboratory frame?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Unit field from a toward b; the lab-frame wording is harmless."
+ },
+ "Calculate the first-order induced dipole vector arising from a field of unit magnitude oriented from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "First-order induced dipole for a unit field from a to b."
+ },
+ "What is the vector-valued dipole response to a unit field whose direction is the ordered pair running from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Vector response to a unit field in the ordered direction a to b."
+ },
+ "Obtain the induced electric dipole, a rank-1 tensor, produced by contracting the rank-2 polarizability tensor with the unit vector from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Contracts the rank-2 tensor with the unit vector a to b, giving a rank-1 dipole."
+ },
+ "What rank-1 induced dipole results from a rank-2 polarizability tensor acting on a unit field directed from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Rank-1 dipole from alpha acting on a unit field a to b."
+ },
+ "Determine the dipole vector induced by a unit field along the oriented axis from {a} to {b}, expressed via the polarizability tensor's action on that axis.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the dipole vector from a unit field along a\u2192b, via \u03b1 acting on that axis."
+ },
+ "Under a unit electric field pointing from {a} to {b}, what dipole moment vector does the molecule acquire?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Clear: dipole vector under a unit field pointing from a to b."
+ },
+ "Give the induced dipole vector obtained when the unit-normalized direction from {a} to {b} serves as the applied field direction.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "The unit-normalized a\u2192b direction is the field direction, so this gives \u03b1 u."
+ },
+ "What is the net induced dipole vector when the polarizability tensor is applied to a field of unit strength pointing from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Applies \u03b1 to a unit-strength field from a to b and asks for the vector."
+ },
+ "Quantify the induced dipole moment in the molecule for a unit field oriented from {a} toward {b}, as a 3D vector.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the induced dipole as a 3D vector for a unit field from a toward b."
+ },
+ "Express the dipole induced by a unit field from {a} to {b} as alpha u, with u the unit vector between them, and report its components.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ambiguous",
+  "why": "'The unit vector between them' does not say which atom is the origin, so the sign of u could be read either way."
+ },
+ "Starting from the polarizability tensor, derive the induced dipole vector for a unit electric field that points from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Derives the induced dipole vector for a unit field pointing from a to b."
+ },
+ "What vector dipole does the molecule develop in response to a unit field directed from {a} to {b} along the corresponding unit direction?": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the vector dipole from a unit field directed from a to b along the unit direction."
+ },
+ "Find the induced dipole, a three-dimensional vector, for a field of unit magnitude whose direction is from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for the 3D induced dipole for a unit-magnitude field directed from a to b."
+ },
+ "Calculate p = \u03b1\u00b7u for a unit electric field directed from {a} to {b}, with u the corresponding unit direction vector.": {
+  "task": "pol_ind",
+  "style": "technical",
+  "verdict": "ok",
+  "why": "Asks for p = \u03b1\u00b7u with u the unit direction for a field from a to b."
+ },
+ "Could you tell me the induced dipole vector that results when a unit electric field is applied pointing from {a} toward {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the induced dipole vector for a unit field from a toward b."
+ },
+ "I would like to know the 3D dipole moment induced in the molecule by a unit field directed from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "3D dipole moment induced by a unit field from a to b."
+ },
+ "Would you be able to determine the vector dipole induced by a unit electric field oriented along the line running from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Vector dipole for a unit field along the line from a to b."
+ },
+ "I'm curious what induced dipole vector appears when a field of unit strength points from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole vector for a unit field from a toward b."
+ },
+ "Could you help me work out the polarizability-based dipole, as a 3D vector, produced by a unit field aimed from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Dipole as a 3D vector from polarizability and a unit field from a to b."
+ },
+ "Please compute the induced molecular dipole moment (a vector) for a unit electric field whose direction runs from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole vector for a unit field from a to b."
+ },
+ "I wonder if you could share the three-component induced dipole obtained when a unit field points from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Three-component induced dipole for a unit field from a to b."
+ },
+ "Would it be possible to find the dipole induced in the molecule when a unit electric field is directed from {a} toward {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "Never says vector or 3D, so it could be read as a magnitude."
+ },
+ "May I ask for the vector form of the induced dipole moment under a unit field pointing from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Vector form of the induced dipole for a unit field from a to b."
+ },
+ "I would appreciate it if you could calculate the dipole vector induced by a unit-magnitude field that travels from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Dipole vector for a unit-magnitude field from a to b."
+ },
+ "Could you let me know the induced dipole, expressed as a 3D vector, for a unit electric field pointing from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole as a 3D vector for a unit field from a to b."
+ },
+ "I am interested in the dipole moment vector the molecule acquires under a unit electric field running from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Dipole moment vector under a unit field from a to b."
+ },
+ "Would you kindly describe the induced dipole vector arising when a unit field is oriented from {a} toward {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole vector for a unit field from a toward b; 'describe' is loose but acceptable."
+ },
+ "Might you explain what 3D dipole moment is induced when a unit electric field points from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "3D dipole moment induced by a unit field from a to b."
+ },
+ "I'd be grateful if you could give the induced dipole vector for a field of unit strength directed from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole vector for a unit field from a to b."
+ },
+ "Could you estimate the vector dipole moment induced in the molecule by a unit field along the direction from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Vector dipole for a unit field along the direction from a to b."
+ },
+ "I would value your help in finding the induced dipole vector when a unit electric field is aimed from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole vector for a unit field from a to b."
+ },
+ "Do you think you could provide the dipole induced by a unit electric field whose direction goes from {a} toward {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "No vector or 3D wording, so it could be read as a scalar."
+ },
+ "Could you walk me through obtaining the 3D induced dipole moment for a unit field pointing from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "Asks to be walked through the procedure rather than for the vector itself."
+ },
+ "I'd like to understand the dipole vector produced in the molecule when a unit-strength field runs from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Dipole vector for a unit field from a to b."
+ },
+ "Would you mind telling me the induced dipole moment, as a vector, under a unit electric field from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole moment as a vector for a unit field from a to b."
+ },
+ "Could you report the directional induced dipole for a unit field pointing from {a} toward {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ambiguous",
+  "why": "'Directional induced dipole' does not clearly ask for a 3D vector."
+ },
+ "I was wondering whether you could supply the induced dipole vector when the unit electric field points from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole vector for a unit field from a to b."
+ },
+ "Kindly share the dipole moment vector that the molecule develops in a unit electric field oriented from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Dipole moment vector for a unit field from a to b."
+ },
+ "Could you provide the induced polarization dipole, in vector form, for a unit field directed from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole in vector form for a unit field from a to b."
+ },
+ "I would be thankful for the three-dimensional dipole induced when a unit field points from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Three-dimensional dipole for a unit field from a toward b."
+ },
+ "Would you be so kind as to determine the induced dipole vector for a unit electric field pointed from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole vector for a unit field from a to b."
+ },
+ "Could you indicate the vector of induced dipole moment resulting from a unit field along the direction from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Vector of the induced dipole moment for a unit field from a to b."
+ },
+ "I am hoping you can calculate the induced dipole vector produced by a unit electric field heading from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole vector for a unit field from a to b."
+ },
+ "Could you tell me what dipole vector is induced when the unit field runs from {a} toward {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Dipole vector induced by a unit field from a toward b."
+ },
+ "Would you be willing to compute the induced 3D dipole moment for a field of unit magnitude pointing from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "3D induced dipole for a unit field from a to b; direction and vector nature are clear"
+ },
+ "I would like the induced dipole, given as an x, y, z vector, for a unit electric field from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Asks for the x, y, z induced dipole for a unit field from a to b"
+ },
+ "Could you help clarify the dipole moment vector induced in the molecule when a unit field is directed from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "'Clarify' is loosely worded, but it asks for the induced dipole vector for a unit field from a to b"
+ },
+ "I'd appreciate knowing the vector dipole that a unit electric field from {a} toward {b} would induce.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Vector dipole induced by a unit field from a toward b"
+ },
+ "Might you be able to supply the induced dipole vector for a unit field whose orientation points from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole vector for a unit field pointing from a to b"
+ },
+ "Could you give me the dipole moment induced by a unit electric field that points from {a} to {b}, expressed as a vector?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole as a vector for a unit field from a to b"
+ },
+ "I would welcome your calculation of the induced dipole vector for a unit field pointing from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole vector for a unit field from a to b"
+ },
+ "Would you kindly tell me the 3D dipole the molecule acquires when subjected to a unit field from {a} toward {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "3D dipole acquired under a unit field from a toward b"
+ },
+ "Could you work out the induced dipole vector under a unit electric field that proceeds from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Induced dipole vector for a unit field from a to b"
+ },
+ "I'd be obliged if you could report the dipole induced by a unit field directed from {a} to {b} as a three-component vector.": {
+  "task": "pol_ind",
+  "style": "indirect",
+  "verdict": "ok",
+  "why": "Three-component induced dipole for a unit field from a to b"
+ },
+ "The induced dipole vector, alpha times the unit direction, that a unit field aimed from {a} toward {b} produces is what?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for alpha times the unit direction, which is the target vector."
+ },
+ "Name the three-component dipole that appears in a molecule when a unit electric field runs from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Three-component dipole for a unit field from a to b."
+ },
+ "Given a unit field directed from {a} to {b}, the molecular dipole it induces equals what 3D vector?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the 3D induced dipole vector."
+ },
+ "Complete the statement: a unit electric field pointing from {a} toward {b} induces a dipole equal to ____.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ambiguous",
+  "why": "Does not say vector or 3D, so a scalar or magnitude answer is possible."
+ },
+ "Expressed as a 3D vector, the dipole induced by a unit field oriented from {a} to {b} is what?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear 3D vector request."
+ },
+ "Which induced dipole vector arises in the molecule when the applied unit field points from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "From the polarizability tensor, derive the induced dipole vector for a unit field running from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Derivation from the polarizability tensor gives alpha u."
+ },
+ "The dipole that a molecule develops under a unit field along the line from {a} to {b}: what vector is it?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "'Along the line from a to b' still fixes the direction."
+ },
+ "Calculate, as a 3D vector, the moment induced when a unit-strength field travels from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for a 3D vector; 'travels' is loose wording but the direction is clear."
+ },
+ "What three-dimensional dipole vector does a unit electric field pointing from {a} to {b} call forth?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "A unit electric field aimed from {a} toward {b} induces which dipole vector in the molecule?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Provide the induced dipole vector, in 3D, for a unit field whose direction runs from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Induced by a unit field pointing from {a} to {b}, the dipole vector equals what?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "State the 3D dipole vector that results when a unit field is oriented from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Determine the vector dipole produced in the molecule by unit field strength pointing from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "The molecular dipole induced by a unit electric field whose direction is from {a} to {b} is the vector ____.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Fill in the blank: a unit field from {a} to {b} induces a 3D dipole vector of ____.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "What, in vector form, is the dipole that a unit field from {a} toward {b} induces?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Unit field, pointing from {a} to {b}: report the induced dipole as a three-component vector.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Along the direction from {a} to {b}, a unit electric field induces what dipole vector?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "The induced dipole vector under a unit field from {a} toward {b} is what, in Cartesian components?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Cartesian components of the vector."
+ },
+ "Show the 3D dipole vector a molecule acquires when exposed to a unit field pointing from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Which Cartesian dipole vector corresponds to a unit electric field directed from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Answer with a 3D vector: the dipole induced when a unit electric field points from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Describe the induced dipole vector generated by a unit field whose orientation points from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ambiguous",
+  "why": "'Describe' could be answered qualitatively rather than with the vector."
+ },
+ "Given that a unit electric field points from {a} to {b}, the induced dipole is which 3D vector?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "The response dipole, as a vector, to a unit field pointing from {a} toward {b} is what?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Supply the vector of the molecular dipole induced by a unit field pointing from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Compute the induced dipole vector for a unit electric field whose direction runs from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "A molecule responds to a unit field aimed from {a} to {b} with a dipole vector equal to ____; what is it?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Clear."
+ },
+ "Derive the 3D induced dipole that accompanies a unit electric field pointing from {a} toward {b}.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the 3D induced dipole for a unit field from a to b. 'Accompanies' is loose but the meaning is unchanged."
+ },
+ "What vector-valued dipole moment does the molecule show under a unit field directed from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ambiguous",
+  "why": "Says 'dipole moment the molecule shows' and never says 'induced', so it could mean the total dipole including any permanent one."
+ },
+ "State the induced dipole, a three-dimensional vector, produced by a unit field pointing from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the induced 3D vector with the correct direction a to b."
+ },
+ "In three dimensions, what dipole is induced when a unit electric field is pointed from {a} to {b}?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "A 3D induced dipole is a vector, and the field direction is correct."
+ },
+ "Under a unit electric field pointing from {a} to {b}, the molecule's induced dipole vector is: what?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the induced dipole vector under a unit field from a to b."
+ },
+ "The 3D dipole induced by unit-magnitude field oriented from {a} toward {b} equals which vector?": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Correct: the 3D induced dipole for a unit-magnitude field from a toward b."
+ },
+ "Find the dipole vector that a unit electric field from {a} to {b} induces in the molecule.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the dipole vector induced by a unit field from a to b."
+ },
+ "Tell me the induced dipole vector for a unit field whose direction goes from {a} to {b}.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Asks for the induced dipole vector for a unit field from a to b."
+ },
+ "Complete: when a unit field points from {a} to {b}, the induced dipole vector equals ____ in 3D.": {
+  "task": "pol_ind",
+  "style": "inverted",
+  "verdict": "ok",
+  "why": "Fill-in asks for the induced dipole vector in 3D with the correct direction."
  }
 }
