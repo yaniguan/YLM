@@ -271,3 +271,23 @@ This is the novelty-critical group.
 **EquiVLA** (above, C) — needs a close read.
 
 Nothing found (in my searches) where text tokens do cross-attention *over l>=1 irreps* and return an l>=1 answer with guaranteed equivariance, evaluated on tensor Q&A.
+
+
+## Added 2026-10-19 (reviewer-style critique, both papers verified on arXiv)
+
+**GeoMFormer** (Chen et al., ICML 2024) — https://arxiv.org/abs/2406.16853
+Two streams (invariant, equivariant) exchanging information by cross-attention: invariant representations query
+key/value pairs of the equivariant stream and vice versa. Closest *mechanism* to our Option A (invariant weights,
+equivariant values). Difference: its queries come from the molecule itself; ours come from natural-language text
+that is chosen at question time. We do not claim the attention mechanism as new.
+
+**GEM / Grounded Equivariant Manipulation** (Jia et al., arXiv 2406.15677, v2 titled "Learning Efficient and Robust
+Language-conditioned Manipulation using Textual-Visual Relevancy and Equivariant Language Mapping", RA-L preprint)
+— https://arxiv.org/abs/2406.15677
+Language-conditioned manipulation that is exactly equivariant in SE(2) (planar rotation/translation). Closest
+*problem statement*. Difference: discrete planar group, robot actions; ours is SO(3)/O(3) irreps (l up to 2), scientific
+vector/tensor answers, per-molecule geometry.
+
+Positioning that follows: the contribution is the generalisation of language-conditioned equivariance from SE(2) with
+invariant queries to SO(3)/O(3) irreps and scientific tensor question answering, plus the benchmark, plus an honest
+study of when language is necessary (see PLAN_v1.md).
