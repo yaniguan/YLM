@@ -1,0 +1,3 @@
+python scripts/25_train_pol.py --name pol_s0 --seed 0 > runs/pol_s0.stdout 2>&1
+python scripts/25_train_pol.py --name pol_s1 --seed 1 > runs/pol_s1.stdout 2>&1
+python scripts/25_train_pol.py --name pol_s2 --seed 2 > runs/pol_s2.stdout 2>&1

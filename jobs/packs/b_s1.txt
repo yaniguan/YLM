@@ -1,0 +1,5 @@
+python scripts/22_train_v1.py --name v1_bcso3_s1 --model bc --parity so3 --seed 1 > runs/v1_bcso3_s1.stdout 2>&1
+python scripts/22_train_v1.py --name v1_prognosup_s1 --model prog --prog_w 0 --seed 1 > runs/v1_prognosup_s1.stdout 2>&1
+python scripts/22_train_v1.py --name v1_progaux_s1 --model prog --aux_force 1.0 --seed 1 > runs/v1_progaux_s1.stdout 2>&1
+python scripts/22_train_v1.py --name v1_ruleaux_s1 --model rule --aux_force 1.0 --seed 1 > runs/v1_ruleaux_s1.stdout 2>&1
+python scripts/22_train_v1.py --name v1_oracleaux_s1 --model oracle --aux_force 1.0 --seed 1 > runs/v1_oracleaux_s1.stdout 2>&1

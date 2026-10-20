@@ -3,7 +3,7 @@
 #$ -cwd
 #$ -o runs/$JOB_NAME.$JOB_ID.out
 #$ -j y
-#$ -l h_rt=10:00:00,h_data=12G,gpu,V100,cuda=1
+#$ -l h_rt=10:00:00,h_data=12G,gpu,cuda=1
 
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate ylm
