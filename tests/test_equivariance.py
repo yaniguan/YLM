@@ -95,3 +95,18 @@ def test_pair_parser_handles_order_and_unseen_wordings():
     t, first, second = parse_pair(f"What is the projection of the force on {a} toward {b}?")
     assert t == "proj" and first["element"] == 6 and second["element"] == 8
     assert parse_pair(f"Is the force on {a} larger than on {b}?") is None       # unknown type -> failure, not a guess
+
+
+def test_quadrupole_head_equivariant_l2():
+    from src.quad import QuadModel, quad_to_2e
+    Z, pos, mask, text, tmask, _ = fake_batch()
+    R = o3.rand_matrix()
+    D = o3.Irreps("2e").D_from_matrix(R)
+    A = torch.randn(3, 3)
+    Q = A + A.T
+    Q = Q - torch.eye(3) * torch.trace(Q) / 3
+    assert (quad_to_2e(R @ Q @ R.T) - quad_to_2e(Q) @ D.T).abs().max() < 1e-9      # label convention: Q -> R Q R^T
+    model = QuadModel(text_dim=16)
+    y = model(Z, pos, mask, text, tmask)
+    assert (model(Z, pos @ R.T, mask, text, tmask) - y @ D.T).abs().max() < 1e-8
+    assert (model(Z, pos + 4.0, mask, text, tmask) - y).abs().max() < 1e-8
