@@ -89,7 +89,9 @@ class Encoder(nn.Module):
         self.layers = nn.ModuleList(layers)
         self.irreps_out = irreps_in
 
-    def forward(self, Z, pos, mask):
+    def forward(self, Z, pos, mask, extra_scalars=None):
+        """extra_scalars: optional (B, N, n_scalar) invariant features added to the l=0 input embedding
+        (e.g. species role / mole fraction for mixtures). None keeps the original behaviour."""
         B, N = Z.shape
         # all pairs (i, j) inside the same molecule, both real atoms, i != j, closer than cutoff
         rel = pos[:, :, None, :] - pos[:, None, :, :]            # (B, N, N, 3): pos_i - pos_j
@@ -104,6 +106,8 @@ class Encoder(nn.Module):
         radial = bessel_basis(dist[b, i, j], self.cutoff, self.n_radial)
 
         x = self.embed(Z.reshape(-1))                             # (B*N, n_scalar)
+        if extra_scalars is not None:
+            x = x + extra_scalars.reshape(B * N, -1).to(x.dtype)
         for layer in self.layers:
             x = layer(x, src, dst, sh, radial)
         x = x.reshape(B, N, -1) * mask[..., None]
