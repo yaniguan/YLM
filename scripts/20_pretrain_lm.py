@@ -24,7 +24,7 @@ def main():
     p.add_argument('--init_encoder')
     p.add_argument('--device')
     p.add_argument('--out', required=True)
-    p.add_argument('--resume', action='store_true')
+    p.add_argument('--resume', action='store_true', help='Resume saved state if present; otherwise start fresh')
     p.add_argument('--profile_dir')
     p.add_argument('--seed', type=int, default=0)
     p.add_argument('--limit', type=int)
@@ -57,7 +57,7 @@ def main():
                     n_layer=args.n_layer, n_embd=args.n_embd, n_head=args.n_head)
     config = {'model_cfg': cfg.to_dict(), 'args': vars(args),
               'splits': {k: [e.meta['qm9_index'] for e in v] for k, v in splits.items()}}
-    if args.resume:
+    if args.resume and (out / 'config.json').exists():
         previous = json.loads((out / 'config.json').read_text())
         for key in ('model_cfg', 'splits'):
             if previous[key] != config[key]:

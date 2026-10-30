@@ -55,7 +55,7 @@ def main():
     p.add_argument('--seed', type=int, default=0)
     p.add_argument('--limit', type=int)
     p.add_argument('--device')
-    p.add_argument('--resume', action='store_true')
+    p.add_argument('--resume', action='store_true', help='Resume saved state if present; otherwise start fresh')
     p.add_argument('--ckpt_every', type=int, default=100)
     p.add_argument('--stop_after_steps', type=int)
     p.add_argument('--numeric_eval_n', type=int, default=32)
@@ -86,7 +86,7 @@ def main():
         for source, membership in lineage.items():
             exposure.setdefault(source, set()).update(membership['train'])
     config['sft_train_ids'] = {k: sorted(v) for k, v in exposure.items()}
-    if args.resume:
+    if args.resume and (out / 'config.json').exists():
         old = json.loads((out / 'config.json').read_text())
         if old['qa_splits'] != manifests or old['model_cfg'] != config['model_cfg']:
             raise ValueError('Resume data/model changed')

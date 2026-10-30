@@ -321,10 +321,9 @@ def train_lm(model: YLMCausalLM, examples: list, tok, *, out_dir: str, tokens_bu
     state = {"step": 0, "tokens": 0, "epoch": 0, "pos": 0, "wall": 0.0, "history": []}
     if resume:
         path = latest_checkpoint(ckpt_dir)
-        if path is None:
-            raise FileNotFoundError(f"No checkpoint to resume in {ckpt_dir}")
-        state = load_checkpoint(path, model, opt)
-        log(f"resumed from {path}: step {state['step']} tokens {state['tokens']}")
+        if path is not None:
+            state = load_checkpoint(path, model, opt)
+            log(f"resumed from {path}: step {state['step']} tokens {state['tokens']}")
     n = len(examples)
     if n == 0:
         raise ValueError("no training examples")

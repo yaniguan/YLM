@@ -77,9 +77,8 @@ def train_dpo(model, reference, pairs, tok, *, out_dir, tokens_budget, batch_siz
     ckpt_dir = str(out_dir) + '/ckpt'
     if resume:
         path = latest_checkpoint(ckpt_dir)
-        if path is None:
-            raise FileNotFoundError('No DPO checkpoint to resume')
-        state = load_checkpoint(path, model, opt)
+        if path is not None:
+            state = load_checkpoint(path, model, opt)
     reference.eval().requires_grad_(False)
     model.train()
     start = time.perf_counter()
