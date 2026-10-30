@@ -1,0 +1,95 @@
+{
+  "torch": "2.10.0+cpu",
+  "e3nn": "0.4.4",
+  "threads": 2,
+  "dtype": "float32",
+  "batch_size": 1,
+  "irreps": "16x0e+4x0o+8x1o+4x1e+4x2e",
+  "text_dim": 32,
+  "key_dim": 16,
+  "iterations": 20,
+  "warmup": 3,
+  "results": [
+    {
+      "atoms": 8,
+      "tokens": 4,
+      "forward_ms": 0.2506736999976056,
+      "backward_ms": 0.6802823499697297,
+      "forward_backward_ms": 1.214582449995305,
+      "equivariance_max_abs": 1.9073486328125e-06,
+      "equivariance_relative_l2": 1.191670335742856e-07
+    },
+    {
+      "atoms": 8,
+      "tokens": 16,
+      "forward_ms": 0.2454916000033336,
+      "backward_ms": 0.6862812999656853,
+      "forward_backward_ms": 1.2145806999910747,
+      "equivariance_max_abs": 2.86102294921875e-06,
+      "equivariance_relative_l2": 1.1993554949185636e-07
+    },
+    {
+      "atoms": 8,
+      "tokens": 32,
+      "forward_ms": 0.24495600000591367,
+      "backward_ms": 0.7065881000130503,
+      "forward_backward_ms": 1.271180399999139,
+      "equivariance_max_abs": 1.1920928955078125e-06,
+      "equivariance_relative_l2": 1.074809929946241e-07
+    },
+    {
+      "atoms": 32,
+      "tokens": 4,
+      "forward_ms": 0.2570197999943957,
+      "backward_ms": 0.6980163999855904,
+      "forward_backward_ms": 1.2671350999994502,
+      "equivariance_max_abs": 2.384185791015625e-06,
+      "equivariance_relative_l2": 1.4198495534856193e-07
+    },
+    {
+      "atoms": 32,
+      "tokens": 16,
+      "forward_ms": 0.27136125000879474,
+      "backward_ms": 0.7027557000128581,
+      "forward_backward_ms": 1.2648365500012915,
+      "equivariance_max_abs": 5.7220458984375e-06,
+      "equivariance_relative_l2": 1.548551864516412e-07
+    },
+    {
+      "atoms": 32,
+      "tokens": 32,
+      "forward_ms": 0.2664510500039796,
+      "backward_ms": 0.7195604999765237,
+      "forward_backward_ms": 1.3013796499990349,
+      "equivariance_max_abs": 7.62939453125e-06,
+      "equivariance_relative_l2": 1.2399249271766166e-07
+    },
+    {
+      "atoms": 64,
+      "tokens": 4,
+      "forward_ms": 0.27464839999993274,
+      "backward_ms": 0.7398578999982419,
+      "forward_backward_ms": 1.3080222999974467,
+      "equivariance_max_abs": 4.76837158203125e-06,
+      "equivariance_relative_l2": 1.256105832680987e-07
+    },
+    {
+      "atoms": 64,
+      "tokens": 16,
+      "forward_ms": 0.5284741499963275,
+      "backward_ms": 0.7396396499643743,
+      "forward_backward_ms": 1.3392811500011703,
+      "equivariance_max_abs": 5.7220458984375e-06,
+      "equivariance_relative_l2": 1.4745394594228856e-07
+    },
+    {
+      "atoms": 64,
+      "tokens": 32,
+      "forward_ms": 0.2874299000040992,
+      "backward_ms": 0.7736519000104636,
+      "forward_backward_ms": 1.4042535000044154,
+      "equivariance_max_abs": 7.62939453125e-06,
+      "equivariance_relative_l2": 1.833676464002565e-07
+    }
+  ]
+}
