@@ -2,13 +2,19 @@
 
 Run:  python -m pytest tests -q
 """
+import pytest
 import torch
 from e3nn import o3
 
 from src.encoder import Encoder
 from src.model import YLM
 
-torch.set_default_dtype(torch.float64)  # float64 so the error is ~1e-12, easy to check
+@pytest.fixture(autouse=True)
+def double_precision():
+    previous = torch.get_default_dtype()
+    torch.set_default_dtype(torch.float64)
+    yield
+    torch.set_default_dtype(previous)
 
 
 def fake_batch(B=3, N=7, T=5, d=16):

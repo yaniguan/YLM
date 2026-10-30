@@ -29,12 +29,12 @@ def channel_index(irreps):
 
 
 def invariants(x, irreps):
-    """Scalars as they are; for l>=1, the length of each channel. (..., dim) -> (..., n_inv)"""
+    """Even scalars unchanged; odd scalars absolute; higher-l channel lengths. (..., dim) -> (..., n_inv)"""
     parts = []
     for (mul, ir), sl in zip(irreps, irreps.slices()):
         block = x[..., sl]
         if ir.l == 0:
-            parts.append(block)
+            parts.append(block if ir.p == 1 else block.abs())
         else:
             block = block.reshape(*block.shape[:-1], mul, ir.dim)
             parts.append((block.pow(2).sum(-1) + 1e-8).sqrt())
