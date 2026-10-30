@@ -1,0 +1,70 @@
+{
+  "validation": {
+    "loss": 4.210452955947773,
+    "ppl": 67.38705626622836,
+    "tokens": 3544,
+    "by_token_type": {
+      "other": {
+        "tokens": 0,
+        "loss": null,
+        "ppl": null
+      },
+      "smiles": {
+        "tokens": 0,
+        "loss": null,
+        "ppl": null
+      },
+      "num": {
+        "tokens": 0,
+        "loss": null,
+        "ppl": null
+      },
+      "xyz": {
+        "tokens": 0,
+        "loss": null,
+        "ppl": null
+      },
+      "answer": {
+        "tokens": 3544,
+        "loss": 4.210452955947773,
+        "ppl": 67.38705626622836
+      }
+    }
+  },
+  "numeric": {
+    "dipole_norm": {
+      "mae": 1.111111111111111e+19,
+      "parsed": 1,
+      "attempted": 1,
+      "truncated_prompts": 0,
+      "parse_rate": 1.0
+    },
+    "energy": {
+      "mae": null,
+      "parsed": 0,
+      "attempted": 1,
+      "truncated_prompts": 0,
+      "parse_rate": 0.0
+    }
+  },
+  "state": {
+    "step": 17,
+    "tokens": 4000,
+    "epoch": 0,
+    "pos": 66,
+    "wall": 4.278801441192627,
+    "history": [],
+    "finished": true
+  },
+  "budget_shortfall": 0,
+  "budget_note": "DPO counts chosen+rejected policy AND reference forward tokens, including prefix",
+  "params": {
+    "lm": 174720,
+    "lm_non_embedding": 100096,
+    "encoder": 17808,
+    "adapters": 22273,
+    "prefix_projector": 0,
+    "geometry_pathway": 40081,
+    "total": 214801
+  }
+}

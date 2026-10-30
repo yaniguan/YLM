@@ -1,0 +1,118 @@
+{
+  "validation": {
+    "loss": 4.136713773122887,
+    "ppl": 62.59677587108388,
+    "tokens": 13996,
+    "by_token_type": {
+      "other": {
+        "tokens": 4400,
+        "loss": 4.1247292466597125,
+        "ppl": 61.85106060183566
+      },
+      "smiles": {
+        "tokens": 2656,
+        "loss": 4.2914577679461745,
+        "ppl": 73.07291424630533
+      },
+      "num": {
+        "tokens": 6940,
+        "loss": 4.0850901227176015,
+        "ppl": 59.447295061617574
+      },
+      "xyz": {
+        "tokens": 0,
+        "loss": null,
+        "ppl": null
+      },
+      "answer": {
+        "tokens": 0,
+        "loss": null,
+        "ppl": null
+      }
+    }
+  },
+  "numeric": {
+    "dipole_0": {
+      "mae": 5.555555555555555e+18,
+      "parsed": 2,
+      "attempted": 2,
+      "truncated_prompts": 0,
+      "parse_rate": 1.0
+    },
+    "dipole_1": {
+      "mae": 0.3776555555555556,
+      "parsed": 2,
+      "attempted": 2,
+      "truncated_prompts": 0,
+      "parse_rate": 1.0
+    },
+    "dipole_2": {
+      "mae": 0.283,
+      "parsed": 2,
+      "attempted": 2,
+      "truncated_prompts": 0,
+      "parse_rate": 1.0
+    },
+    "dipole_norm": {
+      "mae": 0.7506999999999999,
+      "parsed": 2,
+      "attempted": 2,
+      "truncated_prompts": 0,
+      "parse_rate": 1.0
+    },
+    "energy": {
+      "mae": 1.111111111111111e+19,
+      "parsed": 2,
+      "attempted": 2,
+      "truncated_prompts": 0,
+      "parse_rate": 1.0
+    }
+  },
+  "params": {
+    "lm": 174720,
+    "lm_non_embedding": 100096,
+    "encoder": 17808,
+    "adapters": 63489,
+    "prefix_projector": 0,
+    "geometry_pathway": 81297,
+    "total": 256017
+  },
+  "tokens_seen": 12000,
+  "token_budget": 12000,
+  "budget_shortfall": 0,
+  "wall_seconds": 274.95407009124756,
+  "flops_estimate": 18433224000,
+  "flops_note": "6*N*T dense-training proxy; excludes attention quadratic and geometry graph/CG work",
+  "state": {
+    "step": 43,
+    "tokens": 12000,
+    "epoch": 0,
+    "pos": 170,
+    "wall": 274.95407009124756,
+    "history": [
+      {
+        "step": 20,
+        "tokens": 5644,
+        "loss": 4.619572186470032,
+        "grad_norm": 1.4197752475738525,
+        "lr": 0.0001994012429999944,
+        "wall": 134.4,
+        "gates": [
+          -0.0024
+        ]
+      },
+      {
+        "step": 40,
+        "tokens": 11333,
+        "loss": 4.2379050016403195,
+        "grad_norm": 1.3791747093200684,
+        "lr": 3.469679711255793e-05,
+        "wall": 269.2,
+        "gates": [
+          -0.0031
+        ]
+      }
+    ],
+    "finished": true
+  }
+}

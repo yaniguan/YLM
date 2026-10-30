@@ -1,0 +1,273 @@
+/workspace/venv311/lib/python3.11/site-packages/torch/profiler/profiler.py:217: UserWarning: Warning: Profiler clears events at the end of each cycle.Only events from the current cycle will be reported.To keep events across cycles, set acc_events=True.
+  _warn_once(
+INFO:src.tasks.reddb:RedDB retained 400/400 rows
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
+/home/box/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/ast.py:418: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  return visitor(node)
