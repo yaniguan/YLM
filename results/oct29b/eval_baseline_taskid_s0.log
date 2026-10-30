@@ -1,0 +1,3 @@
+checkpoint checkpoints/v0/baseline_taskid_s0.pt | text=taskid | seed=0 | device=cpu
+test {"dipole": {"mae": 0.07241118177826614, "cosine": 0.9850045223954608, "eq_err_mean": 8.569466376599979e-07, "eq_err_max": 2.505041084077675e-05}, "force": {"mae": 0.04208510418968066, "cosine": 0.11702108554390954, "eq_err_mean": 2.7390425875119636e-06, "eq_err_max": 7.299554999917746e-05, "atom_acc": 0.010625326598153632}}
+test_heldout {"dipole": {"mae": 0.07241118177826614, "cosine": 0.9850045223954608, "eq_err_mean": 8.569466376599979e-07, "eq_err_max": 2.505041084077675e-05}, "force": {"mae": 0.04208510418968066, "cosine": 0.11702108554390954, "eq_err_mean": 2.7390425875119636e-06, "eq_err_max": 7.299554999917746e-05, "atom_acc": 0.010625326598153632}}
