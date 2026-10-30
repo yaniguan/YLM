@@ -269,3 +269,18 @@ Not published yet. Placeholder:
 
 - Code: [MIT](LICENSE)
 - Data and benchmark (TensorQA): [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+
+### A/B/C experiments (October 29)
+
+The full YLM model now accepts `option="A"`, `"B"` (direction-aware same-l keys),
+or `"C"` (text-weighted CG self product). The older `CompModel` experiment is
+separate. Train with `scripts/04_train.py --text minilm --option B --name ylm_B`;
+add `--tiny --device cpu` for small CPU runs. `--eval_reflections` saves both
+combined O(3) and reflection-only MAE/cosine/equivariance metrics.
+`--legacy_odd_scalars` reproduces the pre-fix reflection-breaking keys for ablations.
+
+The self-contained [Colab notebook](colab/ylm_train.ipynb) builds 500-molecule data,
+trains A/B/C, task-ID, and legacy A, evaluates, and saves/downloads results through
+Drive. [October 29 worklog](docs/WORKLOG_oct29b.md) records local limitations and
+measured CPU benchmarks. These changes do not establish new molecular accuracy
+results; the v0 tables above remain historical results.

@@ -21,17 +21,18 @@ def inputs():
             torch.tensor([[True, True, False]]), torch.tensor([0]))
 
 
-@pytest.fixture
-def model():
+@pytest.fixture(params=["A", "B", "C"])
+def model(request):
     return YLM(8, hidden_irreps='4x0e + 2x0o + 3x1o + 2x1e + 2x2e',
-               cross_irreps='3x0e + 2x1o + 1x1e + 1x2e', n_layers=2)
+               cross_irreps='3x0e + 2x1o + 1x1e + 1x2e', n_layers=2, option=request.param)
 
 
 @pytest.mark.parametrize('reflection', [False, True])
-def test_cross_o3(reflection):
+@pytest.mark.parametrize("option", ["A", "B", "C"])
+def test_cross_o3(reflection, option):
     torch.manual_seed(12)
     irreps = o3.Irreps('2x0e + 2x0o + 2x1o + 2x1e + 1x2e')
-    layer = IrrepsToText(8, irreps, irreps)
+    layer = IrrepsToText(8, irreps, irreps, option=option)
     x, h = torch.randn(2, 5, irreps.dim), torch.randn(2, 3, 8)
     mask = torch.tensor([[True]*4+[False], [True]*5])
     R = -o3.rand_matrix() if reflection else o3.rand_matrix()
@@ -61,6 +62,9 @@ def test_ylm_o3(model, inputs, reflection):
     yr, ar = model(Z, pos @ R.T, mask, text, tm, task)
     torch.testing.assert_close(yr, y @ R.T, atol=2e-8, rtol=2e-8)
     torch.testing.assert_close(ar, a, atol=2e-8, rtol=2e-8)
+    ym, am = model(Z, pos + torch.tensor([2., -1., 4.]), mask, text, tm, task)
+    torch.testing.assert_close(ym, y, atol=2e-8, rtol=2e-8)
+    torch.testing.assert_close(am, a, atol=2e-8, rtol=2e-8)
 
 
 def test_ylm_padding_permutation_grad(model, inputs):
@@ -82,3 +86,35 @@ def test_ylm_padding_permutation_grad(model, inputs):
         assert grad is not None and torch.isfinite(grad).all() and grad.abs().sum() > 0
     assert text.grad[:, 2].abs().sum() == 0
     assert pos.grad[:, 3].abs().sum() == 0
+
+
+def test_c_creates_quadrupole_and_text_weights_receive_gradients():
+    # Start with vectors only: A cannot synthesize l=2, whereas C's 1o x 1o
+    # path can. A mixed side stream supplies vectors to the self product.
+    layer = IrrepsToText(8, '2x1o', '2x1o + 1x2e', option='C')
+    x = torch.randn(1, 4, 6)
+    h = torch.randn(1, 2, 8)
+    mask = torch.ones(1, 4, dtype=torch.bool)
+    y, _ = layer(h, x, mask)
+    assert y[..., -5:].abs().sum() > 0
+    y[..., -5:].square().sum().backward()
+    assert layer.tp_weights[-1].weight.grad.abs().sum() > 0
+    R = -o3.rand_matrix()
+    yr, _ = layer(h, x @ o3.Irreps('2x1o').D_from_matrix(R).T, mask)
+    torch.testing.assert_close(yr, y @ layer.out_irreps.D_from_matrix(R).T, atol=2e-8, rtol=2e-8)
+
+
+def test_b_direction_scores_change_for_relative_alignment():
+    layer = IrrepsToText(8, '1x1o', '1x1o', option='B')
+    with torch.no_grad():
+        layer.q.weight.zero_(); layer.q.bias.zero_()
+        layer.direction_key.weight.fill_(1)
+        layer.direction_query.weight.zero_(); layer.direction_query.bias.fill_(1)
+    h = torch.zeros(1, 1, 8)
+    mask = torch.ones(1, 3, dtype=torch.bool)
+    # All norms stay one, but global/atom alignment changes.
+    x = torch.tensor([[[1., 0, 0], [1., 0, 0], [0, 1., 0]]])
+    x2 = x.clone(); x2[0, 1, 0] = -1
+    a = layer(h, x, mask)[1]
+    a2 = layer(h, x2, mask)[1]
+    assert (a-a2).abs().max() > 0.01

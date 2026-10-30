@@ -24,6 +24,8 @@ import time
 
 import numpy as np
 import torch
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import src
 from e3nn import o3
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -102,7 +104,7 @@ def get_batch(data, split, idx, device, R=None):
 
 
 @torch.no_grad()
-def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0):
+def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0, reflection=False, reflection_only=False):
     model.eval()
     scale = scale.to(device)
     rotations = [torch.eye(3)]  # first one = no rotation
@@ -110,6 +112,8 @@ def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0):
         with torch.random.fork_rng():  # same rotations every time, without touching the training RNG
             torch.manual_seed(seed)
             rotations += list(o3.rand_matrix(n_rot - 1))
+    if reflection:
+        rotations += [-R for R in rotations.copy()]
     n = len(split["mol"])
     res = {t: {"abs_err": [], "cos": [], "eq_err": [], "atom_hit": []} for t in TASKS}
     for start in range(0, n, batch_size):
@@ -123,7 +127,9 @@ def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0):
             target = target.cpu()
             if y0 is None:
                 y0 = y  # prediction in the original frame (R = identity)
-            else:
+            if reflection_only and torch.linalg.det(R) > 0:
+                continue
+            if not torch.equal(R, torch.eye(3)):
                 eq = (y - y0 @ R.T).norm(dim=-1) / y0.norm(dim=-1).clamp(min=1e-12)
                 for name, k in TASKS.items():
                     res[name]["eq_err"] += eq[task == k].tolist()
@@ -183,6 +189,12 @@ def main():
     p.add_argument("--model", choices=["ylm", "pipeline", "scalar"], default="ylm",
                    help="ylm = Option A; pipeline = parse text -> atom index -> force model; "
                         "scalar = invariants only (see src/baselines.py)")
+    p.add_argument("--option", choices=list("ABC"), default="A")
+    p.add_argument("--legacy_odd_scalars", action="store_true",
+                   help="ablation: raw odd scalars in keys; breaks reflection invariance")
+    p.add_argument("--tiny", action="store_true", help="small three-layer CPU model")
+    p.add_argument("--eval_reflections", action="store_true")
+    p.add_argument("--eval_batch_size", type=int, default=32)
     p.add_argument("--augment", action="store_true", help="random rotation of every training batch")
     p.add_argument("--name", required=True)
     p.add_argument("--epochs", type=int, default=60)
@@ -229,7 +241,10 @@ def main():
         from src.baselines import ScalarCollapse
         model = ScalarCollapse(text_dim=data["text_dim"]).to(device)
     else:
-        model = YLM(text_dim=data["text_dim"], text_mode="taskid" if args.text == "taskid" else "text").to(device)
+        tiny = dict(hidden_irreps="8x0e + 2x0o + 4x1o + 2x1e + 2x2e",
+                    cross_irreps="4x0e + 4x1o + 2x1e + 2x2e") if args.tiny else {}
+        model = YLM(text_dim=data["text_dim"], text_mode="taskid" if args.text == "taskid" else "text",
+                    option=args.option, legacy_odd_scalars=args.legacy_odd_scalars, **tiny).to(device)
     say("parameters", sum(p.numel() for p in model.parameters()))
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-5)
     steps_per_epoch = math.ceil(len(train["mol"]) / args.batch_size)
@@ -255,7 +270,7 @@ def main():
             step += 1
             if args.max_steps and step >= args.max_steps:
                 break
-        val = evaluate(model, data, splits["val"], scale, device, n_rot=1)
+        val = evaluate(model, data, splits["val"], scale, device, n_rot=1, batch_size=args.eval_batch_size)
         val_score = val["dipole"]["mae"] / scale[0].item() + val["force"]["mae"] / scale[1].item()
         if val_score < best_val:
             best_val = val_score
@@ -273,8 +288,16 @@ def main():
     for split in ["test", "test_heldout"]:
         if args.test_limit:
             splits[split] = {k: (v[: args.test_limit] if torch.is_tensor(v) else v) for k, v in splits[split].items()}
-        results[split] = evaluate(model, data, splits[split], scale, device, n_rot=args.eval_rotations)
+        results[split] = evaluate(model, data, splits[split], scale, device, n_rot=args.eval_rotations, batch_size=args.eval_batch_size)
+        if args.eval_reflections:
+            results[split + "_o3"] = evaluate(model, data, splits[split], scale, device,
+                n_rot=args.eval_rotations, batch_size=args.eval_batch_size, reflection=True)
+            results[split + "_reflection"] = evaluate(model, data, splits[split], scale, device,
+                n_rot=args.eval_rotations, batch_size=args.eval_batch_size,
+                reflection=True, reflection_only=True)
         say(split, json.dumps(results[split]))
+    torch.save(dict(state_dict=model.state_dict(), scale=scale.tolist(), args=vars(args),
+                    text=args.text, text_dim=data["text_dim"]), f"{out_dir}/checkpoint.pt")
     json.dump(results, open(f"{out_dir}/results.json", "w"), indent=2)
     say("saved", out_dir)
 
