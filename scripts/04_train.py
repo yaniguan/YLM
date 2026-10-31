@@ -280,7 +280,8 @@ def main():
         if args.max_steps and step >= args.max_steps:
             break
         perm = torch.randperm(len(train["mol"]))
-        losses = []
+        loss_sum, n_loss = None, 0  # summed on the device: no per-step host sync
+        profiler.epoch_start()
         for start in range(0, len(perm), args.batch_size):
             idx = perm[start: start + args.batch_size]
             with profiler.phase("data"):
@@ -297,7 +298,8 @@ def main():
                 opt.step()
                 sched.step()
             profiler.step_done(tokens=0, samples=len(idx))
-            losses.append(loss.item())
+            loss_sum = loss.detach() if loss_sum is None else loss_sum + loss.detach()
+            n_loss += 1
             step += 1
             if args.max_steps and step >= args.max_steps:
                 break
@@ -307,7 +309,8 @@ def main():
             best_val = val_score
             torch.save(model.state_dict(), f"{out_dir}/model.pt.tmp")
             os.replace(f"{out_dir}/model.pt.tmp", f"{out_dir}/model.pt")
-        say(f"epoch {epoch} loss {np.mean(losses):.4f} | val dipole mae {val['dipole']['mae']:.4f} "
+        mean_loss = (loss_sum / max(n_loss, 1)).item() if loss_sum is not None else float("nan")
+        say(f"epoch {epoch} loss {mean_loss:.4f} | val dipole mae {val['dipole']['mae']:.4f} "
             f"cos {val['dipole']['cosine']:.3f} | force mae {val['force']['mae']:.5f} "
             f"cos {val['force']['cosine']:.3f} atom_acc {val['force']['atom_acc']:.3f} | {time.time() - t0:.0f}s")
         torch.save(dict(model=model.state_dict(), optimizer=opt.state_dict(),

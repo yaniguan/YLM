@@ -11,13 +11,23 @@ import torch
 
 
 class Profiler:
-    def __init__(self, directory, device='cpu', trace_steps=20):
+    def __init__(self, directory, device='cpu', trace_steps=20, sync_steps=200, smi_timeout=10.0):
+        """sync_steps: only the first sync_steps steps are timed with CUDA synchronization per phase (step-time
+        breakdown); later steps run unsynchronized so profiling does not throttle the GPU. Throughput is the
+        wall-clock rate over all steps (time between consecutive step_done calls within an epoch)."""
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
         self.device = torch.device(device)
         self.started = time.perf_counter()
         self.phases = {}
         self.tokens = self.samples = self.steps = 0
+        self.sync_steps = int(sync_steps)
+        self.smi_timeout = float(smi_timeout)
+        self.telemetry_errors = 0
+        self.synced_steps = 0
+        self.train_wall = 0.0
+        self.wall_samples = 0
+        self._last_step_t = None
         self.utilization = []
         self.stop = threading.Event()
         self.trace_steps = trace_steps
@@ -39,8 +49,15 @@ class Profiler:
         if self.device.type == 'cuda':
             torch.cuda.synchronize(self.device)
 
+    def epoch_start(self):
+        """Call at the start of each epoch so validation time is not counted as training time."""
+        self._last_step_t = time.perf_counter()
+
     @contextmanager
     def phase(self, name):
+        if self.steps >= self.sync_steps and self.trace is None:
+            yield  # unsynchronized steady state
+            return
         self._sync()
         start = time.perf_counter()
         try:
@@ -51,6 +68,13 @@ class Profiler:
             self.phases[name] = self.phases.get(name, 0.0) + time.perf_counter() - start
 
     def step_done(self, tokens, samples):
+        now = time.perf_counter()
+        if self._last_step_t is not None:
+            self.train_wall += now - self._last_step_t
+            self.wall_samples += samples
+        self._last_step_t = now
+        if self.steps < self.sync_steps or self.trace is not None:
+            self.synced_steps += 1
         self.tokens += tokens
         self.samples += samples
         self.steps += 1
@@ -77,7 +101,7 @@ class Profiler:
             try:
                 output = subprocess.check_output(['nvidia-smi', '-i', physical,
                     '--query-gpu=utilization.gpu', '--format=csv,noheader,nounits'],
-                    timeout=2, text=True)
+                    timeout=self.smi_timeout, text=True)
                 value = float(output.strip().splitlines()[0])
                 self.utilization.append(value)
                 with (self.directory / "gpu_utilization.jsonl").open("a") as stream:
@@ -85,6 +109,7 @@ class Profiler:
                                              "utilization_percent": value}) + "\n")
             except Exception as exc:
                 self.telemetry_error = str(exc)
+                self.telemetry_errors += 1
             self.stop.wait(1.0)
 
     def close(self):
@@ -103,13 +128,19 @@ class Profiler:
             import resource
             import sys
             rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * (1 if sys.platform == 'darwin' else 1024)
+        synced = max(self.synced_steps, 1)
         summary = {'wall_seconds': elapsed, 'tokens': self.tokens, 'samples': self.samples,
                    'steps': self.steps, 'tokens_per_second': self.tokens / max(elapsed, 1e-9),
-                   'samples_per_second': self.samples / max(sum(self.phases.values()), 1e-9),
-                   'throughput_basis': 'synchronized training phases (includes profiling overhead)',
+                   'samples_per_second': self.wall_samples / max(self.train_wall, 1e-9),
+                   'step_seconds_mean': self.train_wall / max(self.steps - 1, 1),
+                   'throughput_basis': 'wall clock between consecutive training steps (validation excluded); '
+                                       f'phase breakdown from the first {self.synced_steps} CUDA-synchronized steps',
+                   'samples_per_second_synchronized': (self.samples * synced / max(self.steps, 1)) / max(sum(self.phases.values()), 1e-9),
+                   'synchronized_steps': self.synced_steps,
                    'gpu_telemetry_error': getattr(self, 'telemetry_error', None),
+                   'gpu_telemetry_errors': self.telemetry_errors,
                    'phase_seconds': self.phases,
-                   'phase_seconds_per_step': {k: v / max(self.steps, 1) for k, v in self.phases.items()},
+                   'phase_seconds_per_step': {k: v / synced for k, v in self.phases.items()},
                    'cpu_rss_bytes': rss,
                    'cuda_peak_bytes': torch.cuda.max_memory_allocated(self.device) if self.device.type == 'cuda' else None,
                    'gpu_utilization_mean': sum(self.utilization) / len(self.utilization) if self.utilization else None,
