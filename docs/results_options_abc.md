@@ -36,6 +36,6 @@ round-off. Max errors: A 1.9e-4, B 3.0e-4, C 8.9e-4 (reflection-only).
 
 - Option C has 13,137,857 parameters; ~148 s/epoch on the Colab GPU (from `log.txt`).
 - Final full_C validation (epoch 59): force MAE 0.00486, cosine 0.976, atom acc 0.920.
-- full_C ran across 6 Colab sessions (resumes at epochs 4, 13, 25, 35, 47); each session lasted roughly
-  11–34 min before the runtime disconnected. Per-epoch `latest.pt` checkpoints made every resume lossless
+- full_C ran across 6 Colab sessions (resumes at epochs 4, 13, 25, 35, 47); the five interrupted sessions
+  lasted ~11–31 min each before the runtime disconnected; the sixth finished (epochs 47–59 + TEST). Per-epoch `latest.pt` checkpoints made every resume lossless
   apart from the interrupted partial epoch. See "Hang/disconnect mitigations" in the PR.
