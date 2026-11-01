@@ -11,7 +11,8 @@ import torch
 
 
 class Profiler:
-    def __init__(self, directory, device='cpu', trace_steps=20, sync_steps=200, smi_timeout=10.0):
+    def __init__(self, directory, device='cpu', trace_steps=20, sync_steps=200, smi_timeout=10.0,
+                 sample_interval=5.0, flush_interval=60.0, max_summary_samples=1000):
         """sync_steps: only the first sync_steps steps are timed with CUDA synchronization per phase (step-time
         breakdown); later steps run unsynchronized so profiling does not throttle the GPU. Throughput is the
         wall-clock rate over all steps (time between consecutive step_done calls within an epoch)."""
@@ -29,6 +30,14 @@ class Profiler:
         self.wall_samples = 0
         self._last_step_t = None
         self.utilization = []
+        # Telemetry is buffered and flushed in batches: one append per flush_interval instead of one
+        # open/append per sample, which keeps small-write traffic off network filesystems (Drive FUSE).
+        self.sample_interval = float(sample_interval)
+        self.flush_interval = float(flush_interval)
+        self.max_summary_samples = int(max_summary_samples)
+        self._pending = []
+        self._pending_lock = threading.Lock()
+        self._last_flush = time.perf_counter()
         self.stop = threading.Event()
         self.trace_steps = trace_steps
         self.trace = None
@@ -104,22 +113,42 @@ class Profiler:
                     timeout=self.smi_timeout, text=True)
                 value = float(output.strip().splitlines()[0])
                 self.utilization.append(value)
-                with (self.directory / "gpu_utilization.jsonl").open("a") as stream:
-                    stream.write(json.dumps({"elapsed_seconds": time.perf_counter() - self.started,
-                                             "utilization_percent": value}) + "\n")
+                with self._pending_lock:
+                    self._pending.append({"elapsed_seconds": time.perf_counter() - self.started,
+                                          "utilization_percent": value})
+                if time.perf_counter() - self._last_flush >= self.flush_interval:
+                    self.flush_telemetry()
             except Exception as exc:
                 self.telemetry_error = str(exc)
                 self.telemetry_errors += 1
-            self.stop.wait(1.0)
+            self.stop.wait(self.sample_interval)
+
+    def flush_telemetry(self):
+        """Append buffered GPU samples in one write."""
+        with self._pending_lock:
+            rows, self._pending = self._pending, []
+        self._last_flush = time.perf_counter()
+        if rows:
+            with (self.directory / "gpu_utilization.jsonl").open("a") as stream:
+                stream.write("".join(json.dumps(r) + "\n" for r in rows))
+
+    def _bounded_samples(self):
+        u = self.utilization
+        if len(u) <= self.max_summary_samples:
+            return list(u)
+        stride = -(-len(u) // self.max_summary_samples)
+        return u[::stride]
 
     def close(self):
         self._finish_trace()
         self.stop.set()
         if self.thread:
             self.thread.join(timeout=3)
+        self.flush_telemetry()
         return self.save()
 
     def save(self):
+        self.flush_telemetry()
         elapsed = time.perf_counter() - self.started
         try:
             import psutil
@@ -144,7 +173,8 @@ class Profiler:
                    'cpu_rss_bytes': rss,
                    'cuda_peak_bytes': torch.cuda.max_memory_allocated(self.device) if self.device.type == 'cuda' else None,
                    'gpu_utilization_mean': sum(self.utilization) / len(self.utilization) if self.utilization else None,
-                   'gpu_utilization_samples': self.utilization}
+                   'gpu_utilization_samples_total': len(self.utilization),
+                   'gpu_utilization_samples': self._bounded_samples()}
         (self.directory / 'summary.json').write_text(json.dumps(summary, indent=2))
         return summary
 

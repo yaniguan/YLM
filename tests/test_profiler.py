@@ -21,3 +21,16 @@ def test_profiler_sync_window_and_wall_throughput(tmp_path):
     saved = json.loads((tmp_path / "profiling" / "summary.json").read_text())
     assert saved["throughput_basis"].startswith("wall clock")
     assert (tmp_path / "profiling" / "trace.json").exists()
+
+
+def test_profiler_telemetry_buffered_and_bounded(tmp_path):
+    prof = Profiler(tmp_path / "p", device="cpu", trace_steps=0, max_summary_samples=10)
+    prof.utilization = [float(i) for i in range(95)]
+    prof._pending = [{"elapsed_seconds": i, "utilization_percent": 50.0} for i in range(7)]
+    assert not (tmp_path / "p" / "gpu_utilization.jsonl").exists()
+    s = prof.close()
+    lines = (tmp_path / "p" / "gpu_utilization.jsonl").read_text().splitlines()
+    assert len(lines) == 7 and prof._pending == []
+    assert s["gpu_utilization_samples_total"] == 95
+    assert len(s["gpu_utilization_samples"]) <= 10
+    assert abs(s["gpu_utilization_mean"] - 47.0) < 1e-9
