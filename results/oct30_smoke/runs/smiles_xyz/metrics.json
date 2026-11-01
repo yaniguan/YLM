@@ -1,0 +1,95 @@
+{
+  "validation": {
+    "loss": 4.413945642691008,
+    "ppl": 82.5947106441139,
+    "tokens": 38200,
+    "by_token_type": {
+      "other": {
+        "tokens": 1230,
+        "loss": 4.588784461292794,
+        "ppl": 98.3747791046184
+      },
+      "smiles": {
+        "tokens": 2656,
+        "loss": 4.761518937995635,
+        "ppl": 116.92339046639047
+      },
+      "num": {
+        "tokens": 43,
+        "loss": 4.474536673967228,
+        "ppl": 87.75393230787085
+      },
+      "xyz": {
+        "tokens": 34271,
+        "loss": 4.3806576781275535,
+        "ppl": 79.89055840378005
+      },
+      "answer": {
+        "tokens": 0,
+        "loss": null,
+        "ppl": null
+      }
+    }
+  },
+  "numeric": {
+    "dipole_0": {
+      "mae": null,
+      "parsed": 0,
+      "attempted": 2,
+      "truncated_prompts": 2,
+      "parse_rate": 0.0
+    },
+    "dipole_1": {
+      "mae": null,
+      "parsed": 0,
+      "attempted": 2,
+      "truncated_prompts": 2,
+      "parse_rate": 0.0
+    },
+    "dipole_2": {
+      "mae": null,
+      "parsed": 0,
+      "attempted": 2,
+      "truncated_prompts": 2,
+      "parse_rate": 0.0
+    },
+    "dipole_norm": {
+      "mae": null,
+      "parsed": 0,
+      "attempted": 2,
+      "truncated_prompts": 2,
+      "parse_rate": 0.0
+    },
+    "energy": {
+      "mae": null,
+      "parsed": 0,
+      "attempted": 2,
+      "truncated_prompts": 2,
+      "parse_rate": 0.0
+    }
+  },
+  "params": {
+    "lm": 174720,
+    "lm_non_embedding": 100096,
+    "encoder": 0,
+    "adapters": 0,
+    "prefix_projector": 0,
+    "geometry_pathway": 0,
+    "total": 174720
+  },
+  "tokens_seen": 12000,
+  "token_budget": 12000,
+  "budget_shortfall": 0,
+  "wall_seconds": 34.07528042793274,
+  "flops_estimate": 12579840000,
+  "flops_note": "6*N*T dense-training proxy; excludes attention quadratic and geometry graph/CG work",
+  "state": {
+    "step": 16,
+    "tokens": 12000,
+    "epoch": 0,
+    "pos": 63,
+    "wall": 34.07528042793274,
+    "history": [],
+    "finished": true
+  }
+}

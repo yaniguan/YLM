@@ -1,0 +1,24 @@
+{
+  "wall_seconds": 130.36504048999996,
+  "tokens": 12000,
+  "samples": 170,
+  "steps": 43,
+  "tokens_per_second": 92.04921775727517,
+  "samples_per_second": 1.3040305848947316,
+  "phase_seconds": {
+    "data": 0.04959969999617897,
+    "forward": 43.35511483999653,
+    "backward": 75.31667368399576,
+    "optimizer": 8.06926754800952
+  },
+  "phase_seconds_per_step": {
+    "data": 0.001153481395259976,
+    "forward": 1.008258484651082,
+    "backward": 1.751550550790599,
+    "optimizer": 0.18765738483743072
+  },
+  "cpu_rss_bytes": 842354688,
+  "cuda_peak_bytes": null,
+  "gpu_utilization_mean": null,
+  "gpu_utilization_samples": []
+}
