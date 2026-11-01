@@ -29,6 +29,7 @@ import src
 from e3nn import o3
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.profiling import Profiler
 from src.model import YLM  # noqa: E402
 
 TASKS = {"dipole": 0, "force": 1}
@@ -206,13 +207,15 @@ def main():
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--device", default=None, help="default: cuda, else mps, else cpu")
     p.add_argument("--test_limit", type=int, default=0, help="debug: only evaluate this many questions per split")
+    p.add_argument("--resume", action="store_true", help="resume latest completed epoch in run directory")
+    p.add_argument("--output_dir", help="explicit persistent run directory")
     args = p.parse_args()
 
     torch.manual_seed(args.seed)
     device = args.device or ("cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu"))
-    out_dir = f"runs/{args.name}"
+    out_dir = args.output_dir or f"runs/{args.name}"
     os.makedirs(out_dir, exist_ok=True)
-    log = open(f"{out_dir}/log.txt", "w")
+    log = open(f"{out_dir}/log.txt", "a" if args.resume else "w")
 
     def say(*a):
         s = " ".join(str(x) for x in a)
@@ -252,21 +255,51 @@ def main():
     sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=args.lr, total_steps=total, pct_start=0.05)
 
     step, best_val, t0 = 0, float("inf"), time.time()
-    for epoch in range(args.epochs):
+    start_epoch = 0
+    latest = f"{out_dir}/latest.pt"
+    if args.resume and os.path.exists(latest):
+        saved = torch.load(latest, map_location=device, weights_only=False)
+        for key in ("epochs", "batch_size", "lr", "text", "option", "model", "tiny", "seed", "train_fraction", "augment", "legacy_odd_scalars"):
+            if saved["args"][key] != vars(args)[key]:
+                raise ValueError(f"Resume configuration differs: {key}")
+        model.load_state_dict(saved["model"])
+        opt.load_state_dict(saved["optimizer"])
+        sched.load_state_dict(saved["scheduler"])
+        start_epoch, step, best_val = saved["epoch"] + 1, saved["step"], saved["best_val"]
+        torch.set_rng_state(saved["rng"].cpu())
+        if saved["cuda_rng"] is not None:
+            torch.cuda.set_rng_state_all([state.cpu() for state in saved["cuda_rng"]])
+        say("resumed epoch", start_epoch, "step", step)
+    profile_dir = f"{out_dir}/profiling"
+    if os.path.exists(profile_dir):
+        # Preserve earlier sessions and interrupted traces when resuming.
+        import shutil
+        shutil.move(profile_dir, f"{profile_dir}_session_{time.time_ns()}")
+    profiler = Profiler(profile_dir, device=device, trace_steps=20)
+    for epoch in range(start_epoch, args.epochs):
+        if args.max_steps and step >= args.max_steps:
+            break
         perm = torch.randperm(len(train["mol"]))
-        losses = []
+        loss_sum, n_loss = None, 0  # summed on the device: no per-step host sync
+        profiler.epoch_start()
         for start in range(0, len(perm), args.batch_size):
             idx = perm[start: start + args.batch_size]
-            R = o3.rand_matrix() if args.augment else None
-            inputs, target = get_batch(data, train, idx, device, R)
-            y, _ = model(*inputs)
-            loss = ((y - target / scale_dev[inputs[5]][:, None]) ** 2).mean()
-            opt.zero_grad()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 10.0)
-            opt.step()
-            sched.step()
-            losses.append(loss.item())
+            with profiler.phase("data"):
+                R = o3.rand_matrix() if args.augment else None
+                inputs, target = get_batch(data, train, idx, device, R)
+            with profiler.phase("forward"):
+                y, _ = model(*inputs)
+                loss = ((y - target / scale_dev[inputs[5]][:, None]) ** 2).mean()
+            with profiler.phase("backward"):
+                opt.zero_grad()
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 10.0)
+            with profiler.phase("optimizer"):
+                opt.step()
+                sched.step()
+            profiler.step_done(tokens=0, samples=len(idx))
+            loss_sum = loss.detach() if loss_sum is None else loss_sum + loss.detach()
+            n_loss += 1
             step += 1
             if args.max_steps and step >= args.max_steps:
                 break
@@ -274,13 +307,23 @@ def main():
         val_score = val["dipole"]["mae"] / scale[0].item() + val["force"]["mae"] / scale[1].item()
         if val_score < best_val:
             best_val = val_score
-            torch.save(model.state_dict(), f"{out_dir}/model.pt")
-        say(f"epoch {epoch} loss {np.mean(losses):.4f} | val dipole mae {val['dipole']['mae']:.4f} "
+            torch.save(model.state_dict(), f"{out_dir}/model.pt.tmp")
+            os.replace(f"{out_dir}/model.pt.tmp", f"{out_dir}/model.pt")
+        mean_loss = (loss_sum / max(n_loss, 1)).item() if loss_sum is not None else float("nan")
+        say(f"epoch {epoch} loss {mean_loss:.4f} | val dipole mae {val['dipole']['mae']:.4f} "
             f"cos {val['dipole']['cosine']:.3f} | force mae {val['force']['mae']:.5f} "
             f"cos {val['force']['cosine']:.3f} atom_acc {val['force']['atom_acc']:.3f} | {time.time() - t0:.0f}s")
+        torch.save(dict(model=model.state_dict(), optimizer=opt.state_dict(),
+                        scheduler=sched.state_dict(), epoch=epoch, step=step, best_val=best_val,
+                        args=vars(args), rng=torch.get_rng_state(),
+                        cuda_rng=torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None),
+                   latest + ".tmp")
+        os.replace(latest + ".tmp", latest)
+        profiler.save()
         if args.max_steps and step >= args.max_steps:
             break
 
+    profiler.close()
     model.load_state_dict(torch.load(f"{out_dir}/model.pt"))
     results = {"args": vars(args), "scale": scale.tolist()}
     if args.model == "pipeline":
@@ -297,8 +340,11 @@ def main():
                 reflection=True, reflection_only=True)
         say(split, json.dumps(results[split]))
     torch.save(dict(state_dict=model.state_dict(), scale=scale.tolist(), args=vars(args),
-                    text=args.text, text_dim=data["text_dim"]), f"{out_dir}/checkpoint.pt")
-    json.dump(results, open(f"{out_dir}/results.json", "w"), indent=2)
+                    text=args.text, text_dim=data["text_dim"]), f"{out_dir}/checkpoint.pt.tmp")
+    os.replace(f"{out_dir}/checkpoint.pt.tmp", f"{out_dir}/checkpoint.pt")
+    with open(f"{out_dir}/results.json.tmp", "w") as stream:
+        json.dump(results, stream, indent=2)
+    os.replace(f"{out_dir}/results.json.tmp", f"{out_dir}/results.json")
     say("saved", out_dir)
 
 
