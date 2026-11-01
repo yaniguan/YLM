@@ -24,9 +24,12 @@ import time
 
 import numpy as np
 import torch
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import src
 from e3nn import o3
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.profiling import Profiler
 from src.model import YLM  # noqa: E402
 
 TASKS = {"dipole": 0, "force": 1}
@@ -102,7 +105,7 @@ def get_batch(data, split, idx, device, R=None):
 
 
 @torch.no_grad()
-def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0):
+def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0, reflection=False, reflection_only=False):
     model.eval()
     scale = scale.to(device)
     rotations = [torch.eye(3)]  # first one = no rotation
@@ -110,6 +113,8 @@ def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0):
         with torch.random.fork_rng():  # same rotations every time, without touching the training RNG
             torch.manual_seed(seed)
             rotations += list(o3.rand_matrix(n_rot - 1))
+    if reflection:
+        rotations += [-R for R in rotations.copy()]
     n = len(split["mol"])
     res = {t: {"abs_err": [], "cos": [], "eq_err": [], "atom_hit": []} for t in TASKS}
     for start in range(0, n, batch_size):
@@ -123,7 +128,9 @@ def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0):
             target = target.cpu()
             if y0 is None:
                 y0 = y  # prediction in the original frame (R = identity)
-            else:
+            if reflection_only and torch.linalg.det(R) > 0:
+                continue
+            if not torch.equal(R, torch.eye(3)):
                 eq = (y - y0 @ R.T).norm(dim=-1) / y0.norm(dim=-1).clamp(min=1e-12)
                 for name, k in TASKS.items():
                     res[name]["eq_err"] += eq[task == k].tolist()
@@ -183,6 +190,12 @@ def main():
     p.add_argument("--model", choices=["ylm", "pipeline", "scalar"], default="ylm",
                    help="ylm = Option A; pipeline = parse text -> atom index -> force model; "
                         "scalar = invariants only (see src/baselines.py)")
+    p.add_argument("--option", choices=list("ABC"), default="A")
+    p.add_argument("--legacy_odd_scalars", action="store_true",
+                   help="ablation: raw odd scalars in keys; breaks reflection invariance")
+    p.add_argument("--tiny", action="store_true", help="small three-layer CPU model")
+    p.add_argument("--eval_reflections", action="store_true")
+    p.add_argument("--eval_batch_size", type=int, default=32)
     p.add_argument("--augment", action="store_true", help="random rotation of every training batch")
     p.add_argument("--name", required=True)
     p.add_argument("--epochs", type=int, default=60)
@@ -194,13 +207,15 @@ def main():
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--device", default=None, help="default: cuda, else mps, else cpu")
     p.add_argument("--test_limit", type=int, default=0, help="debug: only evaluate this many questions per split")
+    p.add_argument("--resume", action="store_true", help="resume latest completed epoch in run directory")
+    p.add_argument("--output_dir", help="explicit persistent run directory")
     args = p.parse_args()
 
     torch.manual_seed(args.seed)
     device = args.device or ("cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu"))
-    out_dir = f"runs/{args.name}"
+    out_dir = args.output_dir or f"runs/{args.name}"
     os.makedirs(out_dir, exist_ok=True)
-    log = open(f"{out_dir}/log.txt", "w")
+    log = open(f"{out_dir}/log.txt", "a" if args.resume else "w")
 
     def say(*a):
         s = " ".join(str(x) for x in a)
@@ -229,7 +244,10 @@ def main():
         from src.baselines import ScalarCollapse
         model = ScalarCollapse(text_dim=data["text_dim"]).to(device)
     else:
-        model = YLM(text_dim=data["text_dim"], text_mode="taskid" if args.text == "taskid" else "text").to(device)
+        tiny = dict(hidden_irreps="8x0e + 2x0o + 4x1o + 2x1e + 2x2e",
+                    cross_irreps="4x0e + 4x1o + 2x1e + 2x2e") if args.tiny else {}
+        model = YLM(text_dim=data["text_dim"], text_mode="taskid" if args.text == "taskid" else "text",
+                    option=args.option, legacy_odd_scalars=args.legacy_odd_scalars, **tiny).to(device)
     say("parameters", sum(p.numel() for p in model.parameters()))
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-5)
     steps_per_epoch = math.ceil(len(train["mol"]) / args.batch_size)
@@ -237,35 +255,75 @@ def main():
     sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=args.lr, total_steps=total, pct_start=0.05)
 
     step, best_val, t0 = 0, float("inf"), time.time()
-    for epoch in range(args.epochs):
+    start_epoch = 0
+    latest = f"{out_dir}/latest.pt"
+    if args.resume and os.path.exists(latest):
+        saved = torch.load(latest, map_location=device, weights_only=False)
+        for key in ("epochs", "batch_size", "lr", "text", "option", "model", "tiny", "seed", "train_fraction", "augment", "legacy_odd_scalars"):
+            if saved["args"][key] != vars(args)[key]:
+                raise ValueError(f"Resume configuration differs: {key}")
+        model.load_state_dict(saved["model"])
+        opt.load_state_dict(saved["optimizer"])
+        sched.load_state_dict(saved["scheduler"])
+        start_epoch, step, best_val = saved["epoch"] + 1, saved["step"], saved["best_val"]
+        torch.set_rng_state(saved["rng"].cpu())
+        if saved["cuda_rng"] is not None:
+            torch.cuda.set_rng_state_all([state.cpu() for state in saved["cuda_rng"]])
+        say("resumed epoch", start_epoch, "step", step)
+    profile_dir = f"{out_dir}/profiling"
+    if os.path.exists(profile_dir):
+        # Preserve earlier sessions and interrupted traces when resuming.
+        import shutil
+        shutil.move(profile_dir, f"{profile_dir}_session_{time.time_ns()}")
+    profiler = Profiler(profile_dir, device=device, trace_steps=20)
+    for epoch in range(start_epoch, args.epochs):
+        if args.max_steps and step >= args.max_steps:
+            break
         perm = torch.randperm(len(train["mol"]))
-        losses = []
+        loss_sum, n_loss = None, 0  # summed on the device: no per-step host sync
+        profiler.epoch_start()
         for start in range(0, len(perm), args.batch_size):
             idx = perm[start: start + args.batch_size]
-            R = o3.rand_matrix() if args.augment else None
-            inputs, target = get_batch(data, train, idx, device, R)
-            y, _ = model(*inputs)
-            loss = ((y - target / scale_dev[inputs[5]][:, None]) ** 2).mean()
-            opt.zero_grad()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 10.0)
-            opt.step()
-            sched.step()
-            losses.append(loss.item())
+            with profiler.phase("data"):
+                R = o3.rand_matrix() if args.augment else None
+                inputs, target = get_batch(data, train, idx, device, R)
+            with profiler.phase("forward"):
+                y, _ = model(*inputs)
+                loss = ((y - target / scale_dev[inputs[5]][:, None]) ** 2).mean()
+            with profiler.phase("backward"):
+                opt.zero_grad()
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 10.0)
+            with profiler.phase("optimizer"):
+                opt.step()
+                sched.step()
+            profiler.step_done(tokens=0, samples=len(idx))
+            loss_sum = loss.detach() if loss_sum is None else loss_sum + loss.detach()
+            n_loss += 1
             step += 1
             if args.max_steps and step >= args.max_steps:
                 break
-        val = evaluate(model, data, splits["val"], scale, device, n_rot=1)
+        val = evaluate(model, data, splits["val"], scale, device, n_rot=1, batch_size=args.eval_batch_size)
         val_score = val["dipole"]["mae"] / scale[0].item() + val["force"]["mae"] / scale[1].item()
         if val_score < best_val:
             best_val = val_score
-            torch.save(model.state_dict(), f"{out_dir}/model.pt")
-        say(f"epoch {epoch} loss {np.mean(losses):.4f} | val dipole mae {val['dipole']['mae']:.4f} "
+            torch.save(model.state_dict(), f"{out_dir}/model.pt.tmp")
+            os.replace(f"{out_dir}/model.pt.tmp", f"{out_dir}/model.pt")
+        mean_loss = (loss_sum / max(n_loss, 1)).item() if loss_sum is not None else float("nan")
+        say(f"epoch {epoch} loss {mean_loss:.4f} | val dipole mae {val['dipole']['mae']:.4f} "
             f"cos {val['dipole']['cosine']:.3f} | force mae {val['force']['mae']:.5f} "
             f"cos {val['force']['cosine']:.3f} atom_acc {val['force']['atom_acc']:.3f} | {time.time() - t0:.0f}s")
+        torch.save(dict(model=model.state_dict(), optimizer=opt.state_dict(),
+                        scheduler=sched.state_dict(), epoch=epoch, step=step, best_val=best_val,
+                        args=vars(args), rng=torch.get_rng_state(),
+                        cuda_rng=torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None),
+                   latest + ".tmp")
+        os.replace(latest + ".tmp", latest)
+        profiler.save()
         if args.max_steps and step >= args.max_steps:
             break
 
+    profiler.close()
     model.load_state_dict(torch.load(f"{out_dir}/model.pt"))
     results = {"args": vars(args), "scale": scale.tolist()}
     if args.model == "pipeline":
@@ -273,9 +331,20 @@ def main():
     for split in ["test", "test_heldout"]:
         if args.test_limit:
             splits[split] = {k: (v[: args.test_limit] if torch.is_tensor(v) else v) for k, v in splits[split].items()}
-        results[split] = evaluate(model, data, splits[split], scale, device, n_rot=args.eval_rotations)
+        results[split] = evaluate(model, data, splits[split], scale, device, n_rot=args.eval_rotations, batch_size=args.eval_batch_size)
+        if args.eval_reflections:
+            results[split + "_o3"] = evaluate(model, data, splits[split], scale, device,
+                n_rot=args.eval_rotations, batch_size=args.eval_batch_size, reflection=True)
+            results[split + "_reflection"] = evaluate(model, data, splits[split], scale, device,
+                n_rot=args.eval_rotations, batch_size=args.eval_batch_size,
+                reflection=True, reflection_only=True)
         say(split, json.dumps(results[split]))
-    json.dump(results, open(f"{out_dir}/results.json", "w"), indent=2)
+    torch.save(dict(state_dict=model.state_dict(), scale=scale.tolist(), args=vars(args),
+                    text=args.text, text_dim=data["text_dim"]), f"{out_dir}/checkpoint.pt.tmp")
+    os.replace(f"{out_dir}/checkpoint.pt.tmp", f"{out_dir}/checkpoint.pt")
+    with open(f"{out_dir}/results.json.tmp", "w") as stream:
+        json.dump(results, stream, indent=2)
+    os.replace(f"{out_dir}/results.json.tmp", f"{out_dir}/results.json")
     say("saved", out_dir)
 
 

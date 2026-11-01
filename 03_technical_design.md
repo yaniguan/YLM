@@ -163,3 +163,30 @@ def test_equivariance(model, pos, atom_types, text_ids, irreps_out):
 ```
 
 Run it for every model, every commit.
+
+## Executable A/B/C configuration (2026-10-29)
+
+`YLM(text_dim=..., option="A" | "B" | "C")` selects these layers in
+`src/irreps_to_text.py`; `scripts/04_train.py --option B` exposes the same choice.
+A remains the default and retains released checkpoint parameter names.
+B uses masked mean pooling of encoder irreps, text-generated channel gates, an
+`o3.Linear` key projection, and contractions of identical `(l, parity)` blocks.
+Its direction scores are added to A's scaled scalar-key score before softmax.
+C uses A's output `o_t`, then `FullyConnectedTensorProduct(o_t, o_t, MLP(h_t))`
+with external, per-token weights. It includes all compatible paths in the configured
+cross irreps, including `1o x 1o -> 2e`; it is separate from the earlier
+compositional `CompModel` B/C-lite experiment. The vector readout remains `1o`;
+the token side stream can contain `2e` tensors.
+
+For **O(3)**, raw `0o` features cannot enter scalar scores: use their absolute
+values, or a parity-even contraction. Same-l contractions in B must also match
+parity. The earlier chirality discussion concerns SO(3) or an explicitly
+parity-aware text representation; invariant text with raw pseudoscalar scores
+has no reflection guarantee. `legacy_odd_scalars=True` / `--legacy_odd_scalars`
+is provided only to reproduce that earlier behavior. It changes no parameters.
+
+C's fully connected CG paths are intentionally unrestricted here. With default
+widths and 32-dimensional input text the complete model has about 13.05M
+parameters, versus 0.25M for A, largely due to the text-to-path hypernetwork.
+Use `--tiny` for CPU smoke experiments. Full-model timing and isolated peak RSS
+are measured by `scripts/bench_full_model.py` (both tiny and default presets).

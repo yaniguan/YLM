@@ -1,0 +1,3 @@
+checkpoint checkpoints/v0/ylm_minilm_s0.pt | text=minilm | seed=0 | device=cpu
+test {"dipole": {"mae": 0.08462729176509445, "cosine": 0.9792225674934071, "eq_err_mean": 1.625421533124035e-06, "eq_err_max": 4.567109499475919e-05}, "force": {"mae": 0.007268876365350696, "cosine": 0.9445979632587691, "eq_err_mean": 2.387395691327478e-06, "eq_err_max": 0.0002921524574048817, "atom_acc": 0.7540498171050339}}
+test_heldout {"dipole": {"mae": 0.26642279229151467, "cosine": 0.8170523174749819, "eq_err_mean": 2.1733121995108853e-06, "eq_err_max": 5.137108382768929e-05}, "force": {"mae": 0.01312028886325747, "cosine": 0.8763872692864163, "eq_err_mean": 2.5093307232438735e-06, "eq_err_max": 0.00025683565763756633, "atom_acc": 0.706497125936248}}

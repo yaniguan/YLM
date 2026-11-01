@@ -1,4 +1,4 @@
-"""Irreps-to-Text cross-attention, Option A (see 03_technical_design.md).
+"""Irreps-to-Text cross-attention, Options A/B/C (03_technical_design.md).
 
 Text tokens ask, atoms answer.
   query   = from text hidden state h_t          (invariant)
@@ -9,6 +9,8 @@ Text tokens ask, atoms answer.
 
 The second term lets the text ask for a whole-molecule sum (needed for the dipole).
 Gates are invariant numbers per channel, so out_t is equivariant.
+B adds text-gated global/atom same-irrep contractions to scores.
+C applies a per-token text-weighted CG self product to A's output.
 """
 import math
 
@@ -28,13 +30,17 @@ def channel_index(irreps):
     return torch.tensor(idx, dtype=torch.long)
 
 
-def invariants(x, irreps):
-    """Scalars as they are; for l>=1, the length of each channel. (..., dim) -> (..., n_inv)"""
+def invariants(x, irreps, legacy_odd_scalars=False):
+    """Parity-even keys; legacy_odd_scalars reproduces the SO(3)-only ablation.
+
+    Even scalars unchanged, odd scalars absolute, higher-l channel lengths.
+    (..., dim) -> (..., n_inv).
+    """
     parts = []
     for (mul, ir), sl in zip(irreps, irreps.slices()):
         block = x[..., sl]
         if ir.l == 0:
-            parts.append(block)
+            parts.append(block if ir.p == 1 or legacy_odd_scalars else block.abs())
         else:
             block = block.reshape(*block.shape[:-1], mul, ir.dim)
             parts.append((block.pow(2).sum(-1) + 1e-8).sqrt())
@@ -42,14 +48,29 @@ def invariants(x, irreps):
 
 
 class IrrepsToText(nn.Module):
-    def __init__(self, text_dim, atom_irreps, out_irreps, key_dim=64):
+    def __init__(self, text_dim, atom_irreps, out_irreps, key_dim=64, option="A", legacy_odd_scalars=False):
         super().__init__()
+        if option not in {"A", "B", "C"}:
+            raise ValueError("option must be A, B, or C")
+        self.option = option
+        self.legacy_odd_scalars = legacy_odd_scalars
         self.atom_irreps = o3.Irreps(atom_irreps)
         self.out_irreps = o3.Irreps(out_irreps)
         n_inv = self.atom_irreps.num_irreps
         self.key_dim = key_dim
         self.q = nn.Linear(text_dim, key_dim)
         self.k = nn.Sequential(nn.Linear(n_inv, 128), nn.SiLU(), nn.Linear(128, key_dim))
+        # B contracts identical (l, parity) channels, preserving O(3).
+        if option == "B":
+            self.direction_key = o3.Linear(self.atom_irreps, self.atom_irreps)
+            self.direction_query = nn.Linear(text_dim, self.atom_irreps.num_irreps)
+        if option == "C":
+            # C uses A's output and text-generated weights for every CG path.
+            self.tp = o3.FullyConnectedTensorProduct(
+                self.out_irreps, self.out_irreps, self.out_irreps,
+                internal_weights=False, shared_weights=False)
+            self.tp_weights = nn.Sequential(nn.Linear(text_dim, 64), nn.SiLU(),
+                                            nn.Linear(64, self.tp.weight_numel))
         self.v = o3.Linear(self.atom_irreps, self.out_irreps)
         self.gate_attn = nn.Linear(text_dim, self.out_irreps.num_irreps)
         self.gate_sum = nn.Linear(text_dim, self.out_irreps.num_irreps)
@@ -59,8 +80,19 @@ class IrrepsToText(nn.Module):
         """h: (B, T, text_dim)  x: (B, N, atom_irreps.dim)  atom_mask: (B, N)
         returns e: (B, T, out_irreps.dim), attn: (B, T, N)"""
         q = self.q(h)                                                  # (B, T, K)
-        k = self.k(invariants(x, self.atom_irreps))                    # (B, N, K)
+        k = self.k(invariants(x, self.atom_irreps, self.legacy_odd_scalars))                    # (B, N, K)
         scores = torch.einsum("btk,bnk->btn", q, k) / math.sqrt(self.key_dim)
+        if self.option == "B":
+            global_x = (x * atom_mask[..., None]).sum(1) / atom_mask.sum(1, keepdim=True)
+            gates = self.direction_query(h)
+            keys = self.direction_key(x)
+            channel = 0
+            for (mul, ir), sl in zip(self.atom_irreps, self.atom_irreps.slices()):
+                query = global_x[:, None, sl].reshape(x.shape[0], 1, mul, ir.dim)
+                query = query * gates[..., channel:channel + mul, None]
+                key = keys[..., sl].reshape(x.shape[0], x.shape[1], mul, ir.dim)
+                scores = scores + torch.einsum("btcm,bncm->btn", query, key)
+                channel += mul
         scores = scores.masked_fill(~atom_mask[:, None, :], float("-inf"))
         attn = scores.softmax(dim=-1)                                  # (B, T, N)  invariant
 
@@ -71,4 +103,6 @@ class IrrepsToText(nn.Module):
         g_attn = torch.sigmoid(self.gate_attn(h))[..., self.expand]   # (B, T, D) invariant
         g_sum = self.gate_sum(h)[..., self.expand]
         e = g_attn * picked + g_sum * total
+        if self.option == "C":
+            e = self.tp(e, e, self.tp_weights(h))
         return e, attn

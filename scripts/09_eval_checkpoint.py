@@ -13,6 +13,8 @@ import os
 import sys
 
 import torch
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import src
 from e3nn import o3
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,6 +31,8 @@ def main():
     p.add_argument("--ckpt", required=True)
     p.add_argument("--splits", nargs="+", default=["test", "test_heldout"])
     p.add_argument("--eval_rotations", type=int, default=32)
+    p.add_argument("--reflections", action="store_true")
+    p.add_argument("--batch_size", type=int, default=32)
     p.add_argument("--demo", action="store_true", help="print one force question under a random rotation")
     p.add_argument("--data_dir", default=os.path.join(ROOT, "data"))
     args = p.parse_args()
@@ -38,13 +42,19 @@ def main():
     text = ck["text"]
     text_path = None if text == "taskid" else f"{args.data_dir}/text_{text}.pt"
     data, splits = train04.load_data(f"{args.data_dir}/qm9_xtb.pkl", f"{args.data_dir}/tensorqa_v0.json", text_path)
-    model = YLM(text_dim=data["text_dim"], text_mode="taskid" if text == "taskid" else "text").to(device)
+    config = ck.get("args", {})
+    tiny = dict(hidden_irreps="8x0e + 2x0o + 4x1o + 2x1e + 2x2e",
+                cross_irreps="4x0e + 4x1o + 2x1e + 2x2e") if config.get("tiny") else {}
+    model = YLM(text_dim=data["text_dim"], text_mode="taskid" if text == "taskid" else "text",
+                option=config.get("option", "A"), legacy_odd_scalars=config.get("legacy_odd_scalars", False),
+                **tiny).to(device)
     model.load_state_dict(ck["state_dict"])
     scale = torch.tensor(ck["scale"])
     print(f"checkpoint {args.ckpt} | text={text} | seed={ck.get('seed')} | device={device}")
 
     for split in args.splits:
-        r = train04.evaluate(model, data, splits[split], scale, device, n_rot=args.eval_rotations)
+        r = train04.evaluate(model, data, splits[split], scale, device, n_rot=args.eval_rotations,
+                             batch_size=args.batch_size, reflection=args.reflections)
         print(split, json.dumps(r))
 
     if args.demo:
