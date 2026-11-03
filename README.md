@@ -1,5 +1,7 @@
 # YLM: Letting Language Read 3D Directions
 
+[![tests](https://github.com/yaniguan/YLM/actions/workflows/tests.yml/badge.svg)](https://github.com/yaniguan/YLM/actions/workflows/tests.yml)
+
 **YLM** (Y_lm + Language Model) lets text tokens attend directly to rotation-equivariant 3D features
 (vectors and tensors), so a model can answer questions like *"what is the force on this oxygen atom?"*
 with a vector that rotates correctly when the molecule rotates.
@@ -284,3 +286,16 @@ trains A/B/C, task-ID, and legacy A, evaluates, and saves/downloads results thro
 Drive. [October 29 worklog](docs/WORKLOG_oct29b.md) records local limitations and
 measured CPU benchmarks. These changes do not establish new molecular accuracy
 results; the v0 tables above remain historical results.
+
+### A/B/C full runs (October 30–31)
+
+Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
+[docs/results_options_abc.md](docs/results_options_abc.md). TEST split, force task:
+
+| Option | Force MAE (≤ 0.00727) | Force cosine (≥ 0.9446) | Atom acc (≥ 0.754) |
+|---|---|---|---|
+| A | 0.00668 | 0.9559 | 0.909 |
+| B | 0.00680 | 0.9588 | 0.696 |
+| C | **0.00487** | **0.9762** | **0.920** |
+
+Single seed; see the linked doc for held-out wordings, dipole, and caveats.
