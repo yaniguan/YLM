@@ -53,7 +53,7 @@ def test_tiny_joint_training_restores_best_validation(monkeypatch):
         return loss
 
     monkeypatch.setattr(ds, 'masked_multitarget_loss', traced)
-    # A deliberately large learning rate exercises validation selection, on a tiny random LM.
+    # Use a large learning rate to test choosing the best validation model.
     prediction = ds.fine_tune_multitarget(model, tok, examples, y, [0, 1, 2], [3], [4, 5],
                                          epochs=3, batch_size=3, max_len=16, lr=.1)
     assert prediction.shape == (2, 2) and np.isfinite(prediction).all()

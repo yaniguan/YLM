@@ -235,7 +235,7 @@ def paired_comparisons(records, draws=1000, seed=0):
 
 
 def multitarget_stats(y, train):
-    """Per-target population statistics from observed training labels only."""
+    """Return each target's mean and scale using only known training labels."""
     y = np.asarray(y, dtype=float)
     if y.ndim != 2 or not len(train):
         raise ValueError('Joint targets require a matrix and nonempty training rows')
@@ -250,23 +250,25 @@ def multitarget_stats(y, train):
 
 
 def masked_multitarget_loss(prediction, target):
-    """Mean of observed per-target MSEs; missing cells have zero gradient."""
+    """Average each target's mean squared error, ignoring missing labels."""
     mask = torch.isfinite(target)
     safe = torch.where(mask, target, torch.zeros_like(target))
     square = (prediction - safe).square() * mask
     counts = mask.sum(0)
     active = counts > 0
     per_target = square.sum(0) / counts.clamp_min(1)
-    return per_target[active].mean() if active.any() else prediction.sum() * 0
+    if active.any():
+        return per_target[active].mean()
+    return prediction.sum() * 0
 
 
 def fine_tune_multitarget(model, tok, examples, y, train, val, test, *, seed=0,
                           epochs=3, device='cpu', batch_size=8, max_len=512,
                           lr=1e-5, profiler=None):
-    """One shared LM/head, normalized masked loss, validation-selected checkpoint.
+    """Train targets together and restore the model with the best validation loss.
 
-    Return a matrix in original target units, with columns in caller target order.
-    Split membership is supplied before missing-label filtering.
+    Return predictions in the original units and target column order.
+    Pass split indices before filtering out missing labels.
     """
     from contextlib import nullcontext
     from src.tasks.common import batch_tokens

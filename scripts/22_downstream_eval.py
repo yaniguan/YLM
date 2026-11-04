@@ -37,7 +37,7 @@ def assert_no_sft_leak(config, task, rows, split):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--multitarget', action='store_true', help='Joint masked RedDB/MP fine-tuning')
+    p.add_argument('--multitarget', action='store_true', help='Train RedDB/MP targets together, ignoring missing labels')
     p.add_argument('--runs', nargs='+', required=True, help='Saved run directories, one per arm')
     p.add_argument('--tasks', nargs='+', choices=['calisol', 'reddb', 'mp_battery'], default=['calisol', 'reddb', 'mp_battery'])
     p.add_argument('--seeds', nargs='+', type=int, default=[0, 1, 2])

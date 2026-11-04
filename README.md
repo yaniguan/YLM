@@ -300,9 +300,10 @@ Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
 
 Single seed; see the linked doc for held-out wordings, dipole, and caveats.
 
-`--multitarget` in downstream evaluation opts RedDB/MP into one shared LM and
-multi-output head per task/seed. Missing labels have zero loss/gradient; observed
-MSEs are normalized using training-only statistics and averaged per target.
-Validation selects and restores the best shared model/head. Results retain
-per-target test rows and metrics under `finetune_joint`; the default independent
-target fine-tuning remains the comparator. Joint learning may introduce negative transfer.
+Use `--multitarget` in downstream evaluation to train RedDB/MP targets together
+with one language model and output head per task and seed. Missing labels do not
+affect training. Each target is scaled using its training labels, and the loss
+is the average of the targets' mean squared errors. Validation picks the best
+model and head to restore. Results under `finetune_joint` include test rows and
+metrics for each target. By default, targets are still trained separately.
+Training targets together can hurt some targets' results.
