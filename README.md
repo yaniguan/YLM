@@ -299,3 +299,10 @@ Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
 | C | **0.00487** | **0.9762** | **0.920** |
 
 Single seed; see the linked doc for held-out wordings, dipole, and caveats.
+
+`--multitarget` in downstream evaluation opts RedDB/MP into one shared LM and
+multi-output head per task/seed. Missing labels have zero loss/gradient; observed
+MSEs are normalized using training-only statistics and averaged per target.
+Validation selects and restores the best shared model/head. Results retain
+per-target test rows and metrics under `finetune_joint`; the default independent
+target fine-tuning remains the comparator. Joint learning may introduce negative transfer.
