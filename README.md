@@ -299,3 +299,10 @@ Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
 | C | **0.00487** | **0.9762** | **0.920** |
 
 Single seed; see the linked doc for held-out wordings, dipole, and caveats.
+
+Option B scoring can be controlled with `scripts/04_train.py --b_score_mode normalized`
+(or `YLMConfig(b_score_mode="normalized")` for the LM adapter). This opt-in mode
+normalizes same-irrep contractions, scales by the square root of the channel count,
+and multiplies the directional term by a learned `tanh` coefficient initialized to
+zero. The default `legacy` mode retains the original scores and checkpoint layout.
+Correctness tests do not establish improved atom-routing accuracy.
