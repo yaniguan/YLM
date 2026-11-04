@@ -60,6 +60,12 @@ def result_record(rows, indices, target, predictions, seed, draws=1000):
     return result
 
 
+def controlled_examples(rows, xyz=False, *, mode="original", indices=None, donor_indices=None, seed=0):
+    from src.tasks.geometry_controls import geometry_control
+    changed, report = geometry_control(rows, mode, indices=indices, donor_indices=donor_indices, seed=seed)
+    return render_examples(changed, xyz), report
+
+
 def render_examples(rows, xyz=False):
     examples = []
     for row in rows:

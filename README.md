@@ -299,3 +299,11 @@ Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
 | C | **0.00487** | **0.9762** | **0.920** |
 
 Single seed; see the linked doc for held-out wordings, dipole, and caveats.
+
+Downstream evaluation accepts `--geometry_control zero` or `donor` (default:
+`original`). Only test coordinates change; training and validation stay intact.
+Donors come from training rows with matching per-species elements and roles;
+recipient text, atoms, species, roles, and amounts are preserved. Coverage and
+unmatched recipients are recorded in results.json. The SMILES-only arm is
+unaffected. Zero coordinates are out of distribution, and donor coverage may be
+limited; these controls measure geometry dependence without establishing causality.
