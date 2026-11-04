@@ -1,5 +1,11 @@
 # YLM: Letting Language Read 3D Directions
 
+<p>
+  <a href="https://antigravity.google/"><img src="assets/google-antigravity-logo.svg" alt="Google Antigravity" height="40" align="left"></a>
+  <sub>This project uses API credits from the Google Antigravity for Science program. Thank you, Google Antigravity!</sub>
+</p>
+<br clear="left">
+
 [![tests](https://github.com/yaniguan/YLM/actions/workflows/tests.yml/badge.svg)](https://github.com/yaniguan/YLM/actions/workflows/tests.yml)
 
 **YLM** (Y_lm + Language Model) lets text tokens attend directly to rotation-equivariant 3D features
