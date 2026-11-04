@@ -305,3 +305,11 @@ Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
 | C | **0.00487** | **0.9762** | **0.920** |
 
 Single seed; see the linked doc for held-out wordings, dipole, and caveats.
+
+Add `--mp_composition_baseline` to downstream evaluation to enable this baseline
+(off by default). It uses the fraction of each of the 118 elements in the full
+charged structure and a separate column for each working ion, including unknown
+ions. Fractions are computed before cutting the crystal to a cluster. Reordering
+sites or repeating the cell does not change them. Ridge regression fits scaling
+on training rows and chooses its penalty on validation rows. Results appear as
+`composition/ridge`. Inputs exclude atom positions and electrochemical targets.

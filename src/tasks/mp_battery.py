@@ -75,12 +75,15 @@ def load_mp_battery(limit=None, cache_path='data/electrolyte/mp_battery.json', l
     rows = []
     for r in records[:limit] if limit is not None else records:
         try:
-            geom = crystal_cluster(Structure.from_dict(r['structure']))
+            structure = Structure.from_dict(r['structure'])
+            fractions = elemental_fractions(structure)
+            geom = crystal_cluster(structure)
             targets = {k: float(v) for k, v in r['targets'].items() if v is not None and np.isfinite(float(v))}
         except (ValueError, TypeError):
             continue
         if targets:
             rows.append(dict(id=r['id'], material_id=r['material_id'], targets=targets,
+                             composition_fractions=fractions.tolist(), working_ion=r.get('working_ion', 'unknown'),
                              example=Example([Seg('charged crystal=' + r['formula'] +
                                                   ' working_ion=' + r.get('working_ion', 'unknown'))], geom),
                              fingerprints=[], conditions=[]))
@@ -89,3 +92,31 @@ def load_mp_battery(limit=None, cache_path='data/electrolyte/mp_battery.json', l
 
 def split_mp(rows, seed=0, method='group'):
     return group_split([r['material_id'] for r in rows], seed)
+
+
+def elemental_fractions(structure):
+    """Count element fractions in the full crystal before cutting a cluster.
+
+    Each site must have one element. Columns use atomic number minus one.
+    Reordering sites or repeating the cell does not change the fractions.
+    """
+    counts = np.zeros(118, dtype=np.float64)
+    for site in structure:
+        if not site.is_ordered:
+            raise ValueError('Composition baseline requires ordered sites')
+        z = int(site.specie.Z)
+        if not 1 <= z <= 118:
+            raise ValueError('Unsupported atomic number')
+        counts[z - 1] += 1
+    if not counts.sum():
+        raise ValueError('Empty structure')
+    return counts / counts.sum()
+
+
+def working_ion_indicator(working_ion):
+    """Set the ion's atomic-number column to 1, or column 0 for unknown ions."""
+    from src.tasks.common import element_symbol
+    symbols = {element_symbol(z): z for z in range(1, 119)}
+    result = np.zeros(119, dtype=np.float64)
+    result[symbols.get(str(working_ion).strip(), 0)] = 1.
+    return result

@@ -232,3 +232,24 @@ def paired_comparisons(records, draws=1000, seed=0):
                                 'bootstrap_95': np.percentile(values, [2.5, 97.5]).tolist(),
                                 'bootstrap_probability_delta_nonnegative': float(np.mean(np.asarray(values) >= 0))})
     return comparisons
+
+
+def mp_composition_features(rows):
+    """Combine full crystal element fractions with the working ion.
+
+    Fractions must come from the loader, before the crystal is cut to a cluster.
+    ridge_predict fits scaling on training rows and picks the penalty on
+    validation rows.
+    """
+    from src.tasks.mp_battery import working_ion_indicator
+    vectors = []
+    for row in rows:
+        if 'composition_fractions' not in row:
+            raise ValueError('Missing full-structure composition; reload MP rows')
+        fractions = np.asarray(row['composition_fractions'], dtype=float)
+        if (fractions.shape != (118,) or not np.isfinite(fractions).all()
+                or (fractions < 0).any() or not np.isclose(fractions.sum(), 1.)):
+            raise ValueError('Invalid full-structure elemental fractions')
+        ion = working_ion_indicator(row.get('working_ion', 'unknown'))
+        vectors.append(np.concatenate([fractions, ion]))
+    return np.stack(vectors)
