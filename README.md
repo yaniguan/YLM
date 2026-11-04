@@ -299,3 +299,10 @@ Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
 | C | **0.00487** | **0.9762** | **0.920** |
 
 Single seed; see the linked doc for held-out wordings, dipole, and caveats.
+
+Downstream evaluation offers `--mp_composition_baseline`: full charged-structure
+fractions for all 118 elements plus a fixed working-ion indicator (including an
+unknown category), followed by training-scaled, validation-selected ridge
+regression. Fractions are computed before cluster truncation and are invariant
+to site order and cell replication. The opt-in comparator is reported as
+`composition/ridge`; it omits crystal arrangement and electrochemical endpoints.
