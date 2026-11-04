@@ -301,7 +301,8 @@ Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
 Single seed; see the linked doc for held-out wordings, dipole, and caveats.
 
 QM9 LM pretraining accepts `--target_mode invariant` in `scripts/20_pretrain_lm.py`.
-It emits energy and dipole norm, omitting Cartesian dipole components. Use the
-same mode for every comparison arm: it changes the objective and token
-distribution. The default remains `cartesian`. The selected mode is saved in the
-run config and checked on resume; older configs are treated as Cartesian.
+This mode predicts energy and dipole magnitude, without the x, y, and z dipole
+components. Use the same mode for all runs you compare: it changes the prediction
+task and the tokens used in training. The default is `cartesian`. The mode is
+saved in the run config and must match when you resume. Older configs use
+`cartesian`.

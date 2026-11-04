@@ -62,7 +62,8 @@ def corpus(rows, seed=0, with_xyz=False, target_mode="cartesian"):
 
 
 def check_corpus_resume(saved, target_mode):
-    """Legacy configs predate the mode field and contain Cartesian targets."""
-    previous = saved.get("corpus_target_mode", saved.get("args", {}).get("target_mode", "cartesian"))
+    """Check the saved mode. Older configs use Cartesian targets."""
+    args_mode = saved.get("args", {}).get("target_mode", "cartesian")
+    previous = saved.get("corpus_target_mode", args_mode)
     if previous != target_mode:
         raise ValueError("Resume corpus target mode differs from saved run")

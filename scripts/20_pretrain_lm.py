@@ -18,7 +18,7 @@ from src.tasks.evaluation import evaluate_lm, numeric_eval
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--target_mode', choices=['cartesian', 'invariant'], default='cartesian',
-                   help='Shared QM9 objective for all comparison arms')
+                   help='QM9 targets to predict; use the same mode for runs you compare')
     p.add_argument('--arm', choices=ARMS, required=True)
     p.add_argument('--tokens_budget', type=int, default=1000000)
     p.add_argument('--model', default='tiny', help='tiny, small, or hf:<name>')
