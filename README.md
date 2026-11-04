@@ -305,3 +305,10 @@ Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
 | C | **0.00487** | **0.9762** | **0.920** |
 
 Single seed; see the linked doc for held-out wordings, dipole, and caveats.
+
+Use `--group_exposure_guard` in post-training and downstream evaluation to
+record training groups and check for overlap with validation and test groups.
+It is off by default. CALiSol uses formulation groups. RedDB uses canonical
+reactants and scaffolds, including the empty scaffold for molecules without rings.
+Saved groups are combined across SFT and DPO stages. The guard rejects tasks
+whose earlier training groups are unknown; it cannot recover groups from row IDs.
