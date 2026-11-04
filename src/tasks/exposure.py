@@ -1,4 +1,4 @@
-"""Versioned chemistry-group exposure across SFT and DPO stages."""
+"""Track training groups across SFT and DPO stages."""
 from __future__ import annotations
 import copy
 
@@ -7,7 +7,7 @@ FIELDS = {'calisol': ('group',), 'reddb': ('smiles', 'scaffold'), 'mp_battery': 
 
 
 def training_groups(task, rows, indices):
-    """Use loader-provided splitting keys, including the empty acyclic scaffold."""
+    """Collect groups from loaded rows, including empty scaffolds."""
     if task not in FIELDS:
         raise ValueError(f'No group definition for {task}')
     groups = {key: set() for key in FIELDS[task]}
@@ -20,11 +20,14 @@ def training_groups(task, rows, indices):
 
 
 def merge_exposure(config, current):
-    """Union known groups; never infer chemistry from historical row IDs."""
+    """Combine known groups without guessing groups from old row IDs."""
     saved = config.get('group_exposure')
     if saved is not None and saved.get('version') != VERSION:
         raise ValueError('Unsupported group-exposure manifest version')
-    result = copy.deepcopy(saved) if saved else dict(version=VERSION, groups={}, unknown_sources=[])
+    if saved:
+        result = copy.deepcopy(saved)
+    else:
+        result = {'version': VERSION, 'groups': {}, 'unknown_sources': []}
     unknown = set(result['unknown_sources'])
     for source in set(config.get('qa_splits', {})) | set(config.get('sft_train_ids', {})):
         if source in FIELDS and source not in result['groups']:
@@ -48,7 +51,10 @@ def assert_no_group_leak(config, task, rows, split):
         return
     if set(trained) != set(FIELDS[task]):
         raise ValueError('Incomplete group-exposure manifest')
-    heldout = training_groups(task, rows, [i for k in ('val', 'test') for i in split[k]])
+    heldout_indices = []
+    for name in ('val', 'test'):
+        heldout_indices.extend(split[name])
+    heldout = training_groups(task, rows, heldout_indices)
     for key, values in heldout.items():
         if set(values) & set(trained[key]):
             raise ValueError(f'Downstream held-out {task} {key} groups overlap post-training exposure')

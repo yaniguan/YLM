@@ -47,7 +47,7 @@ def source_splits(config, sources, seed, limit, group_manifest=None):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--group_exposure_guard', action='store_true', help='Record and guard chemistry-group exposure')
+    p.add_argument('--group_exposure_guard', action='store_true', help='Record training groups and check for overlap')
     p.add_argument('--pretrained', required=True)
     p.add_argument('--out', required=True)
     p.add_argument('--sources', nargs='+', choices=['qm9', 'calisol', 'reddb'], default=['qm9'])
@@ -92,14 +92,16 @@ def main():
         for source, membership in lineage.items():
             exposure.setdefault(source, set()).update(membership['train'])
     if args.group_exposure_guard or 'group_exposure' in source_config:
-        # Disabling recording after a guarded stage leaves explicit unknown provenance.
+        # Mark new training groups as unknown when recording is turned off.
         lineage = dict(source_config)
         if not args.group_exposure_guard:
             lineage['qa_splits'] = {**source_config.get('qa_splits', {}), **manifests}
         config['group_exposure'] = merge_exposure(lineage, current_groups or {})
         if not args.group_exposure_guard:
             unknown = set(config['group_exposure']['unknown_sources'])
-            unknown.update(s for s in args.sources if s in ('calisol', 'reddb'))
+            for source in args.sources:
+                if source in ('calisol', 'reddb'):
+                    unknown.add(source)
             config['group_exposure']['unknown_sources'] = sorted(unknown)
     config['sft_train_ids'] = {k: sorted(v) for k, v in exposure.items()}
     if args.resume and (out / 'config.json').exists():
