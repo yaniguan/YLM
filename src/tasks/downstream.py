@@ -232,3 +232,100 @@ def paired_comparisons(records, draws=1000, seed=0):
                                 'bootstrap_95': np.percentile(values, [2.5, 97.5]).tolist(),
                                 'bootstrap_probability_delta_nonnegative': float(np.mean(np.asarray(values) >= 0))})
     return comparisons
+
+
+def multitarget_stats(y, train):
+    """Return each target's mean and scale using only known training labels."""
+    y = np.asarray(y, dtype=float)
+    if y.ndim != 2 or not len(train):
+        raise ValueError('Joint targets require a matrix and nonempty training rows')
+    observed = np.isfinite(y[train])
+    counts = observed.sum(0)
+    if (counts == 0).any():
+        raise ValueError('Each joint target needs an observed training label')
+    values = np.where(observed, y[train], 0.)
+    centre = values.sum(0) / counts
+    variance = np.where(observed, (y[train] - centre) ** 2, 0.).sum(0) / counts
+    return centre, np.maximum(np.sqrt(variance), 1e-6)
+
+
+def masked_multitarget_loss(prediction, target):
+    """Average each target's mean squared error, ignoring missing labels."""
+    mask = torch.isfinite(target)
+    safe = torch.where(mask, target, torch.zeros_like(target))
+    square = (prediction - safe).square() * mask
+    counts = mask.sum(0)
+    active = counts > 0
+    per_target = square.sum(0) / counts.clamp_min(1)
+    if active.any():
+        return per_target[active].mean()
+    return prediction.sum() * 0
+
+
+def fine_tune_multitarget(model, tok, examples, y, train, val, test, *, seed=0,
+                          epochs=3, device='cpu', batch_size=8, max_len=512,
+                          lr=1e-5, profiler=None):
+    """Train targets together and restore the model with the best validation loss.
+
+    Return predictions in the original units and target column order.
+    Pass split indices before filtering out missing labels.
+    """
+    from contextlib import nullcontext
+    from src.tasks.common import batch_tokens
+    if epochs < 1 or not len(val) or not len(test):
+        raise ValueError('Joint fine-tuning requires positive epochs and nonempty held-out splits')
+    y = np.asarray(y, dtype=float)
+    centre, scale = multitarget_stats(y, train)
+    if not np.isfinite(y[val]).any(0).all():
+        raise ValueError('Each joint target needs an observed validation label')
+    dtype = next(model.parameters()).dtype
+    targets = torch.as_tensor((y - centre) / scale, dtype=dtype, device=device)
+    head = torch.nn.Linear(model.lm.config.hidden_size, y.shape[1]).to(device=device, dtype=dtype)
+    parameters = list(model.parameters()) + list(head.parameters())
+    optimizer = torch.optim.AdamW(parameters, lr=lr)
+    rng = np.random.default_rng(seed)
+
+    @torch.no_grad()
+    def predict(indices):
+        model.eval()
+        head.eval()
+        predictions = []
+        for start in range(0, len(indices), batch_size):
+            ids = indices[start:start + batch_size]
+            batch = collate([examples[i] for i in ids], tok, max_len,
+                            need_geom=model.needs_geometry, device=device)
+            predictions.append(head(pooled_hidden(model, batch)))
+        return torch.cat(predictions)
+
+    best_loss, best_model, best_head = float('inf'), None, None
+    for _ in range(epochs):
+        model.train()
+        head.train()
+        order = rng.permutation(train).tolist()
+        for start in range(0, len(order), batch_size):
+            ids = order[start:start + batch_size]
+            if not torch.isfinite(targets[ids]).any():
+                continue
+            with profiler.phase('data') if profiler else nullcontext():
+                batch = collate([examples[i] for i in ids], tok, max_len,
+                                need_geom=model.needs_geometry, device=device)
+            with profiler.phase('forward') if profiler else nullcontext():
+                loss = masked_multitarget_loss(head(pooled_hidden(model, batch)), targets[ids])
+            with profiler.phase('backward') if profiler else nullcontext():
+                optimizer.zero_grad(set_to_none=True)
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(parameters, 1.)
+            with profiler.phase('optimizer') if profiler else nullcontext():
+                optimizer.step()
+            if profiler:
+                profiler.step_done(batch_tokens(batch, model), len(ids))
+        value = float(masked_multitarget_loss(predict(val), targets[val]))
+        if math.isfinite(value) and value < best_loss:
+            best_loss = value
+            best_model = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+            best_head = {k: v.detach().cpu().clone() for k, v in head.state_dict().items()}
+    if best_model is None:
+        raise ValueError('No finite joint validation loss')
+    model.load_state_dict(best_model)
+    head.load_state_dict(best_head)
+    return predict(test).cpu().numpy() * scale + centre

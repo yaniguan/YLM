@@ -10,7 +10,7 @@ import numpy as np
 from src.profiling import Profiler
 from src.tasks.common import load_run, pick_device, seed_everything
 from src.tasks.downstream import (render_examples, extract_features, ridge_predict, fingerprint_features,
-                                  fine_tune, result_record, paired_comparisons)
+                                  fine_tune, fine_tune_multitarget, result_record, paired_comparisons)
 
 
 def load_task(task, limit):
@@ -37,6 +37,7 @@ def assert_no_sft_leak(config, task, rows, split):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--multitarget', action='store_true', help='Train RedDB/MP targets together, ignoring missing labels')
     p.add_argument('--runs', nargs='+', required=True, help='Saved run directories, one per arm')
     p.add_argument('--tasks', nargs='+', choices=['calisol', 'reddb', 'mp_battery'], default=['calisol', 'reddb', 'mp_battery'])
     p.add_argument('--seeds', nargs='+', type=int, default=[0, 1, 2])
@@ -124,6 +125,25 @@ def main():
                     examples = render_examples(rows, arm == 'smiles_xyz')
                     features = extract_features(model, tok, examples, device, args.batch_size, text_limit, profiler)
                     del model
+                    joint = args.multitarget and task in ('reddb', 'mp_battery')
+                    if joint and not args.probe_only:
+                        eligible = [t for t in targets if all(valid[t][k] for k in ('train', 'val', 'test'))]
+                        if eligible:
+                            seed_everything(seed)
+                            model, tok, _ = load_run(run, device)
+                            y_joint = np.array([[r['targets'].get(t, np.nan) for t in eligible] for r in rows])
+                            prediction = fine_tune_multitarget(
+                                model, tok, examples, y_joint, split['train'], split['val'], split['test'],
+                                seed=seed, epochs=args.epochs, device=device, batch_size=args.batch_size,
+                                max_len=text_limit, lr=args.lr, profiler=profiler)
+                            positions = {i: j for j, i in enumerate(split['test'])}
+                            for column, target in enumerate(eligible):
+                                test_ids = valid[target]['test']
+                                pred = prediction[[positions[i] for i in test_ids], column]
+                                records.append(dict(task=task, target=target, arm=arm, method='finetune_joint',
+                                                    seed=seed, joint_targets=eligible,
+                                                    **result_record(rows, test_ids, target, pred, seed, args.bootstrap)))
+                            del model
                     for target in targets:
                         if any(not valid[target][k] for k in ('train', 'val', 'test')):
                             continue
@@ -132,7 +152,7 @@ def main():
                         pred, alpha = ridge_predict(features, y, train, val, test)
                         records.append(dict(task=task, target=target, arm=arm, method='probe', seed=seed,
                                             alpha=alpha, **result_record(rows, test, target, pred, seed, args.bootstrap)))
-                        if not args.probe_only:
+                        if not args.probe_only and not joint:
                             seed_everything(seed)
                             model, tok, _ = load_run(run, device)
                             pred = fine_tune(model, tok, examples, y, train, val, test, seed=seed,

@@ -305,3 +305,11 @@ Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
 | C | **0.00487** | **0.9762** | **0.920** |
 
 Single seed; see the linked doc for held-out wordings, dipole, and caveats.
+
+Use `--multitarget` in downstream evaluation to train RedDB/MP targets together
+with one language model and output head per task and seed. Missing labels do not
+affect training. Each target is scaled using its training labels, and the loss
+is the average of the targets' mean squared errors. Validation picks the best
+model and head to restore. Results under `finetune_joint` include test rows and
+metrics for each target. By default, targets are still trained separately.
+Training targets together can hurt some targets' results.
