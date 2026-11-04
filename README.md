@@ -299,3 +299,10 @@ Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
 | C | **0.00487** | **0.9762** | **0.920** |
 
 Single seed; see the linked doc for held-out wordings, dipole, and caveats.
+
+Opt into `--group_exposure_guard` in post-training and downstream evaluation to
+record and check versioned chemistry-group exposure alongside existing row-ID
+checks. CALiSol uses formulation groups; RedDB records canonical reactants and
+scaffolds (including the empty acyclic scaffold). Exposure is unioned through
+SFT/DPO stages. Historical task exposure without group provenance is explicitly
+unknown and rejected by the guard; old row IDs are never used to invent groups.

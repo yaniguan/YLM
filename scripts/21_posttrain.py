@@ -11,10 +11,11 @@ from src.profiling import Profiler
 from src.tasks.common import (load_run, train_lm, save_run_model, seed_everything, pick_device)
 from src.tasks.qm9_pretrain import load_qm9
 from src.tasks.sft import build_qa, build_preferences, train_dpo
+from src.tasks.exposure import training_groups, merge_exposure, assert_no_group_leak
 from src.tasks.evaluation import evaluate_lm, numeric_eval
 
 
-def source_splits(config, sources, seed, limit):
+def source_splits(config, sources, seed, limit, group_manifest=None):
     """Return QA split lists; builders never receive a combined train/held-out collection."""
     out = {k: [] for k in ('train', 'val', 'test')}
     manifests = {}
@@ -34,6 +35,9 @@ def source_splits(config, sources, seed, limit):
             from src.tasks.reddb import load_reddb, split_reddb
             rows = load_reddb(limit=limit, seed=0)
             splits = split_reddb(rows, seed, 'scaffold')
+        if group_manifest is not None and source != "qm9":
+            assert_no_group_leak(config, source, rows, splits)
+            group_manifest[source] = training_groups(source, rows, splits["train"])
         manifests[source] = {k: [str(rows[i].get('id', rows[i].get('qm9_index'))) for i in ids]
                              for k, ids in splits.items()}
         for split, indices in splits.items():
@@ -43,6 +47,7 @@ def source_splits(config, sources, seed, limit):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--group_exposure_guard', action='store_true', help='Record and guard chemistry-group exposure')
     p.add_argument('--pretrained', required=True)
     p.add_argument('--out', required=True)
     p.add_argument('--sources', nargs='+', choices=['qm9', 'calisol', 'reddb'], default=['qm9'])
@@ -70,7 +75,8 @@ def main():
     with open(Path(args.pretrained) / 'model.pt', 'rb') as handle:
         for block in iter(lambda: handle.read(1024 * 1024), b''):
             digest.update(block)
-    splits, manifests = source_splits(source_config, args.sources, args.seed, args.limit)
+    current_groups = {} if args.group_exposure_guard else None
+    splits, manifests = source_splits(source_config, args.sources, args.seed, args.limit, current_groups)
     max_atoms = max((len(ex.geom['Z']) for examples in splits.values() for ex in examples
                      if ex.geom is not None), default=0)
     # Reserve geometry space in every arm so the question text cap remains comparable.
@@ -85,9 +91,21 @@ def main():
     for lineage in (source_config.get('qa_splits', {}), manifests):
         for source, membership in lineage.items():
             exposure.setdefault(source, set()).update(membership['train'])
+    if args.group_exposure_guard or 'group_exposure' in source_config:
+        # Disabling recording after a guarded stage leaves explicit unknown provenance.
+        lineage = dict(source_config)
+        if not args.group_exposure_guard:
+            lineage['qa_splits'] = {**source_config.get('qa_splits', {}), **manifests}
+        config['group_exposure'] = merge_exposure(lineage, current_groups or {})
+        if not args.group_exposure_guard:
+            unknown = set(config['group_exposure']['unknown_sources'])
+            unknown.update(s for s in args.sources if s in ('calisol', 'reddb'))
+            config['group_exposure']['unknown_sources'] = sorted(unknown)
     config['sft_train_ids'] = {k: sorted(v) for k, v in exposure.items()}
     if args.resume and (out / 'config.json').exists():
         old = json.loads((out / 'config.json').read_text())
+        if old.get('group_exposure') != config.get('group_exposure'):
+            raise ValueError('Resume group exposure changed')
         if old['qa_splits'] != manifests or old['model_cfg'] != config['model_cfg']:
             raise ValueError('Resume data/model changed')
         if old['initial_model_sha256'] != config['initial_model_sha256']:
