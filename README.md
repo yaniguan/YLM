@@ -299,3 +299,9 @@ Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
 | C | **0.00487** | **0.9762** | **0.920** |
 
 Single seed; see the linked doc for held-out wordings, dipole, and caveats.
+
+Use `scripts/04_train.py --routing_audit` to include a `routing` report in ordinary
+held-out evaluation. It reports invariant/directional score scales, entropy,
+target mass/rank, top-k accuracy, and exact versus nearby/far routing errors.
+Only the identity-frame force observations are counted, once per question. The
+3.4-bohr neighbor criterion is a distance proxy, not a bond annotation.
