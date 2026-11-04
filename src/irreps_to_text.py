@@ -98,10 +98,12 @@ class IrrepsToText(nn.Module):
                 key = keys[..., sl].reshape(x.shape[0], x.shape[1], mul, ir.dim)
                 if self.b_score_mode == "normalized":
                     raw = global_x[:, None, sl].reshape(x.shape[0], 1, mul, ir.dim)
-                    query = torch.nn.functional.normalize(raw, dim=-1, eps=1e-6) * gates[..., channel:channel + mul, None]
+                    query = torch.nn.functional.normalize(raw, dim=-1, eps=1e-6)
+                    query = query * gates[..., channel:channel + mul, None]
                     key = torch.nn.functional.normalize(key, dim=-1, eps=1e-6)
                     contribution = torch.einsum("btcm,bncm->btn", query, key)
-                    scores = scores + self.direction_coefficient.tanh() * contribution / math.sqrt(self.atom_irreps.num_irreps)
+                    contribution = self.direction_coefficient.tanh() * contribution / math.sqrt(self.atom_irreps.num_irreps)
+                    scores = scores + contribution
                 else:
                     scores = scores + torch.einsum("btcm,bncm->btn", query, key)
                 channel += mul
