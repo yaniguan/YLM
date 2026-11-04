@@ -305,3 +305,12 @@ Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
 | C | **0.00487** | **0.9762** | **0.920** |
 
 Single seed; see the linked doc for held-out wordings, dipole, and caveats.
+
+Downstream evaluation accepts `--geometry_control zero` or `donor`. The default,
+`original`, leaves coordinates unchanged. These options change only test
+coordinates; training and validation stay the same. Donor coordinates come from
+training rows with matching elements and atom roles in each species. All other
+row data stays the same. `results.json` records how many rows changed and how many
+had no matching donor. SMILES-only runs stay the same. Zero coordinates differ
+from the training data, and some rows may have no donor. These checks show how
+results depend on coordinates, but do not prove cause and effect.
