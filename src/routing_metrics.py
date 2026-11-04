@@ -1,15 +1,15 @@
-"""Optional force-question routing diagnostics; no model-output changes."""
+"""Measure atom choices for force questions without changing model outputs."""
 from __future__ import annotations
 import numpy as np
 import torch
 
 
 class RoutingAudit:
-    """Aggregate each question once. Ranks use strict-greater (optimistic ties).
+    """Count each question once. Only higher scores count toward target rank.
 
-    Bonded-neighbor errors use the existing analysis distance proxy, 3.4 bohr,
-    rather than asserting chemical bond provenance. Score scales are population
-    standard deviations over valid atoms and valid question tokens.
+    Nearby errors are within 3.4 bohr; the atoms need not be bonded.
+    Score spread is the population standard deviation over unmasked atoms
+    and question tokens.
     """
     def __init__(self, topk=(1, 3, 5), neighbor_cutoff=3.4):
         if any(k < 1 for k in topk):
@@ -46,17 +46,27 @@ class RoutingAudit:
             for k in self.topk:
                 row[f'top{k}'] = float(rank <= min(k, int(atom_mask[b].sum())))
             if scores is not None:
-                tm = (text_mask[b].cpu().bool() if text_mask is not None
-                      else torch.ones(scores['invariant'].shape[1], dtype=torch.bool))
+                if text_mask is None:
+                    tm = torch.ones(scores['invariant'].shape[1], dtype=torch.bool)
+                else:
+                    tm = text_mask[b].cpu().bool()
                 valid = tm[:, None] & atom_mask[b][None, :]
                 for name, values in scores.items():
                     selected = values[b].detach().cpu()[valid]
-                    row[name + '_scale'] = float(selected.std(unbiased=False)) if len(selected) else 0.
+                    if len(selected):
+                        row[name + '_scale'] = float(selected.std(unbiased=False))
+                    else:
+                        row[name + '_scale'] = 0.
             self.rows.append(row)
             self.seen.add(identity)
 
     def report(self):
-        return {'n_questions': len(self.rows), 'rank_ties': 'strict-greater',
-                'neighbor_cutoff_bohr': self.neighbor_cutoff,
-                **{k: float(np.mean([r[k] for r in self.rows if k in r]))
-                   for k in sorted({k for r in self.rows for k in r})}}
+        report = {'n_questions': len(self.rows), 'rank_ties': 'strict-greater',
+                  'neighbor_cutoff_bohr': self.neighbor_cutoff}
+        keys = set()
+        for row in self.rows:
+            keys.update(row)
+        for key in sorted(keys):
+            values = [row[key] for row in self.rows if key in row]
+            report[key] = float(np.mean(values))
+        return report

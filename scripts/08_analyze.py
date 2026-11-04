@@ -162,7 +162,7 @@ def breakdown(runs_dir, out_dir):
 
 
 def routing_reports(runs_dir, out_dir):
-    """Collect optional identity-frame routing reports from saved evaluations."""
+    """Collect saved routing reports for unrotated molecules."""
     reports = {}
     for path in sorted(glob.glob(f"{runs_dir}/*/results.json")):
         result = json.load(open(path))

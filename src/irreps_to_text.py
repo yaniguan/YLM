@@ -96,9 +96,13 @@ class IrrepsToText(nn.Module):
                 key = keys[..., sl].reshape(x.shape[0], x.shape[1], mul, ir.dim)
                 scores = scores + torch.einsum("btcm,bncm->btn", query, key)
                 channel += mul
-        self.last_scores = ({"invariant": invariant_scores.detach(),
-                             "directional": (scores - invariant_scores).detach()}
-                            if self.audit_enabled else None)
+        if self.audit_enabled:
+            self.last_scores = {
+                "invariant": invariant_scores.detach(),
+                "directional": (scores - invariant_scores).detach(),
+            }
+        else:
+            self.last_scores = None
         scores = scores.masked_fill(~atom_mask[:, None, :], float("-inf"))
         attn = scores.softmax(dim=-1)                                  # (B, T, N)  invariant
 
