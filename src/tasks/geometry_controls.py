@@ -1,4 +1,4 @@
-"""Deterministic coordinate controls. Donors carry no labels or text."""
+"""Replace coordinates with zeros or coordinates from matching rows."""
 from __future__ import annotations
 import copy
 import hashlib
@@ -6,7 +6,7 @@ import numpy as np
 
 
 def _groups(geom):
-    """Canonical species ordering by role and elemental multiset."""
+    """Group atom indices by species, then sort by atom roles and elements."""
     groups = []
     for sid in np.unique(geom['species']):
         ids = np.flatnonzero(np.asarray(geom['species']) == sid)
@@ -21,20 +21,18 @@ def _mapping(recipient, donor):
         return None
     mapping = np.empty(len(recipient['Z']), dtype=int)
     for (_, ai), (_, bi) in zip(a, b):
-        key = lambda geom, i: (int(geom['role'][i]), int(geom['Z'][i]))
-        ai = sorted(ai, key=lambda i: key(recipient, i))
-        bi = sorted(bi, key=lambda i: key(donor, i))
+        ai = sorted(ai, key=lambda i: (int(recipient['role'][i]), int(recipient['Z'][i])))
+        bi = sorted(bi, key=lambda i: (int(donor['role'][i]), int(donor['Z'][i])))
         mapping[ai] = bi
     return mapping
 
 
 def geometry_control(rows, mode='original', *, indices=None, donor_indices=None, seed=0):
-    """Copy rows and replace selected coordinates, preserving all other fields.
+    """Copy rows and replace selected coordinates. Keep all other fields.
 
-    Runner selects only test rows and draws donors from training rows. Unmatched
-    recipients keep their original geometry and are explicitly counted.
-    Matching respects per-species elemental multisets and atom roles. Amounts
-    and species IDs always remain those of the recipient.
+    The evaluation script changes only test rows, using training rows as donors.
+    Donors must match the elements and atom roles in each species. Rows without
+    a match keep their coordinates and are counted in the report.
     """
     if mode not in {'original', 'zero', 'donor'}:
         raise ValueError('Unknown geometry control')
@@ -57,7 +55,9 @@ def geometry_control(rows, mode='original', *, indices=None, donor_indices=None,
                 if i == j or str(rows[i]['id']) == str(rows[j]['id']):
                     continue
                 donor = rows[j]['example'].geom
-                mapping = _mapping(geom, donor) if donor is not None else None
+                if donor is None:
+                    continue
+                mapping = _mapping(geom, donor)
                 if mapping is not None:
                     candidates.append((str(rows[j]['id']), j, mapping))
             candidates.sort(key=lambda item: (item[0], item[1]))
