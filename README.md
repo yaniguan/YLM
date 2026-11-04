@@ -305,3 +305,10 @@ Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
 | C | **0.00487** | **0.9762** | **0.920** |
 
 Single seed; see the linked doc for held-out wordings, dipole, and caveats.
+
+Add `--routing_audit` to `scripts/04_train.py` to save a `routing` report for
+held-out evaluation. It measures invariant and directional score spread, attention
+entropy, target attention and rank, and top-k accuracy. It also counts correct,
+nearby, and far atom choices. Each force question is counted once, without rotating
+the molecule. Nearby means less than 3.4 bohr apart; it does not mean bonded.
+The report is off by default.

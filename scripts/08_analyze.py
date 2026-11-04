@@ -161,12 +161,28 @@ def breakdown(runs_dir, out_dir):
     print("wrote", f"{out_dir}/breakdown.md")
 
 
+def routing_reports(runs_dir, out_dir):
+    """Collect saved routing reports for unrotated molecules."""
+    reports = {}
+    for path in sorted(glob.glob(f"{runs_dir}/*/results.json")):
+        result = json.load(open(path))
+        for split, values in result.items():
+            if isinstance(values, dict) and "routing" in values:
+                reports[f"{os.path.basename(os.path.dirname(path))}/{split}"] = values["routing"]
+    with open(f"{out_dir}/routing.json", "w") as handle:
+        json.dump(reports, handle, indent=2)
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--runs", default="runs")
     p.add_argument("--out", default="analysis")
+    p.add_argument("--routing_reports", action="store_true", help="Collect saved routing audits only")
     args = p.parse_args()
     os.makedirs(args.out, exist_ok=True)
+    if args.routing_reports:
+        routing_reports(args.runs, args.out)
+        return
     sample_efficiency(args.runs, args.out)
     breakdown(args.runs, args.out)
 

@@ -52,6 +52,8 @@ class IrrepsToText(nn.Module):
         super().__init__()
         if option not in {"A", "B", "C"}:
             raise ValueError("option must be A, B, or C")
+        self.audit_enabled = False
+        self.last_scores = None
         self.option = option
         self.legacy_odd_scalars = legacy_odd_scalars
         self.atom_irreps = o3.Irreps(atom_irreps)
@@ -82,6 +84,7 @@ class IrrepsToText(nn.Module):
         q = self.q(h)                                                  # (B, T, K)
         k = self.k(invariants(x, self.atom_irreps, self.legacy_odd_scalars))                    # (B, N, K)
         scores = torch.einsum("btk,bnk->btn", q, k) / math.sqrt(self.key_dim)
+        invariant_scores = scores
         if self.option == "B":
             global_x = (x * atom_mask[..., None]).sum(1) / atom_mask.sum(1, keepdim=True)
             gates = self.direction_query(h)
@@ -93,6 +96,13 @@ class IrrepsToText(nn.Module):
                 key = keys[..., sl].reshape(x.shape[0], x.shape[1], mul, ir.dim)
                 scores = scores + torch.einsum("btcm,bncm->btn", query, key)
                 channel += mul
+        if self.audit_enabled:
+            self.last_scores = {
+                "invariant": invariant_scores.detach(),
+                "directional": (scores - invariant_scores).detach(),
+            }
+        else:
+            self.last_scores = None
         scores = scores.masked_fill(~atom_mask[:, None, :], float("-inf"))
         attn = scores.softmax(dim=-1)                                  # (B, T, N)  invariant
 
