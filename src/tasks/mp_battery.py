@@ -94,12 +94,11 @@ def split_mp(rows, seed=0, method='group'):
     return group_split([r['material_id'] for r in rows], seed)
 
 
-
 def elemental_fractions(structure):
-    """Full ordered structure fractions, before finite-cluster truncation.
+    """Count element fractions in the full crystal before cutting a cluster.
 
-    All 118 elements have fixed columns (atomic number minus one); cell
-    replication and site ordering do not affect the representation.
+    Each site must have one element. Columns use atomic number minus one.
+    Reordering sites or repeating the cell does not change the fractions.
     """
     counts = np.zeros(118, dtype=np.float64)
     for site in structure:
@@ -115,7 +114,7 @@ def elemental_fractions(structure):
 
 
 def working_ion_indicator(working_ion):
-    """Fixed elemental one-hot with index zero reserved for unknown ions."""
+    """Set the ion's atomic-number column to 1, or column 0 for unknown ions."""
     from src.tasks.common import element_symbol
     symbols = {element_symbol(z): z for z in range(1, 119)}
     result = np.zeros(119, dtype=np.float64)

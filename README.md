@@ -300,9 +300,10 @@ Full Colab runs (20,000 QM9 molecules, MiniLM text, 60 epochs, seed 0) are in
 
 Single seed; see the linked doc for held-out wordings, dipole, and caveats.
 
-Downstream evaluation offers `--mp_composition_baseline`: full charged-structure
-fractions for all 118 elements plus a fixed working-ion indicator (including an
-unknown category), followed by training-scaled, validation-selected ridge
-regression. Fractions are computed before cluster truncation and are invariant
-to site order and cell replication. The opt-in comparator is reported as
-`composition/ridge`; it omits crystal arrangement and electrochemical endpoints.
+Add `--mp_composition_baseline` to downstream evaluation to enable this baseline
+(off by default). It uses the fraction of each of the 118 elements in the full
+charged structure and a separate column for each working ion, including unknown
+ions. Fractions are computed before cutting the crystal to a cluster. Reordering
+sites or repeating the cell does not change them. Ridge regression fits scaling
+on training rows and chooses its penalty on validation rows. Results appear as
+`composition/ridge`. Inputs exclude atom positions and electrochemical targets.

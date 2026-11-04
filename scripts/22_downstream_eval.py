@@ -38,7 +38,7 @@ def assert_no_sft_leak(config, task, rows, split):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--mp_composition_baseline', action='store_true',
-                   help='Full-structure fractions + working-ion validation-selected ridge')
+                   help='Enable ridge regression using element fractions and the working ion')
     p.add_argument('--runs', nargs='+', required=True, help='Saved run directories, one per arm')
     p.add_argument('--tasks', nargs='+', choices=['calisol', 'reddb', 'mp_battery'], default=['calisol', 'reddb', 'mp_battery'])
     p.add_argument('--seeds', nargs='+', type=int, default=[0, 1, 2])
@@ -84,8 +84,9 @@ def main():
                 raise ValueError('Geometry prefix exceeds saved LM context capacity')
             targets = sorted({k for r in rows for k in r['targets']})
             fp = fingerprint_features(rows) if task != 'mp_battery' else None
-            composition = (mp_composition_features(rows)
-                           if task == 'mp_battery' and args.mp_composition_baseline else None)
+            composition = None
+            if task == 'mp_battery' and args.mp_composition_baseline:
+                composition = mp_composition_features(rows)
             for seed in args.seeds:
                 seed_everything(seed)
                 # Split ONCE before target filtering so missing labels cannot change membership.

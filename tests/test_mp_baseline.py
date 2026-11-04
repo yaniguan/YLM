@@ -27,7 +27,7 @@ def test_fractions_permutation_replication_and_ion():
 
 
 def test_loader_uses_full_structure_not_cluster(tmp_path, monkeypatch):
-    # Synthetic cached MP record: no pymatgen/mp-api installation or network needed.
+    # Use a fake cached record without pymatgen, mp-api, or network access.
     core = types.ModuleType('pymatgen.core')
     core.Structure = types.SimpleNamespace(from_dict=lambda saved: structure(saved['zs']))
     monkeypatch.setitem(sys.modules, 'pymatgen', types.ModuleType('pymatgen'))
@@ -49,14 +49,14 @@ def test_ridge_uses_training_scaling_and_heldout_labels_are_unused():
     features = np.array([[0., 0.], [2., 0.], [4., 0.], [8., 100.]])
     y = np.array([0., 2., 4., 9.])
     pred, alpha = ridge_predict(features, y, [0, 1], [2], [3], alphas=(1.,))
-    # Training mean/std=(1,1); constant second feature has zero fitted weight.
-    # Weight=2/(2+1), test standardized first feature=7, target centre=1.
+    # First column's training mean and standard deviation are 1. The other gets weight 0.
+    # Weight is 2/(2+1), scaled test value is 7, and mean training target is 1.
     np.testing.assert_allclose(pred, [1 + 7 * 2/3])
     changed = y.copy()
     changed[3] = -99999
     np.testing.assert_array_equal(pred, ridge_predict(features, changed, [0, 1], [2], [3], alphas=(1.,))[0])
     assert alpha == 1.
-    # Validation labels select regularization; test labels cannot select it.
+    # Validation labels choose the penalty. Test labels do not affect it.
     _, weak = ridge_predict(features, y, [0, 1], [2], [3], alphas=(.01, 100.))
     changed[2] = 1.
     _, strong = ridge_predict(features, changed, [0, 1], [2], [3], alphas=(.01, 100.))

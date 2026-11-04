@@ -234,13 +234,12 @@ def paired_comparisons(records, draws=1000, seed=0):
     return comparisons
 
 
-
 def mp_composition_features(rows):
-    """Full-structure elemental fractions plus explicit working-ion identity.
+    """Combine full crystal element fractions with the working ion.
 
-    Require loader provenance; never fall back to the truncated geometry cluster.
-    The shared ridge_predict routine fits scaling on training rows only and
-    selects regularization on validation rows only.
+    Fractions must come from the loader, before the crystal is cut to a cluster.
+    ridge_predict fits scaling on training rows and picks the penalty on
+    validation rows.
     """
     from src.tasks.mp_battery import working_ion_indicator
     vectors = []
@@ -251,5 +250,6 @@ def mp_composition_features(rows):
         if (fractions.shape != (118,) or not np.isfinite(fractions).all()
                 or (fractions < 0).any() or not np.isclose(fractions.sum(), 1.)):
             raise ValueError('Invalid full-structure elemental fractions')
-        vectors.append(np.r_[fractions, working_ion_indicator(row.get('working_ion', 'unknown'))])
+        ion = working_ion_indicator(row.get('working_ion', 'unknown'))
+        vectors.append(np.concatenate([fractions, ion]))
     return np.stack(vectors)
