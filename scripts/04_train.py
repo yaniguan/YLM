@@ -31,6 +31,7 @@ from e3nn import o3
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.profiling import Profiler
 from src.model import YLM  # noqa: E402
+from src.attn_supervision import attention_supervision_loss  # noqa: E402
 
 TASKS = {"dipole": 0, "force": 1}
 N_MAX = 29  # largest QM9 molecule
@@ -198,6 +199,8 @@ def main():
     p.add_argument("--eval_reflections", action="store_true")
     p.add_argument("--eval_batch_size", type=int, default=32)
     p.add_argument("--augment", action="store_true", help="random rotation of every training batch")
+    p.add_argument("--attn_sup", type=float, default=0.0,
+                   help="weight of auxiliary CE loss pushing pooled attention onto the asked atom (force questions); 0 = off")
     p.add_argument("--name", required=True)
     p.add_argument("--epochs", type=int, default=60)
     p.add_argument("--batch_size", type=int, default=128)
@@ -291,8 +294,11 @@ def main():
                 R = o3.rand_matrix() if args.augment else None
                 inputs, target = get_batch(data, train, idx, device, R)
             with profiler.phase("forward"):
-                y, _ = model(*inputs)
+                y, attn = model(*inputs)
                 loss = ((y - target / scale_dev[inputs[5]][:, None]) ** 2).mean()
+                if args.attn_sup > 0 and attn is not None:
+                    loss = loss + args.attn_sup * attention_supervision_loss(
+                        attn, train["atom"][idx].to(device), inputs[5], inputs[2])
             with profiler.phase("backward"):
                 opt.zero_grad()
                 loss.backward()
