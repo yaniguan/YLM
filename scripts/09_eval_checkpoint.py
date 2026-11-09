@@ -46,7 +46,7 @@ def main():
     tiny = dict(hidden_irreps="8x0e + 2x0o + 4x1o + 2x1e + 2x2e",
                 cross_irreps="4x0e + 4x1o + 2x1e + 2x2e") if config.get("tiny") else {}
     model = YLM(text_dim=data["text_dim"], text_mode="taskid" if text == "taskid" else "text",
-                option=config.get("option", "A"), legacy_odd_scalars=config.get("legacy_odd_scalars", False),
+                option=config.get("option", "A"), b_score_mode=config.get("b_score_mode", "legacy"), legacy_odd_scalars=config.get("legacy_odd_scalars", False),
                 **tiny).to(device)
     model.load_state_dict(ck["state_dict"])
     scale = torch.tensor(ck["scale"])

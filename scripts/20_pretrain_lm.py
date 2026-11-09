@@ -11,12 +11,15 @@ from src.ylm_lm import YLMConfig, YLMCausalLM
 from src.tasks.common import (ARMS, seed_everything, pick_device, train_lm, save_run_model,
                               load_encoder_weights, make_logger)
 from src.tasks.tokenizer import get_tokenizer
-from src.tasks.qm9_pretrain import load_qm9, corpus
+from src.tasks.qm9_pretrain import load_qm9, corpus, check_corpus_resume
 from src.tasks.evaluation import evaluate_lm, numeric_eval
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--b_score_mode', choices=['legacy', 'normalized'], default='legacy')
+    p.add_argument('--target_mode', choices=['cartesian', 'invariant'], default='cartesian',
+                   help='QM9 targets to predict; use the same mode for runs you compare')
     p.add_argument('--arm', choices=ARMS, required=True)
     p.add_argument('--tokens_budget', type=int, default=1000000)
     p.add_argument('--model', default='tiny', help='tiny, small, or hf:<name>')
@@ -48,17 +51,18 @@ def main():
     tok = get_tokenizer(args.model)
     mode, xyz = ARMS[args.arm]
     rows = load_qm9(args.qm9, args.sdf, args.limit)
-    splits = corpus(rows, args.seed, xyz)
+    splits = corpus(rows, args.seed, xyz, args.target_mode)
     # Account for the largest prefix in context capacity; no arm-specific molecule filtering.
     max_atoms = max((len(r['geom']['Z']) for r in rows), default=0)
-    cfg = YLMConfig(mode=mode, lm=args.model, vocab_size=tok.vocab_size,
+    cfg = YLMConfig(mode=mode, b_score_mode=args.b_score_mode, lm=args.model, vocab_size=tok.vocab_size,
                     bos_token_id=tok.bos_id, eos_token_id=tok.eos_id,
                     n_positions=max(1024, args.max_len + max_atoms), encoder=args.encoder,
                     n_layer=args.n_layer, n_embd=args.n_embd, n_head=args.n_head)
-    config = {'model_cfg': cfg.to_dict(), 'args': vars(args),
+    config = {'corpus_target_mode': args.target_mode, 'model_cfg': cfg.to_dict(), 'args': vars(args),
               'splits': {k: [e.meta['qm9_index'] for e in v] for k, v in splits.items()}}
     if args.resume and (out / 'config.json').exists():
         previous = json.loads((out / 'config.json').read_text())
+        check_corpus_resume(previous, args.target_mode)
         for key in ('model_cfg', 'splits'):
             if previous[key] != config[key]:
                 raise ValueError(f'Resume {key} differs from saved run')

@@ -9,6 +9,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import numpy as np
 from src.profiling import Profiler
 from src.tasks.common import load_run, pick_device, seed_everything
+from src.tasks.exposure import assert_no_group_leak
+from src.tasks.downstream import (render_examples, controlled_examples, extract_features, ridge_predict, fingerprint_features,
+                                  fine_tune, result_record, paired_comparisons)
 from src.tasks.downstream import (render_examples, extract_features, ridge_predict, fingerprint_features,
                                   fine_tune, fine_tune_multitarget, result_record, paired_comparisons)
 
@@ -37,6 +40,8 @@ def assert_no_sft_leak(config, task, rows, split):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--geometry_control', choices=['original', 'zero', 'donor'], default='original')
+    p.add_argument('--group_exposure_guard', action='store_true')
     p.add_argument('--multitarget', action='store_true', help='Train RedDB/MP targets together, ignoring missing labels')
     p.add_argument('--runs', nargs='+', required=True, help='Saved run directories, one per arm')
     p.add_argument('--tasks', nargs='+', choices=['calisol', 'reddb', 'mp_battery'], default=['calisol', 'reddb', 'mp_battery'])
@@ -121,8 +126,13 @@ def main():
                                                     rows, test, target, best[1].predict(fp[test]), seed, args.bootstrap)))
                 for run, config, arm in run_configs:
                     assert_no_sft_leak(config, task, rows, split)
+                    if args.group_exposure_guard:
+                        assert_no_group_leak(config, task, rows, split)
                     model, tok, _ = load_run(run, device)
-                    examples = render_examples(rows, arm == 'smiles_xyz')
+                    examples, control = controlled_examples(
+                        rows, arm == 'smiles_xyz', mode=args.geometry_control if arm != 'smiles' else 'original',
+                        indices=split['test'], donor_indices=split['train'], seed=seed)
+                    records.append(dict(task=task, arm=arm, seed=seed, geometry_control=control))
                     features = extract_features(model, tok, examples, device, args.batch_size, text_limit, profiler)
                     del model
                     joint = args.multitarget and task in ('reddb', 'mp_battery')
