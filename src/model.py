@@ -12,6 +12,7 @@
 option: A invariant keys; B direction-aware keys; C text-weighted CG product.
 legacy_odd_scalars: reproduce raw 0o keys for parity ablations (SO(3) only).
 tensor_readout: off by default, so v0 checkpoints still load.
+b_score_mode: "legacy" (default) keeps the original Option B scores.
 
 text_mode:
   "text"   : use the precomputed token states of the question (MiniLM / MatSciBERT)
@@ -34,7 +35,7 @@ def _has_irrep(irreps, l, p):
 class YLM(nn.Module):
     def __init__(self, text_dim, text_mode="text", hidden_irreps="64x0e + 8x0o + 32x1o + 8x1e + 16x2e",
                  cross_irreps="32x0e + 32x1o + 8x1e + 8x2e", n_layers=3, n_tasks=2, option="A",
-                 legacy_odd_scalars=False, tensor_readout=False):
+                 legacy_odd_scalars=False, tensor_readout=False, b_score_mode="legacy"):
         super().__init__()
         self.text_mode = text_mode
         self.tensor_readout = bool(tensor_readout)
@@ -42,7 +43,7 @@ class YLM(nn.Module):
         self.task_embed = nn.Embedding(n_tasks, text_dim)             # only used in "taskid"
         self.text_proj = nn.Sequential(nn.LayerNorm(text_dim), nn.Linear(text_dim, 256), nn.SiLU())
         self.cross = IrrepsToText(256, self.encoder.irreps_out, cross_irreps, option=option,
-                                  legacy_odd_scalars=legacy_odd_scalars)
+                                  legacy_odd_scalars=legacy_odd_scalars, b_score_mode=b_score_mode)
         self.token_weight = nn.Linear(256, 1)
         if self.tensor_readout:
             if not (_has_irrep(cross_irreps, 0, 1) and _has_irrep(cross_irreps, 2, 1)):

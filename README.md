@@ -139,6 +139,65 @@ nearby, and far atom choices. Each force question is counted once, without rotat
 the molecule. Nearby means less than 3.4 bohr apart; it does not mean bonded.
 The report is off by default.
 
+## Optional normalized scores
+
+To use normalized scores for Option B, pass `--b_score_mode normalized` to
+`scripts/04_train.py`, or set `YLMConfig(b_score_mode="normalized")` for the LM adapter.
+This mode normalizes the query and key vectors in each channel before taking their
+dot product. It divides the result by the square root of the channel count and
+multiplies it by a learned weight passed through `tanh`. The weight starts at zero.
+The default is `legacy`, which keeps the original scores and checkpoint format.
+The tests do not show whether this improves how text selects atoms.
+
+## Optional invariant targets
+
+QM9 LM pretraining accepts `--target_mode invariant` in `scripts/20_pretrain_lm.py`.
+This mode predicts energy and dipole magnitude, without the x, y, and z dipole
+components. Use the same mode for all runs you compare: it changes the prediction
+task and the tokens used in training. The default is `cartesian`. The mode is
+saved in the run config and must match when you resume. Older configs use
+`cartesian`.
+
+## Geometry control runs
+
+Downstream evaluation accepts `--geometry_control zero` or `donor`. The default,
+`original`, leaves coordinates unchanged. These options change only test
+coordinates; training and validation stay the same. Donor coordinates come from
+training rows with matching elements and atom roles in each species. All other
+row data stays the same. `results.json` records how many rows changed and how many
+had no matching donor. SMILES-only runs stay the same. Zero coordinates differ
+from the training data, and some rows may have no donor. These checks show how
+results depend on coordinates, but do not prove cause and effect.
+
+## Optional group exposure guard
+
+Use `--group_exposure_guard` in post-training and downstream evaluation to
+record training groups and check for overlap with validation and test groups.
+It is off by default. CALiSol uses formulation groups. RedDB uses canonical
+reactants and scaffolds, including the empty scaffold for molecules without rings.
+Saved groups are combined across SFT and DPO stages. The guard rejects tasks
+whose earlier training groups are unknown; it cannot recover groups from row IDs.
+
+## Optional joint training
+
+Use `--multitarget` in downstream evaluation to train RedDB/MP targets together
+with one language model and output head per task and seed. Missing labels do not
+affect training. Each target is scaled using its training labels, and the loss
+is the average of the targets' mean squared errors. Validation picks the best
+model and head to restore. Results under `finetune_joint` include test rows and
+metrics for each target. By default, targets are still trained separately.
+Training targets together can hurt some targets' results.
+
+## Optional composition baseline
+
+Add `--mp_composition_baseline` to downstream evaluation to enable this baseline
+(off by default). It uses the fraction of each of the 118 elements in the full
+charged structure and a separate column for each working ion, including unknown
+ions. Fractions are computed before cutting the crystal to a cluster. Reordering
+sites or repeating the cell does not change them. Ridge regression fits scaling
+on training rows and chooses its penalty on validation rows. Results appear as
+`composition/ridge`. Inputs exclude atom positions and electrochemical targets.
+
 ## Optional tensor readout
 
 `YLM(..., tensor_readout=True)` adds a `0e+2e` head and returns one symmetric
