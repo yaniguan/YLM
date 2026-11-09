@@ -11,8 +11,6 @@ from src.profiling import Profiler
 from src.tasks.common import load_run, pick_device, seed_everything
 from src.tasks.exposure import assert_no_group_leak
 from src.tasks.downstream import (render_examples, controlled_examples, extract_features, ridge_predict, fingerprint_features,
-                                  fine_tune, result_record, paired_comparisons)
-from src.tasks.downstream import (render_examples, extract_features, ridge_predict, fingerprint_features,
                                   fine_tune, fine_tune_multitarget, result_record, paired_comparisons)
 
 
