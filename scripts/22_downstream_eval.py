@@ -9,9 +9,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import numpy as np
 from src.profiling import Profiler
 from src.tasks.common import load_run, pick_device, seed_everything
-from src.tasks.downstream import (render_examples, controlled_examples, extract_features, ridge_predict, fingerprint_features,
 from src.tasks.exposure import assert_no_group_leak
-from src.tasks.downstream import (render_examples, extract_features, ridge_predict, fingerprint_features,
+from src.tasks.downstream import (render_examples, controlled_examples, extract_features, ridge_predict, fingerprint_features,
                                   fine_tune, result_record, paired_comparisons)
 
 
