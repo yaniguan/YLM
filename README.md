@@ -169,6 +169,15 @@ had no matching donor. SMILES-only runs stay the same. Zero coordinates differ
 from the training data, and some rows may have no donor. These checks show how
 results depend on coordinates, but do not prove cause and effect.
 
+## Optional group exposure guard
+
+Use `--group_exposure_guard` in post-training and downstream evaluation to
+record training groups and check for overlap with validation and test groups.
+It is off by default. CALiSol uses formulation groups. RedDB uses canonical
+reactants and scaffolds, including the empty scaffold for molecules without rings.
+Saved groups are combined across SFT and DPO stages. The guard rejects tasks
+whose earlier training groups are unknown; it cannot recover groups from row IDs.
+
 ## Citation
 
 Not published yet. Placeholder:
