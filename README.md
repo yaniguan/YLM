@@ -139,6 +139,13 @@ nearby, and far atom choices. Each force question is counted once, without rotat
 the molecule. Nearby means less than 3.4 bohr apart; it does not mean bonded.
 The report is off by default.
 
+## Optional tensor readout
+
+`YLM(..., tensor_readout=True)` adds a `0e+2e` head and returns one symmetric
+3x3 matrix. The default model still returns one vector, and the v0 checkpoints
+still load. Quadrupole matrices from `scripts/12_make_quadrupole.py` can be
+trained with `scripts/16_train_quad.py`. That script stays unused unless you run it.
+
 ## Citation
 
 Not published yet. Placeholder:

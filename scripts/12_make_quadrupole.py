@@ -4,6 +4,7 @@ The quadrupole is a symmetric traceless 3x3 tensor, i.e. an l=2 object that rota
 It needs one SCF per molecule (seconds), unlike polarizability (finite field, minutes).
 Origin: centre of nuclear charge, so the label depends only on the geometry (not on the lab origin).
 Geometry: the same displaced geometries as the xTB labels (data/qm9_xtb.pkl), positions in bohr.
+Train the opt-in 0e+2e head with scripts/16_train_quad.py. v0 training is unchanged.
 
   python scripts/12_make_quadrupole.py --n 2000 --out data/qm9_quad.pkl [--start 0 --stop 500]  # slices for array jobs
 """
