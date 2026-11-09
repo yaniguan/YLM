@@ -335,3 +335,24 @@ def fine_tune_multitarget(model, tok, examples, y, train, val, test, *, seed=0,
     model.load_state_dict(best_model)
     head.load_state_dict(best_head)
     return predict(test).cpu().numpy() * scale + centre
+
+
+def mp_composition_features(rows):
+    """Combine full crystal element fractions with the working ion.
+
+    Fractions must come from the loader, before the crystal is cut to a cluster.
+    ridge_predict fits scaling on training rows and picks the penalty on
+    validation rows.
+    """
+    from src.tasks.mp_battery import working_ion_indicator
+    vectors = []
+    for row in rows:
+        if 'composition_fractions' not in row:
+            raise ValueError('Missing full-structure composition; reload MP rows')
+        fractions = np.asarray(row['composition_fractions'], dtype=float)
+        if (fractions.shape != (118,) or not np.isfinite(fractions).all()
+                or (fractions < 0).any() or not np.isclose(fractions.sum(), 1.)):
+            raise ValueError('Invalid full-structure elemental fractions')
+        ion = working_ion_indicator(row.get('working_ion', 'unknown'))
+        vectors.append(np.concatenate([fractions, ion]))
+    return np.stack(vectors)

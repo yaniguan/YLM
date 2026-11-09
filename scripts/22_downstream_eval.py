@@ -11,7 +11,8 @@ from src.profiling import Profiler
 from src.tasks.common import load_run, pick_device, seed_everything
 from src.tasks.exposure import assert_no_group_leak
 from src.tasks.downstream import (render_examples, controlled_examples, extract_features, ridge_predict, fingerprint_features,
-                                  fine_tune, fine_tune_multitarget, result_record, paired_comparisons)
+                                  fine_tune, fine_tune_multitarget, result_record, paired_comparisons,
+                                  mp_composition_features)
 
 
 def load_task(task, limit):
@@ -41,6 +42,8 @@ def main():
     p.add_argument('--geometry_control', choices=['original', 'zero', 'donor'], default='original')
     p.add_argument('--group_exposure_guard', action='store_true')
     p.add_argument('--multitarget', action='store_true', help='Train RedDB/MP targets together, ignoring missing labels')
+    p.add_argument('--mp_composition_baseline', action='store_true',
+                   help='Enable ridge regression using element fractions and the working ion')
     p.add_argument('--runs', nargs='+', required=True, help='Saved run directories, one per arm')
     p.add_argument('--tasks', nargs='+', choices=['calisol', 'reddb', 'mp_battery'], default=['calisol', 'reddb', 'mp_battery'])
     p.add_argument('--seeds', nargs='+', type=int, default=[0, 1, 2])
@@ -86,6 +89,9 @@ def main():
                 raise ValueError('Geometry prefix exceeds saved LM context capacity')
             targets = sorted({k for r in rows for k in r['targets']})
             fp = fingerprint_features(rows) if task != 'mp_battery' else None
+            composition = None
+            if task == 'mp_battery' and args.mp_composition_baseline:
+                composition = mp_composition_features(rows)
             for seed in args.seeds:
                 seed_everything(seed)
                 # Split ONCE before target filtering so missing labels cannot change membership.
@@ -101,6 +107,10 @@ def main():
                         continue
                     train, val, test = (valid[target][k] for k in ('train', 'val', 'test'))
                     y = np.array([r['targets'].get(target, np.nan) for r in rows])
+                    if composition is not None:
+                        pred, alpha = ridge_predict(composition, y, train, val, test)
+                        records.append(dict(task=task, target=target, arm='composition', method='ridge', seed=seed,
+                                            alpha=alpha, **result_record(rows, test, target, pred, seed, args.bootstrap)))
                     if fp is not None:
                         pred, alpha = ridge_predict(fp, y, train, val, test)
                         records.append(dict(task=task, target=target, arm='fingerprint', method='ridge', seed=seed,

@@ -188,6 +188,16 @@ model and head to restore. Results under `finetune_joint` include test rows and
 metrics for each target. By default, targets are still trained separately.
 Training targets together can hurt some targets' results.
 
+## Optional composition baseline
+
+Add `--mp_composition_baseline` to downstream evaluation to enable this baseline
+(off by default). It uses the fraction of each of the 118 elements in the full
+charged structure and a separate column for each working ion, including unknown
+ions. Fractions are computed before cutting the crystal to a cluster. Reordering
+sites or repeating the cell does not change them. Ridge regression fits scaling
+on training rows and chooses its penalty on validation rows. Results appear as
+`composition/ridge`. Inputs exclude atom positions and electrochemical targets.
+
 ## Citation
 
 Not published yet. Placeholder:
