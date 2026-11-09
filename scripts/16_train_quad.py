@@ -10,6 +10,8 @@ The question is global (the molecular quadrupole), so the text side is a learned
 task token. Option A is the default. Pass --option B or C to use those heads.
 Splits follow data/tensorqa_v0.json when that file is present. Otherwise the
 split is molecule index mod 10: 8 is val, 9 is test, and the rest is train.
+Quadrupole labels can include molecules that the question file skipped (a force
+above 0.5 hartree/bohr). Those molecules are dropped. They are not used for test.
 """
 import argparse
 import json
@@ -37,9 +39,15 @@ from src.tensor_readout import (  # noqa: E402
 
 
 def splits_from_questions(mol_ids, questions_path):
-    """Use TensorQA-v0 molecule splits when the question file is available."""
+    """Return row splits and how many molecules were dropped.
+
+    When the question file exists, a molecule with no train, val, or test
+    split is dropped. Dropped molecules are not used for test.
+    When the question file is missing, every molecule is kept. The split is
+    then molecule index mod 10: 8 is val, 9 is test, and the rest is train.
+    """
     if not questions_path or not os.path.exists(questions_path):
-        return split_rows(mol_ids)
+        return split_rows(mol_ids), 0
     with open(questions_path) as handle:
         questions = json.load(handle)
     split_of = {}
@@ -47,12 +55,15 @@ def splits_from_questions(mol_ids, questions_path):
         if question["split"] != "test_heldout":
             split_of[question["mol"]] = question["split"]
     rows = {"train": [], "val": [], "test": []}
+    dropped = 0
     for row, mol in enumerate(mol_ids.tolist()):
         name = split_of.get(int(mol))
         if name not in rows:
-            raise ValueError(f"molecule {mol} has no train/val/test split in {questions_path}")
+            dropped += 1
+            continue
         rows[name].append(row)
-    return {name: torch.tensor(index, dtype=torch.long) for name, index in rows.items()}
+    splits = {name: torch.tensor(index, dtype=torch.long) for name, index in rows.items()}
+    return splits, dropped
 
 
 @torch.no_grad()
@@ -125,7 +136,8 @@ def main():
         geom = pickle.load(handle)
     quad = load_quadrupole_labels(args.quad)
     arrays = build_arrays(geom, quad)
-    splits = splits_from_questions(arrays["mol"], args.questions)
+    splits, n_dropped = splits_from_questions(arrays["mol"], args.questions)
+    say("molecules dropped (no question split):", n_dropped)
     for name, rows in splits.items():
         if len(rows) == 0:
             raise SystemExit(f"Split {name} is empty. Check the quadrupole file and the question splits.")
@@ -170,7 +182,7 @@ def main():
         if args.max_steps and step >= args.max_steps:
             break
     model.load_state_dict(torch.load(f"{out_dir}/model.pt", map_location=device))
-    results = {"args": vars(args), "scale": float(scale)}
+    results = {"args": vars(args), "scale": float(scale), "n_dropped": n_dropped}
     for name in ("val", "test"):
         results[name] = evaluate(model, arrays, splits[name], scale, device, n_rot=args.eval_rotations)
         say(name, json.dumps(results[name]))

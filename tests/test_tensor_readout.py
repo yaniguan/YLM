@@ -233,11 +233,13 @@ def test_question_splits_and_script_smoke(tmp_path, monkeypatch):
         {"mol": 8, "split": "test"},
         {"mol": 9, "split": "val"},
     ]))
-    rows = module.splits_from_questions(torch.tensor([9, 1, 8]), questions)
+    rows, dropped = module.splits_from_questions(torch.tensor([9, 1, 8]), questions)
+    assert dropped == 0
     assert rows["train"].tolist() == [1]
     assert rows["val"].tolist() == [0]
     assert rows["test"].tolist() == [2]
-    fallback = module.splits_from_questions(torch.tensor([9, 1, 8]), tmp_path / "missing.json")
+    fallback, dropped = module.splits_from_questions(torch.tensor([9, 1, 8]), tmp_path / "missing.json")
+    assert dropped == 0
     assert fallback["test"].tolist() == [0]
     assert fallback["train"].tolist() == [1]
     assert fallback["val"].tolist() == [2]
@@ -260,5 +262,60 @@ def test_question_splits_and_script_smoke(tmp_path, monkeypatch):
     saved = json.loads((tmp_path / "runs" / "smoke" / "results.json").read_text())
     assert saved["args"]["option"] == "A"
     assert saved["test"]["n"] == 1
+    assert saved["n_dropped"] == 0
     assert saved["test"]["eq_err_mean"] < 1e-4
     assert math.isfinite(saved["test"]["mae"])
+
+
+def test_tensor_readout_is_the_last_argument():
+    import inspect
+    params = inspect.signature(YLM.__init__).parameters
+    names = list(params)
+    assert names[-1] == "tensor_readout"
+    assert names[-2] == "b_score_mode"
+    assert params["tensor_readout"].default is False
+    assert params["b_score_mode"].default == "legacy"
+    assert params["option"].default == "A"
+
+
+def test_quad_molecule_missing_from_questions(tmp_path, monkeypatch):
+    """One quadrupole molecule is absent from the question file. It must be dropped."""
+    torch.set_default_dtype(torch.float32)
+    module = _train_script()
+    questions = tmp_path / "questions.json"
+    questions.write_text(json.dumps([
+        {"mol": 1, "split": "train"},
+        {"mol": 8, "split": "val"},
+        {"mol": 9, "split": "test"},
+        {"mol": 9, "split": "test_heldout"},
+    ]))
+    rows, dropped = module.splits_from_questions(torch.tensor([1, 4, 8, 9]), questions)
+    assert dropped == 1
+    assert rows["train"].tolist() == [0]
+    assert rows["val"].tolist() == [2]
+    assert rows["test"].tolist() == [3]
+    for split_rows in rows.values():
+        assert 1 not in split_rows.tolist()
+    geom = [{"numbers": [6, 1], "pos": [[0.0, 0.0, 0.0], [1.2, 0.0, 0.0]]} for _ in range(10)]
+    # Molecule 4 is in the quadrupole file and not in the question file.
+    quad = {mol: _traceless(mol).numpy() for mol in (1, 4, 8, 9)}
+    geom_path = tmp_path / "geom.pkl"
+    quad_path = tmp_path / "quad.pkl"
+    with open(geom_path, "wb") as handle:
+        pickle.dump(geom, handle)
+    with open(quad_path, "wb") as handle:
+        pickle.dump(quad, handle)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", [
+        "16_train_quad.py", "--name", "missing_split", "--geom", str(geom_path),
+        "--quad", str(quad_path), "--questions", str(questions), "--tiny",
+        "--epochs", "1", "--max_steps", "1", "--eval_rotations", "2",
+        "--batch_size", "4", "--device", "cpu",
+    ])
+    module.main()
+    log = (tmp_path / "runs" / "missing_split" / "log.txt").read_text()
+    assert "molecules dropped (no question split): 1" in log
+    saved = json.loads((tmp_path / "runs" / "missing_split" / "results.json").read_text())
+    assert saved["n_dropped"] == 1
+    assert saved["test"]["n"] == 1
+    assert saved["val"]["n"] == 1
