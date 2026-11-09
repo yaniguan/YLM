@@ -139,6 +139,16 @@ nearby, and far atom choices. Each force question is counted once, without rotat
 the molecule. Nearby means less than 3.4 bohr apart; it does not mean bonded.
 The report is off by default.
 
+## Optional normalized scores
+
+To use normalized scores for Option B, pass `--b_score_mode normalized` to
+`scripts/04_train.py`, or set `YLMConfig(b_score_mode="normalized")` for the LM adapter.
+This mode normalizes the query and key vectors in each channel before taking their
+dot product. It divides the result by the square root of the channel count and
+multiplies it by a learned weight passed through `tanh`. The weight starts at zero.
+The default is `legacy`, which keeps the original scores and checkpoint format.
+The tests do not show whether this improves how text selects atoms.
+
 ## Citation
 
 Not published yet. Placeholder:
