@@ -178,6 +178,16 @@ reactants and scaffolds, including the empty scaffold for molecules without ring
 Saved groups are combined across SFT and DPO stages. The guard rejects tasks
 whose earlier training groups are unknown; it cannot recover groups from row IDs.
 
+## Optional joint training
+
+Use `--multitarget` in downstream evaluation to train RedDB/MP targets together
+with one language model and output head per task and seed. Missing labels do not
+affect training. Each target is scaled using its training labels, and the loss
+is the average of the targets' mean squared errors. Validation picks the best
+model and head to restore. Results under `finetune_joint` include test rows and
+metrics for each target. By default, targets are still trained separately.
+Training targets together can hurt some targets' results.
+
 ## Citation
 
 Not published yet. Placeholder:
