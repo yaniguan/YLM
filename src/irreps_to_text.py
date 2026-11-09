@@ -55,6 +55,8 @@ class IrrepsToText(nn.Module):
         if b_score_mode not in {"legacy", "normalized"}:
             raise ValueError("Unknown B score mode")
         self.b_score_mode = b_score_mode
+        self.audit_enabled = False
+        self.last_scores = None
         self.option = option
         self.legacy_odd_scalars = legacy_odd_scalars
         self.atom_irreps = o3.Irreps(atom_irreps)
@@ -87,6 +89,7 @@ class IrrepsToText(nn.Module):
         q = self.q(h)                                                  # (B, T, K)
         k = self.k(invariants(x, self.atom_irreps, self.legacy_odd_scalars))                    # (B, N, K)
         scores = torch.einsum("btk,bnk->btn", q, k) / math.sqrt(self.key_dim)
+        invariant_scores = scores
         if self.option == "B":
             global_x = (x * atom_mask[..., None]).sum(1) / atom_mask.sum(1, keepdim=True)
             gates = self.direction_query(h)
@@ -107,6 +110,13 @@ class IrrepsToText(nn.Module):
                 else:
                     scores = scores + torch.einsum("btcm,bncm->btn", query, key)
                 channel += mul
+        if self.audit_enabled:
+            self.last_scores = {
+                "invariant": invariant_scores.detach(),
+                "directional": (scores - invariant_scores).detach(),
+            }
+        else:
+            self.last_scores = None
         scores = scores.masked_fill(~atom_mask[:, None, :], float("-inf"))
         attn = scores.softmax(dim=-1)                                  # (B, T, N)  invariant
 

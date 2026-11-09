@@ -106,8 +106,15 @@ def get_batch(data, split, idx, device, R=None):
 
 
 @torch.no_grad()
-def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0, reflection=False, reflection_only=False):
+def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0, reflection=False, reflection_only=False, routing_audit=False):
     model.eval()
+    from src.routing_metrics import RoutingAudit
+    audit = RoutingAudit() if routing_audit else None
+    cross = getattr(model, "cross", None)
+    if audit is not None and cross is None:
+        raise ValueError("Routing audit requires a YLM cross-attention model")
+    if cross is not None:
+        cross.audit_enabled = routing_audit
     scale = scale.to(device)
     rotations = [torch.eye(3)]  # first one = no rotation
     if n_rot > 1:
@@ -125,6 +132,9 @@ def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0, r
         for R in rotations:
             inputs, target = get_batch(data, split, idx, device, R)
             y, attn = model(*inputs)
+            if audit is not None and torch.equal(R, torch.eye(3)):
+                audit.update(idx.tolist(), attn, split["atom"][idx], task, inputs[2],
+                             inputs[1], cross.last_scores, inputs[4])
             y = (y * scale[inputs[5]][:, None]).cpu()
             target = target.cpu()
             if y0 is None:
@@ -152,6 +162,11 @@ def evaluate(model, data, split, scale, device, n_rot, batch_size=512, seed=0, r
         }
         if name == "force":
             out[name]["atom_acc"] = float(np.mean(r["atom_hit"]))
+    if audit is not None:
+        out["routing"] = audit.report()
+    if cross is not None:
+        cross.audit_enabled = False
+        cross.last_scores = None
     model.train()
     return out
 
@@ -192,6 +207,7 @@ def main():
                    help="ylm = Option A; pipeline = parse text -> atom index -> force model; "
                         "scalar = invariants only (see src/baselines.py)")
     p.add_argument("--b_score_mode", choices=["legacy", "normalized"], default="legacy")
+    p.add_argument("--routing_audit", action="store_true")
     p.add_argument("--option", choices=list("ABC"), default="A")
     p.add_argument("--legacy_odd_scalars", action="store_true",
                    help="ablation: raw odd scalars in keys; breaks reflection invariance")
@@ -340,7 +356,7 @@ def main():
     for split in ["test", "test_heldout"]:
         if args.test_limit:
             splits[split] = {k: (v[: args.test_limit] if torch.is_tensor(v) else v) for k, v in splits[split].items()}
-        results[split] = evaluate(model, data, splits[split], scale, device, n_rot=args.eval_rotations, batch_size=args.eval_batch_size)
+        results[split] = evaluate(model, data, splits[split], scale, device, n_rot=args.eval_rotations, batch_size=args.eval_batch_size, routing_audit=args.routing_audit)
         if args.eval_reflections:
             results[split + "_o3"] = evaluate(model, data, splits[split], scale, device,
                 n_rot=args.eval_rotations, batch_size=args.eval_batch_size, reflection=True)
