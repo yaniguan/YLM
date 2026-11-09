@@ -130,6 +130,45 @@ colab/        GPU notebooks
 - The Qwen2.5-0.5B coordinates-as-text baseline did not learn the force, so it is not evidence that an end-to-end LLM cannot.
 - The text encoder is frozen and the model does not generate text yet. Attention often lands on a bonded neighbour, not the exact atom.
 
+## Optional routing report
+
+Add `--routing_audit` to `scripts/04_train.py` to save a `routing` report for
+held-out evaluation. It measures invariant and directional score spread, attention
+entropy, target attention and rank, and top-k accuracy. It also counts correct,
+nearby, and far atom choices. Each force question is counted once, without rotating
+the molecule. Nearby means less than 3.4 bohr apart; it does not mean bonded.
+The report is off by default.
+
+## Optional normalized scores
+
+To use normalized scores for Option B, pass `--b_score_mode normalized` to
+`scripts/04_train.py`, or set `YLMConfig(b_score_mode="normalized")` for the LM adapter.
+This mode normalizes the query and key vectors in each channel before taking their
+dot product. It divides the result by the square root of the channel count and
+multiplies it by a learned weight passed through `tanh`. The weight starts at zero.
+The default is `legacy`, which keeps the original scores and checkpoint format.
+The tests do not show whether this improves how text selects atoms.
+
+## Optional invariant targets
+
+QM9 LM pretraining accepts `--target_mode invariant` in `scripts/20_pretrain_lm.py`.
+This mode predicts energy and dipole magnitude, without the x, y, and z dipole
+components. Use the same mode for all runs you compare: it changes the prediction
+task and the tokens used in training. The default is `cartesian`. The mode is
+saved in the run config and must match when you resume. Older configs use
+`cartesian`.
+
+## Geometry control runs
+
+Downstream evaluation accepts `--geometry_control zero` or `donor`. The default,
+`original`, leaves coordinates unchanged. These options change only test
+coordinates; training and validation stay the same. Donor coordinates come from
+training rows with matching elements and atom roles in each species. All other
+row data stays the same. `results.json` records how many rows changed and how many
+had no matching donor. SMILES-only runs stay the same. Zero coordinates differ
+from the training data, and some rows may have no donor. These checks show how
+results depend on coordinates, but do not prove cause and effect.
+
 ## Optional group exposure guard
 
 Use `--group_exposure_guard` in post-training and downstream evaluation to

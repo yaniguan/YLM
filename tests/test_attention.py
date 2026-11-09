@@ -118,3 +118,35 @@ def test_b_direction_scores_change_for_relative_alignment():
     a = layer(h, x, mask)[1]
     a2 = layer(h, x2, mask)[1]
     assert (a-a2).abs().max() > 0.01
+
+@pytest.mark.parametrize('reflection', [False, True])
+def test_normalized_b(reflection):
+    irreps = o3.Irreps('2x0e + 2x1o + 1x2e')
+    layer = IrrepsToText(8, irreps, irreps, option='B', b_score_mode='normalized')
+    h, x = torch.randn(2, 3, 8), torch.randn(2, 4, irreps.dim)
+    mask = torch.tensor([[True, True, True, False]] * 2)
+    a = IrrepsToText(8, irreps, irreps)
+    a.load_state_dict(layer.state_dict(), strict=False)
+    torch.testing.assert_close(layer(h, x, mask)[1], a(h, x, mask)[1])
+    layer.direction_coefficient.data.fill_(0.7)
+    D = irreps.D_from_matrix(o3.rand_matrix() * (-1 if reflection else 1))
+    y, attn = layer(h, x, mask)
+    yr, ar = layer(h, x @ D.T, mask)
+    torch.testing.assert_close(ar, attn, atol=1e-7, rtol=1e-7)
+    torch.testing.assert_close(yr, y @ D.T, atol=1e-7, rtol=1e-7)
+    perm = torch.tensor([3, 1, 0, 2])
+    torch.testing.assert_close(layer(h, x[:, perm], mask[:, perm])[1], attn[:, :, perm])
+    zero = torch.zeros_like(x, requires_grad=True)
+    layer(h, zero, mask)[0].sum().backward()
+    assert torch.isfinite(zero.grad).all()
+    assert torch.isfinite(layer.direction_coefficient.grad)
+
+
+def test_b_legacy_default():
+    torch.manual_seed(9)
+    default = IrrepsToText(8, '2x0e + 1x1o', '1x1o', option='B')
+    torch.manual_seed(9)
+    explicit = IrrepsToText(8, '2x0e + 1x1o', '1x1o', option='B', b_score_mode='legacy')
+    assert default.state_dict().keys() == explicit.state_dict().keys()
+    for k, v in default.state_dict().items():
+        torch.testing.assert_close(v, explicit.state_dict()[k])
