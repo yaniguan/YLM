@@ -17,6 +17,7 @@ from src.tasks.evaluation import evaluate_lm, numeric_eval
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--b_score_mode', choices=['legacy', 'normalized'], default='legacy')
     p.add_argument('--target_mode', choices=['cartesian', 'invariant'], default='cartesian',
                    help='QM9 targets to predict; use the same mode for runs you compare')
     p.add_argument('--arm', choices=ARMS, required=True)
@@ -53,7 +54,7 @@ def main():
     splits = corpus(rows, args.seed, xyz, args.target_mode)
     # Account for the largest prefix in context capacity; no arm-specific molecule filtering.
     max_atoms = max((len(r['geom']['Z']) for r in rows), default=0)
-    cfg = YLMConfig(mode=mode, lm=args.model, vocab_size=tok.vocab_size,
+    cfg = YLMConfig(mode=mode, b_score_mode=args.b_score_mode, lm=args.model, vocab_size=tok.vocab_size,
                     bos_token_id=tok.bos_id, eos_token_id=tok.eos_id,
                     n_positions=max(1024, args.max_len + max_atoms), encoder=args.encoder,
                     n_layer=args.n_layer, n_embd=args.n_embd, n_head=args.n_head)

@@ -48,10 +48,15 @@ def invariants(x, irreps, legacy_odd_scalars=False):
 
 
 class IrrepsToText(nn.Module):
-    def __init__(self, text_dim, atom_irreps, out_irreps, key_dim=64, option="A", legacy_odd_scalars=False):
+    def __init__(self, text_dim, atom_irreps, out_irreps, key_dim=64, option="A", legacy_odd_scalars=False, b_score_mode="legacy"):
         super().__init__()
         if option not in {"A", "B", "C"}:
             raise ValueError("option must be A, B, or C")
+        if b_score_mode not in {"legacy", "normalized"}:
+            raise ValueError("Unknown B score mode")
+        self.b_score_mode = b_score_mode
+        self.audit_enabled = False
+        self.last_scores = None
         self.option = option
         self.legacy_odd_scalars = legacy_odd_scalars
         self.atom_irreps = o3.Irreps(atom_irreps)
@@ -62,6 +67,8 @@ class IrrepsToText(nn.Module):
         self.k = nn.Sequential(nn.Linear(n_inv, 128), nn.SiLU(), nn.Linear(128, key_dim))
         # B contracts identical (l, parity) channels, preserving O(3).
         if option == "B":
+            if b_score_mode == "normalized":
+                self.direction_coefficient = nn.Parameter(torch.zeros(()))
             self.direction_key = o3.Linear(self.atom_irreps, self.atom_irreps)
             self.direction_query = nn.Linear(text_dim, self.atom_irreps.num_irreps)
         if option == "C":
@@ -82,6 +89,7 @@ class IrrepsToText(nn.Module):
         q = self.q(h)                                                  # (B, T, K)
         k = self.k(invariants(x, self.atom_irreps, self.legacy_odd_scalars))                    # (B, N, K)
         scores = torch.einsum("btk,bnk->btn", q, k) / math.sqrt(self.key_dim)
+        invariant_scores = scores
         if self.option == "B":
             global_x = (x * atom_mask[..., None]).sum(1) / atom_mask.sum(1, keepdim=True)
             gates = self.direction_query(h)
@@ -91,8 +99,24 @@ class IrrepsToText(nn.Module):
                 query = global_x[:, None, sl].reshape(x.shape[0], 1, mul, ir.dim)
                 query = query * gates[..., channel:channel + mul, None]
                 key = keys[..., sl].reshape(x.shape[0], x.shape[1], mul, ir.dim)
-                scores = scores + torch.einsum("btcm,bncm->btn", query, key)
+                if self.b_score_mode == "normalized":
+                    raw = global_x[:, None, sl].reshape(x.shape[0], 1, mul, ir.dim)
+                    query = torch.nn.functional.normalize(raw, dim=-1, eps=1e-6)
+                    query = query * gates[..., channel:channel + mul, None]
+                    key = torch.nn.functional.normalize(key, dim=-1, eps=1e-6)
+                    contribution = torch.einsum("btcm,bncm->btn", query, key)
+                    contribution = self.direction_coefficient.tanh() * contribution / math.sqrt(self.atom_irreps.num_irreps)
+                    scores = scores + contribution
+                else:
+                    scores = scores + torch.einsum("btcm,bncm->btn", query, key)
                 channel += mul
+        if self.audit_enabled:
+            self.last_scores = {
+                "invariant": invariant_scores.detach(),
+                "directional": (scores - invariant_scores).detach(),
+            }
+        else:
+            self.last_scores = None
         scores = scores.masked_fill(~atom_mask[:, None, :], float("-inf"))
         attn = scores.softmax(dim=-1)                                  # (B, T, N)  invariant
 
