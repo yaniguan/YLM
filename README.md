@@ -130,6 +130,15 @@ colab/        GPU notebooks
 - The Qwen2.5-0.5B coordinates-as-text baseline did not learn the force, so it is not evidence that an end-to-end LLM cannot.
 - The text encoder is frozen and the model does not generate text yet. Attention often lands on a bonded neighbour, not the exact atom.
 
+## Optional routing report
+
+Add `--routing_audit` to `scripts/04_train.py` to save a `routing` report for
+held-out evaluation. It measures invariant and directional score spread, attention
+entropy, target attention and rank, and top-k accuracy. It also counts correct,
+nearby, and far atom choices. Each force question is counted once, without rotating
+the molecule. Nearby means less than 3.4 bohr apart; it does not mean bonded.
+The report is off by default.
+
 ## Citation
 
 Not published yet. Placeholder:
