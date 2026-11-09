@@ -35,8 +35,17 @@ def load_qm9(pkl_path='data/qm9_xtb.pkl', sdf_path='data/gdb9.sdf', limit=None):
     return result
 
 
-def pretrain_example(row, with_xyz=False):
+def pretrain_example(row, with_xyz=False, target_mode="cartesian"):
+    if target_mode not in {"cartesian", "invariant"}:
+        raise ValueError("Unknown QM9 target mode")
     segs = molecule_segs(row['smiles'], row['geom'], with_xyz)
+    if target_mode == 'invariant':
+        norm = float(np.linalg.norm(np.asarray(row['dipole'], dtype=float)))
+        targets = {'energy': float(row['energy']), 'dipole_norm': norm}
+        segs += [Seg(' E='), Seg(fmt_num(row['energy'], 6), 'num', 'energy'),
+                 Seg(' |mu|='), Seg(fmt_num(norm, 4), 'num', 'dipole_norm')]
+        return Example(segs, row['geom'], {'qm9_index': int(row['qm9_index']),
+                                         'targets': targets, 'target_mode': target_mode})
     segs += [Seg(' E='), Seg(fmt_num(row['energy'], 6), 'num', 'energy'), Seg(' mu=[')]
     for i, value in enumerate(row['dipole']):
         if i:
@@ -46,7 +55,15 @@ def pretrain_example(row, with_xyz=False):
     return Example(segs, row['geom'], {'qm9_index': int(row['qm9_index']), 'targets': row['targets']})
 
 
-def corpus(rows, seed=0, with_xyz=False):
+def corpus(rows, seed=0, with_xyz=False, target_mode="cartesian"):
     splits = qm9_split([r['qm9_index'] for r in rows], seed)
-    return {name: [pretrain_example(r, with_xyz) for r in rows if r['qm9_index'] in ids]
+    return {name: [pretrain_example(r, with_xyz, target_mode) for r in rows if r['qm9_index'] in ids]
             for name, ids in splits.items()}
+
+
+def check_corpus_resume(saved, target_mode):
+    """Check the saved mode. Older configs use Cartesian targets."""
+    args_mode = saved.get("args", {}).get("target_mode", "cartesian")
+    previous = saved.get("corpus_target_mode", args_mode)
+    if previous != target_mode:
+        raise ValueError("Resume corpus target mode differs from saved run")

@@ -149,6 +149,15 @@ multiplies it by a learned weight passed through `tanh`. The weight starts at ze
 The default is `legacy`, which keeps the original scores and checkpoint format.
 The tests do not show whether this improves how text selects atoms.
 
+## Optional invariant targets
+
+QM9 LM pretraining accepts `--target_mode invariant` in `scripts/20_pretrain_lm.py`.
+This mode predicts energy and dipole magnitude, without the x, y, and z dipole
+components. Use the same mode for all runs you compare: it changes the prediction
+task and the tokens used in training. The default is `cartesian`. The mode is
+saved in the run config and must match when you resume. Older configs use
+`cartesian`.
+
 ## Citation
 
 Not published yet. Placeholder:
