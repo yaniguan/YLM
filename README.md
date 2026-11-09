@@ -158,6 +158,17 @@ task and the tokens used in training. The default is `cartesian`. The mode is
 saved in the run config and must match when you resume. Older configs use
 `cartesian`.
 
+## Geometry control runs
+
+Downstream evaluation accepts `--geometry_control zero` or `donor`. The default,
+`original`, leaves coordinates unchanged. These options change only test
+coordinates; training and validation stay the same. Donor coordinates come from
+training rows with matching elements and atom roles in each species. All other
+row data stays the same. `results.json` records how many rows changed and how many
+had no matching donor. SMILES-only runs stay the same. Zero coordinates differ
+from the training data, and some rows may have no donor. These checks show how
+results depend on coordinates, but do not prove cause and effect.
+
 ## Citation
 
 Not published yet. Placeholder:
