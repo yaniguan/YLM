@@ -157,6 +157,7 @@ components. Use the same mode for all runs you compare: it changes the predictio
 task and the tokens used in training. The default is `cartesian`. The mode is
 saved in the run config and must match when you resume. Older configs use
 `cartesian`.
+
 ## Geometry control runs
 
 Downstream evaluation accepts `--geometry_control zero` or `donor`. The default,
