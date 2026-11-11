@@ -291,7 +291,23 @@ ylm export-hf --labels data/qm9_xtb.pkl --v0 data/tensorqa_v0.json --out dist/hf
 MACE-MP-0 (89 elements) or MACE-OFF23 equivariant node features plus conservative atomic forces (`1x1o`)
 directly into `IrrepsToText` (`pip install -e ".[mace]"`). For live reactive MD monitoring,
 `src/toolkit/md_hooks.py` provides `OpenMMReactionReporter`, `LAMMPSReactionHook`, and `--plot timeline.svg`
-on `ylm scan-traj` to log and plot bond-forming, bond-breaking, and proton-transfer timestamps.
+on `ylm scan-traj` to log and plot bond-forming, bond-breaking, and proton-transfer timestamps
+(demo: `python scripts/33_demo_live_md_hooks.py`).
+
+## Multi-rank Universe Foundation Model (`YLMUniverseModel`) & Uni-Mol / GraphMVP benchmarks
+
+`src/universe_fm.py` (`YLMUniverseModel`) unifies `0e` invariant scalars, `1o` covariant vectors
+(dipole, atom-addressed force, T4 force difference, T5 bond projection), `0e+2e` symmetric 3x3
+tensors (polarizability, quadrupole, crystal stress), and `1o` coordinate denoising on one shared
+two-stream representation with Level-of-Theory (`wb97m`, `r2scan`, `pbe_u`, `ccsd`, `xtb`) magnitude
+calibration and explicit atom-routing supervision. `src/fm_baselines.py` provides fair head-to-head
+`UniMolStyle3DBaseline`, `GraphMVP3DInfoMaxBaseline`, and `EquiLLMMultiTaskBaseline` controls:
+
+```bash
+python scripts/31_prepare_universe_data.py --smoke --out data/universe_smoke
+python scripts/30_train_universe_fm.py --name universe_smoke --data_dir data/universe_smoke --tiny --epochs 20 --device cpu
+python scripts/32_benchmark_vs_unimol.py --data_dir data/universe_smoke --tiny --epochs 20 --device cpu
+```
 
 ## Citation
 
