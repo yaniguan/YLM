@@ -26,14 +26,14 @@ from src.irreps_to_text import IrrepsToText
 
 class YLM(nn.Module):
     def __init__(self, text_dim, text_mode="text", hidden_irreps="64x0e + 8x0o + 32x1o + 8x1e + 16x2e",
-                 cross_irreps="32x0e + 32x1o + 8x1e + 8x2e", n_layers=3, n_tasks=2, option="A", legacy_odd_scalars=False, b_score_mode="legacy"):
+                 cross_irreps="32x0e + 32x1o + 8x1e + 8x2e", n_layers=3, n_tasks=2, option="A", legacy_odd_scalars=False, b_score_mode="legacy", c_tp_mode="fully_connected"):
         super().__init__()
         self.text_mode = text_mode
         self.encoder = Encoder(hidden_irreps=hidden_irreps, n_layers=n_layers)
         self.task_embed = nn.Embedding(n_tasks, text_dim)             # only used in "taskid"
         self.text_proj = nn.Sequential(nn.LayerNorm(text_dim), nn.Linear(text_dim, 256), nn.SiLU())
         self.cross = IrrepsToText(256, self.encoder.irreps_out, cross_irreps, option=option,
-                                  legacy_odd_scalars=legacy_odd_scalars, b_score_mode=b_score_mode)
+                                  legacy_odd_scalars=legacy_odd_scalars, b_score_mode=b_score_mode, c_tp_mode=c_tp_mode)
         self.token_weight = nn.Linear(256, 1)
         self.readout = o3.Linear(cross_irreps, "1x1o")
 
