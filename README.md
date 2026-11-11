@@ -239,6 +239,13 @@ sites or repeating the cell does not change them. Ridge regression fits scaling
 on training rows and chooses its penalty on validation rows. Results appear as
 `composition/ridge`. Inputs exclude atom positions and electrochemical targets.
 
+## Optional tensor readout
+
+`YLM(..., tensor_readout=True)` adds a `0e+2e` head and returns one symmetric
+3x3 matrix. The default model still returns one vector, and the v0 checkpoints
+still load. Quadrupole matrices from `scripts/12_make_quadrupole.py` can be
+trained with `scripts/16_train_quad.py`. That script stays unused unless you run it.
+
 ## Optional periodic crystal graph and packaging
 
 `Encoder.forward` and `YLMCausalLM` accept optional periodic lattice vectors
