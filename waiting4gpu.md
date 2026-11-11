@@ -39,15 +39,18 @@
 | 模块路径 | 已实现的核心能力 |
 | :--- | :--- |
 | `src/mace_backbone.py` (`MACEEncoder`) | 一键加载 `mace-mp-0-{small,medium,large}` 或 `mace-off23-{small,medium,large}`，自动做 Bohr $\leftrightarrow$ Å 转换、支持分子与 3D PBC 晶胞、拼接 `node_feats` 与精确保守力梯度 `1x1o`。 |
-| `src/model.py` (`YLM`, `YLM.from_mace`) | 支持 Option A/B/C、`--c_tp_mode channelwise`（参数量降 `21x`、提速 `10x`）、多层交互 `--n_cross_layers`、向量读出 `1x1o` 与二阶对称张量读出 `tensor_readout=True` (`0e+2e`)。 |
+| `src/nequip_backbone.py` (`NequIPEncoder`) | 零 `nequip` 包依赖直接挂载编译好的 TorchScript `nequip-deploy` / `allegro` `.pth` 权重（自动解析 `_extra_files` 的 `r_max` 与 `type_names`），以及 Python `nequip` GraphModule。 |
+| `src/toolkit/mlip_md.py` (`MLIPTrajectoryRunner`, `ylm run-md`) | 统一驱动 `MACE` / `NequIP` / `OpenMM`（`build_openmm_mlip_simulation`）分子动力学采样，原生串联实时断键/成键/质子转移监测、SVG 时间轴与 3D 交互网页。 |
+| `src/toolkit/ouroboros_bridge.py` (`ylm from-ouroboros`) | 与 `yaniguan/ouroboros-ocsr` 跨仓联动：从 2D 化学结构图 / `predictions.csv` / `.extxyz + .manifest.jsonl`（自动恢复反斜杠 `E/Z` SMILES 并过滤 `stereo_ok=False`）直达 3D CIP 立体审计构象与无泄漏 `InChIKey[:14]` 训练切分（演示：`scripts/34_ouroboros_to_ylm.py`）。 |
+| `src/model.py` (`YLM`, `YLM.from_mace`, `YLM.from_nequip`) | 支持 Option A/B/C、`--c_tp_mode channelwise`（参数量降 `21x`、提速 `10x`）、多层交互 `--n_cross_layers`、向量读出 `1x1o` 与二阶对称张量读出 `tensor_readout=True` (`0e+2e`)。 |
 | `src/ylm_lm.py` (`YLMCausalLM`) | 支持 `hf:Qwen/...` 等开源大模型中间层挂载 `IrrepsAdapter`、`<vec>` 三维向量生成读出、帧间运动向量 `use_motion_1o=True` 及 `freeze_encoder=True`。 |
 | `src/encoder.py` (`_periodic_edges`) | 支持 1D/2D/3D 周期性边界条件（含小晶胞周期性自镜像边）与帧间最小镜像位移。 |
 | `src/baselines.py` | 已内置公平对比基线：`EquiLLMBaseline`（仅不变特征进 Transformer）与 `FrameAveragingBaseline`（8 标架 PCA 平均）。 |
 | `src/toolkit/md_hooks.py` | 已内置 `LiveReactionMonitor`、`OpenMMReactionReporter`、`LAMMPSReactionHook` 与 `plot_reaction_timeline`（演示脚本：`scripts/33_demo_live_md_hooks.py`）。 |
 | `src/toolkit/hf_export.py` | 一键导出 `TensorQA` 多配置 Hugging Face 数据集（含 `--anonymized` 双盲匿名模式与 $K=32$ 旋转评测脚本）。 |
-| `src/universe_fm.py` (`YLMUniverseModel`) | 统一多阶对称性基座（`0e` 标量 + `1o` 向量 + `0e+2e` 二阶对称张量 + `1o` 坐标去噪）+ 泛函条件校准（`LOT`）+ 方向/模长解耦损失 + 原子寻址路由监督（训练脚本：`scripts/30_train_universe_fm.py`）。 |
-| `src/universe_data.py` | 跨数据集统一加载与子结构同义改写生成器（支持 3D PBC 最小镜像配位分析、28+ 训练/留出句式模板，预处理脚本：`scripts/31_prepare_universe_data.py`）。 |
-| `src/fm_baselines.py` | 公平对比基线：`UniMolStyle3DBaseline`（3D 距离矩阵 Transformer + 去噪）、`GraphMVP3DInfoMaxBaseline`（2D 拓扑 GNN + 3D InfoNCE 蒸馏）、`EquiLLMMultiTaskBaseline`（跑分脚本：`scripts/32_benchmark_vs_unimol.py`）。 |
+| `src/universe_fm.py` (`YLMUniverseModel`) | 统一四阶全对称性基座（`0e` 标量 + **`0o` 宇称奇手性赝标量 `out["chiral"]`** + `1o` 向量 + `0e+2e` 二阶对称张量 + `1o` 坐标去噪）+ 泛函条件校准（`LOT`）+ 方向/模长解耦损失 + 原子寻址路由监督（训练脚本：`scripts/30_train_universe_fm.py`）。 |
+| `src/universe_data.py` | 跨数据集统一加载与子结构同义改写生成器（支持 3D PBC 最小镜像配位分析、手性四面体有向体积 `compute_chiral_centers`、35+ 训练/留出句式模板，预处理脚本：`scripts/31_prepare_universe_data.py`）。 |
+| `src/fm_baselines.py` | 公平对比基线：`UniMolStyle3DBaseline`（3D 距离矩阵 Transformer + 去噪）、`GraphMVP3DInfoMaxBaseline`（2D 拓扑 GNN + 3D InfoNCE 蒸馏）、`EquiLLMMultiTaskBaseline`（跑分脚本：`scripts/32_benchmark_vs_unimol.py`、`scripts/35_build_and_eval_chiral_benchmark.py`）。 |
 
 ---
 
@@ -65,6 +68,19 @@
 > **关键实证结论**：
 > 1. `Uni-Mol` 虽能靠 3D 距离矩阵学会找原子（测试集寻址准确率 `81.9%`），但因 `0e` 标量瓶颈，旋转下方向余弦跌至 `+0.0676`；
 > 2. `YLM-Universe FM` 不仅在 `1o` 局部力方向（`+0.4253` vs. `EquiLLM` `+0.3133`）与 `0e+2e` 二阶张量（`+0.9936` vs. `+0.9482`）上全面领先，**甚至反哺了 `0e` 不变标量能量预测（MAE `0.1455` 全场最低）**！拿到 GPU 换上 `MACE-MP-0 / MACE-OFF23` 与百万级 DFT 数据即可直接放大这一优势。
+
+### 2.6 手性立体化学（`0o` 赝标量）+ 四阶全对称性对比实测（`scripts/35_build_and_eval_chiral_benchmark.py --tiny --epochs 24`）
+
+联动 `ouroboros-ocsr` 立体化学构象包格式（8 组 `(R)/(S)` 对映异构体骨架，其中 2 组分子骨架 `O[C@H](F)Br`、`SC[C@H](Cl)O` 留作**零样本未见新骨架测试**，$K=8$ 随机 $O(3)$ 旋转+镜像反演）：
+
+| 模型家族 | 对映体区分 Acc (Test) ↑ | 留出新句式手性 Acc ↑ | **零样本未见骨架 Acc ↑** | `0o` 宇称反对称误差 ↓ | 非手性平面分子 `\|f(X)\|` ↓ | `1o` Vec Cos ↑ | `0e+2e` Tensor Cos ↑ |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| **GraphMVP / 3D-InfoMax** | 54.2% | 47.9% | 50.0% | `6.77e-01` | `1.04e+00` (误报) | +0.0202 | +0.7107 |
+| **Uni-Mol (3D Dist-Transformer)** | 52.1% | 52.1% | 48.4% | `8.05e-01` | `8.19e-01` (误报) | +0.0197 | +0.6953 |
+| **EquiLLM (Inv-Bridge + 1o)** | 52.1% | 50.0% | 50.0% | `6.65e-01` | `4.21e-01` (误报) | +0.7007 | +0.9874 |
+| **YLM-Universe FM (Ours)** | **100.0%** | **100.0%** | **100.0%** | **`3.20e-07`** | **`1.88e-07` (严格归零)** | **+0.7694** | **+0.9974** |
+
+> **关键发现**：`GraphMVP`、`Uni-Mol`（仅编码距离矩阵 $d_{ij}$，对镜像反演完全不变）与 `EquiLLM`（跨模态桥压成 `0e`）在 `(R)/(S)` 对映异构体上全部锁死在 ~50% 随机猜测天花板，且在平面非手性分子（$\text{H}_2\text{O}$、`cis-F/C=C\F`）上产生 `0.42–1.04` 的虚假手性偏置；`YLM-Universe FM` 借助 `0o + (1o × 1o × 1o -> 0o) + (1o × 1e -> 0o)` 读出，**连训练从未见过的新手性分子骨架都能实现 100.0% 零样本区分**，并在平面分子上严格满足镜像对称归零（`1.88e-07`）。
 
 ---
 

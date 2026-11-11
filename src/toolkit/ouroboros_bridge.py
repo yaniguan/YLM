@@ -30,7 +30,7 @@ from src.toolkit.ingest import (
     symbol_for_z,
 )
 from src.toolkit.probe import ProbeResult, YLMProbe
-from src.universe_data import UniverseRecord, generate_diverse_queries
+from src.universe_data import UniverseRecord, compute_chiral_centers, generate_diverse_queries
 
 # Built-in exact enantiomer & E/Z conformer geometries (Angstrom) for zero-dependency offline fallback.
 # Every (S)-enantiomer is the exact spatial inversion (-pos) of its (R)-enantiomer.
@@ -177,60 +177,8 @@ def load_ouroboros_manifest(manifest_path: Union[str, Path]) -> dict[str, Ourobo
 
 
 def compute_signed_chiral_volumes(frame: StructureFrame) -> list[dict]:
-    """Compute O(3)-odd (`0o`) signed tetrahedral volumes around 4-coordinate chiral centers.
-
-    Neighbors are ordered canonically by `(atomic_number, neighbor_degree, distance_sum_round)` so
-    the determinant sign is strictly invariant under atom re-indexing and proper rotations `det(R)=+1`,
-    while flipping sign `V(-pos) = -V(pos)` under mirror reflection / inversion `det(R)=-1`.
-    """
-    n = frame.n_atoms
-    if n < 5:
-        return []
-    pos = frame.pos_angstrom
-    z = frame.Z
-    radii = np.array([covalent_radius(int(zi)) for zi in z], dtype=np.float64)
-    r0 = radii[:, None] + radii[None, :]
-    rel = pos[:, None, :] - pos[None, :, :]
-    dist = np.linalg.norm(rel, axis=-1)
-    bonded = (dist > 1e-6) & (dist <= 1.28 * r0)
-    degrees = bonded.sum(axis=-1)
-
-    # 2-hop topological signature per atom (strictly graph-topological & O(3)-invariant `0e`,
-    # so prochiral -CH2- hydrogens share identical signatures and are never misflagged as chiral!)
-    hop1: list[tuple] = []
-    for i in range(n):
-        nbs = np.where(bonded[i])[0]
-        hop1.append((int(z[i]), int(degrees[i]), tuple(sorted(int(z[j]) for j in nbs))))
-    env_keys: list[tuple] = []
-    for i in range(n):
-        nbs = np.where(bonded[i])[0]
-        env_keys.append((hop1[i], tuple(sorted(hop1[j] for j in nbs))))
-
-    centers: list[dict] = []
-    for c in range(n):
-        if int(z[c]) not in (6, 7, 14, 15, 16):
-            continue
-        nbs = list(np.where(bonded[c])[0])
-        if len(nbs) != 4:
-            continue
-        nb_keys = [env_keys[j] for j in nbs]
-        # Require 4 topologically distinct substituents (true stereocenter)
-        if len(set(nb_keys)) < 4:
-            continue
-        ordered = [j for _, j in sorted(zip(nb_keys, nbs), key=lambda pair: pair[0], reverse=True)]
-        v1 = pos[ordered[0]] - pos[c]
-        v2 = pos[ordered[1]] - pos[c]
-        v3 = pos[ordered[2]] - pos[c]
-        signed_vol = float(np.linalg.det(np.stack([v1, v2, v3], axis=1)) / 6.0)
-        if abs(signed_vol) > 1e-3:
-            centers.append({
-                "atom_index": int(c),
-                "symbol": symbol_for_z(int(z[c])),
-                "neighbors": [int(x) for x in ordered],
-                "signed_volume_ang3": signed_vol,
-                "handedness_sign": 1 if signed_vol > 0 else -1,
-            })
-    return centers
+    """Compute O(3)-odd (`0o`) signed tetrahedral volumes around 4-coordinate chiral centers."""
+    return compute_chiral_centers(frame)
 
 
 def load_ouroboros_forcefield_bundle(
@@ -523,6 +471,7 @@ def ouroboros_frames_to_universe_records(
     domain: str = "ouroboros_ocsr",
     split_ratios: tuple[float, float, float] = (0.70, 0.15, 0.15),
     include_heldout: bool = True,
+    include_chiral: bool = True,
     max_force_sites: int = 2,
 ) -> list[UniverseRecord]:
     """Convert `ouroboros-ocsr` 3D conformers into leak-free `UniverseRecord` multi-task QA rows.
@@ -555,6 +504,7 @@ def ouroboros_frames_to_universe_records(
                 lot=lot,
                 split=split,
                 max_force_sites=max_force_sites,
+                include_chiral=include_chiral,
             )
         )
         if include_heldout and split == "test_id":
@@ -566,6 +516,7 @@ def ouroboros_frames_to_universe_records(
                     lot=lot,
                     split="test_heldout",
                     max_force_sites=1,
+                    include_chiral=include_chiral,
                 )
             )
     return records

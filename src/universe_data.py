@@ -91,6 +91,18 @@ TRAIN_TEMPLATES: dict[str, tuple[str, ...]] = {
         "Give the full 3x3 symmetric electronic response tensor.",
         "Report the rank-2 symmetric polarizability matrix.",
     ),
+    "chiral": (
+        "What is the (R)/(S) chiral handedness pseudoscalar of this stereoisomer?",
+        "Predict the parity-odd 3D chirality sign of this conformer.",
+        "Determine the signed tetrahedral chirality pseudoscalar of the molecule.",
+        "Report the O(3)-odd enantiomeric handedness sign (+1 or -1).",
+        "Compute the 3D stereochemical handedness sign of this structure.",
+    ),
+    "chiral_site": (
+        "What is the local 3D tetrahedral chirality sign around {a}?",
+        "Predict the parity-odd stereocenter handedness at {a}.",
+        "Give the signed tetrahedral volume handedness around {a}.",
+    ),
 }
 
 HELDOUT_TEMPLATES: dict[str, tuple[str, ...]] = {
@@ -124,6 +136,15 @@ HELDOUT_TEMPLATES: dict[str, tuple[str, ...]] = {
         "Output the six-DOF symmetric second-order response matrix for this geometry.",
         "Evaluate the anisotropic 3x3 response tensor under the laboratory frame.",
     ),
+    "chiral": (
+        "Which enantiomeric handedness (+1 vs -1) does this 3D arrangement exhibit?",
+        "Evaluate the reflection-antisymmetric chirality pseudoscalar for this conformer.",
+        "Distinguish the 3D mirror-image enantiomer sign of the current coordinates.",
+    ),
+    "chiral_site": (
+        "Determine the local 3D stereochemical handedness sign centered at {a}.",
+        "Under the current 3D geometry, what parity-odd chirality sign sits on {a}?",
+    ),
 }
 
 
@@ -140,8 +161,8 @@ class UniverseRecord:
     cell_bohr: Optional[list[list[float]]]
     pbc: Optional[list[bool]]
     question: str
-    task_kind: str          # "scalar" | "vector" | "tensor"
-    subtask: str            # "scalar" | "dipole" | "force" | "diff" | "proj" | "tensor"
+    task_kind: str          # "scalar" | "vector" | "tensor" | "chiral"
+    subtask: str            # "scalar" | "chiral" | "dipole" | "force" | "diff" | "proj" | "tensor"
     scalar_target: float
     vector_target: list[float]
     tensor_target: list[list[float]]
@@ -153,6 +174,61 @@ class UniverseRecord:
     @classmethod
     def from_json(cls, line: str) -> "UniverseRecord":
         return cls(**json.loads(line))
+
+
+def compute_chiral_centers(frame: StructureFrame) -> list[dict]:
+    """Compute O(3)-odd (`0o`) signed tetrahedral volumes around 4-coordinate stereocenters.
+
+    Neighbors are ordered canonically by pure 2-hop graph-topological signatures (`0e` invariant)
+    so prochiral `-CH2-` sites are rejected and the signed volume `V(pos @ R.T) = det(R) * V(pos)`
+    is strictly invariant under proper rotations & atom re-indexing while flipping sign under
+    mirror reflection / spatial inversion `det(R) = -1`.
+    """
+    n = frame.n_atoms
+    if n < 5:
+        return []
+    pos = frame.pos_angstrom
+    z = frame.Z
+    radii = np.array([covalent_radius(int(zi)) for zi in z], dtype=np.float64)
+    r0 = radii[:, None] + radii[None, :]
+    rel = pos[:, None, :] - pos[None, :, :]
+    dist = np.linalg.norm(rel, axis=-1)
+    bonded = (dist > 1e-6) & (dist <= 1.28 * r0)
+    degrees = bonded.sum(axis=-1)
+
+    hop1: list[tuple] = []
+    for i in range(n):
+        nbs = np.where(bonded[i])[0]
+        hop1.append((int(z[i]), int(degrees[i]), tuple(sorted(int(z[j]) for j in nbs))))
+    env_keys: list[tuple] = []
+    for i in range(n):
+        nbs = np.where(bonded[i])[0]
+        env_keys.append((hop1[i], tuple(sorted(hop1[j] for j in nbs))))
+
+    centers: list[dict] = []
+    for c in range(n):
+        if int(z[c]) not in (6, 7, 14, 15, 16):
+            continue
+        nbs = list(np.where(bonded[c])[0])
+        if len(nbs) != 4:
+            continue
+        nb_keys = [env_keys[j] for j in nbs]
+        if len(set(nb_keys)) < 4:
+            continue
+        ordered = [j for _, j in sorted(zip(nb_keys, nbs), key=lambda pair: pair[0], reverse=True)]
+        v1 = pos[ordered[0]] - pos[c]
+        v2 = pos[ordered[1]] - pos[c]
+        v3 = pos[ordered[2]] - pos[c]
+        signed_vol = float(np.linalg.det(np.stack([v1, v2, v3], axis=1)) / 6.0)
+        if abs(signed_vol) > 1e-3:
+            centers.append({
+                "atom_index": int(c),
+                "symbol": symbol_for_z(int(z[c])),
+                "neighbors": [int(x) for x in ordered],
+                "signed_volume_ang3": signed_vol,
+                "handedness_sign": 1 if signed_vol > 0 else -1,
+            })
+    return centers
 
 
 def _pairwise_mic_angstrom(frame: StructureFrame) -> tuple[np.ndarray, np.ndarray]:
@@ -409,9 +485,10 @@ def generate_diverse_queries(
     split: str = "train",
     max_force_sites: int = 2,
     include_lot_prefix: bool = True,
+    include_chiral: bool = False,
     rng: Optional[np.random.Generator] = None,
 ) -> list[UniverseRecord]:
-    """Generate multi-task (scalar, dipole, force, diff, proj, tensor) records for one structure."""
+    """Generate multi-task (scalar, chiral, dipole, force, diff, proj, tensor) records for one structure."""
     if rng is None:
         seed = int.from_bytes(hashlib.sha256(f"{structure_id}|{split}".encode("utf-8")).digest()[:4], "big")
         rng = np.random.default_rng(seed)
@@ -529,6 +606,29 @@ def generate_diverse_queries(
                     tensor_target=zero_ten,
                     target_atoms=[int(sa.atom_index), int(sb.atom_index)],
                 ))
+
+    # 6) 0o Parity-Odd Chiral Pseudoscalar (enantiomer handedness sign +1 vs -1)
+    if include_chiral:
+        chiral_centers = compute_chiral_centers(frame)
+        if chiral_centers:
+            site_by_idx = {s.atom_index: s for s in sites}
+            primary = max(chiral_centers, key=lambda d: abs(float(d["signed_volume_ang3"])))
+            c_idx = int(primary["atom_index"])
+            c_sign = float(primary["handedness_sign"])
+            if c_idx in site_by_idx and bool(rng.integers(0, 2) == 1):
+                c_phrase = str(rng.choice(site_by_idx[c_idx].phrases))
+                q_ch = prefix + str(rng.choice(templates["chiral_site"])).format(a=c_phrase)
+            else:
+                q_ch = prefix + str(rng.choice(templates["chiral"]))
+            records.append(UniverseRecord(
+                structure_id=structure_id, domain=domain, lot=lot, split=split,
+                Z=z_list, pos_bohr=pos_list, cell_bohr=cell_list, pbc=pbc_list,
+                question=q_ch, task_kind="chiral", subtask="chiral",
+                scalar_target=c_sign,
+                vector_target=zero_vec,
+                tensor_target=zero_ten,
+                target_atoms=[c_idx],
+            ))
     return records
 
 
