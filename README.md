@@ -130,6 +130,17 @@ colab/        GPU notebooks
 - The Qwen2.5-0.5B coordinates-as-text baseline did not learn the force, so it is not evidence that an end-to-end LLM cannot.
 - The text encoder is frozen and the model does not generate text yet. Attention often lands on a bonded neighbour, not the exact atom.
 
+## Optional equivariant baselines
+
+Pass `--model equillm` or `--model frame_avg` to `scripts/04_train.py` to run two
+additional symmetry-preserving baselines from [`src/baselines.py`](src/baselines.py):
+- `equillm`: uses the same `Encoder`, feeds only O(3) invariants and text tokens into a
+  Transformer, and scales bypassed `1o` atom vectors afterwards.
+- `frame_avg`: projects centered coordinates onto all 8 sign choices of the covariance
+  eigenvectors, runs a plain Transformer in each canonical frame, and averages the 3D
+  predictions back in the lab frame (exact O(3) equivariance when principal eigenvalues
+  are distinct).
+
 ## Optional routing report
 
 Add `--routing_audit` to `scripts/04_train.py` to save a `routing` report for

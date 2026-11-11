@@ -203,9 +203,10 @@ def attach_parsed_atoms(splits, sdf, labels_path, questions_path, say, cache_pat
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--text", choices=["minilm", "matscibert", "taskid"], required=True)
-    p.add_argument("--model", choices=["ylm", "pipeline", "scalar"], default="ylm",
-                   help="ylm = Option A; pipeline = parse text -> atom index -> force model; "
-                        "scalar = invariants only (see src/baselines.py)")
+    p.add_argument("--model", choices=["ylm", "pipeline", "scalar", "equillm", "frame_avg"], default="ylm",
+                   help="ylm = IrrepsToText; pipeline = parse text -> atom index -> force model; "
+                        "scalar = invariants only; equillm = invariant Transformer + post-LLM vector gate; "
+                        "frame_avg = PCA O(3) frame averaging (see src/baselines.py)")
     p.add_argument("--b_score_mode", choices=["legacy", "normalized"], default="legacy")
     p.add_argument("--routing_audit", action="store_true")
     p.add_argument("--option", choices=list("ABC"), default="A")
@@ -263,6 +264,17 @@ def main():
     elif args.model == "scalar":
         from src.baselines import ScalarCollapse
         model = ScalarCollapse(text_dim=data["text_dim"]).to(device)
+    elif args.model == "equillm":
+        from src.baselines import EquiLLMBaseline
+        eq_kw = dict(hidden_irreps="8x0e + 2x0o + 4x1o + 2x1e + 2x2e", d=32, n_vec=4,
+                     n_bridge_layers=1) if args.tiny else {}
+        model = EquiLLMBaseline(text_dim=data["text_dim"],
+                                text_mode="taskid" if args.text == "taskid" else "text", **eq_kw).to(device)
+    elif args.model == "frame_avg":
+        from src.baselines import FrameAveragingBaseline
+        fa_kw = dict(d=32, n_atom_layers=1) if args.tiny else {}
+        model = FrameAveragingBaseline(text_dim=data["text_dim"],
+                                       text_mode="taskid" if args.text == "taskid" else "text", **fa_kw).to(device)
     else:
         tiny = dict(hidden_irreps="8x0e + 2x0o + 4x1o + 2x1e + 2x2e",
                     cross_irreps="4x0e + 4x1o + 2x1e + 2x2e") if args.tiny else {}
