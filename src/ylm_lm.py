@@ -33,7 +33,7 @@ import torch.nn as nn
 from e3nn import o3
 
 from src.encoder import Encoder
-from src.irreps_to_text import IrrepsToText, invariants
+from src.irreps_to_text import IrrepsToText, channel_index, invariants
 
 MODES = ("text", "prefix", "xattnA", "xattnB", "xattnC")
 ROLES = {"molecule": 0, "salt": 1, "solvent": 2, "other": 3}
@@ -78,6 +78,9 @@ class YLMConfig:
     b_score_mode: str = "legacy"
     c_tp_mode: str = "fully_connected"
     key_dim: int = 64
+    vec_readout: bool = False
+    vec_token_id: Optional[int] = None
+    vec_loss_weight: float = 1.0
     extra: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
@@ -162,14 +165,15 @@ class IrrepsAdapter(nn.Module):
         self.proj = nn.Linear(n_inv, lm_dim)
         self.gate = nn.Parameter(torch.zeros(()))
 
-    def forward(self, h, x, atom_mask, has_atoms=None):
+    def forward(self, h, x, atom_mask, has_atoms=None, return_side: bool = False):
         dtype = self.proj.weight.dtype
         with torch.autocast(device_type=h.device.type, enabled=False):
             e, _ = self.cross(self.norm_h(h.to(dtype)), x.to(dtype), atom_mask)
-            delta = torch.tanh(self.gate) * self.proj(self.norm_e(invariants(e, self.cross.out_irreps)))
             if has_atoms is not None:
-                delta = delta * has_atoms[:, None, None].to(dtype)
-        return h + delta.to(h.dtype)
+                e = e * has_atoms[:, None, None].to(dtype)
+            delta = torch.tanh(self.gate) * self.proj(self.norm_e(invariants(e, self.cross.out_irreps)))
+        out = h + delta.to(h.dtype)
+        return (out, e) if return_side else out
 
 
 class _LayerHook:
@@ -185,10 +189,21 @@ class _LayerHook:
             return output
         adapter = self.owner.adapters[self.index]
         x, mask, has = ctx
+        need_side = self.owner.vec_head is not None
         if isinstance(output, tuple):
-            return (adapter(output[0], x, mask, has),) + tuple(output[1:])
+            res = adapter(output[0], x, mask, has, return_side=need_side)
+            if need_side:
+                out_h, e = res
+                self.owner._vec_stream = e if self.owner._vec_stream is None else self.owner._vec_stream + e
+                return (out_h,) + tuple(output[1:])
+            return (res,) + tuple(output[1:])
         if torch.is_tensor(output):
-            return adapter(output, x, mask, has)
+            res = adapter(output, x, mask, has, return_side=need_side)
+            if need_side:
+                out_h, e = res
+                self.owner._vec_stream = e if self.owner._vec_stream is None else self.owner._vec_stream + e
+                return out_h
+            return res
         raise TypeError(f"unsupported decoder layer output type {type(output)}")
 
 
@@ -246,7 +261,13 @@ class YLMCausalLM(nn.Module):
         self.prefix: Optional[nn.Module] = None
         self.adapters = nn.ModuleList()
         self.adapter_layers: list = []
+        self.vec_norm: Optional[nn.Module] = None
+        self.vec_gate: Optional[nn.Module] = None
+        self.vec_head: Optional[nn.Module] = None
         self._ctx = None
+        self._vec_stream = None
+        if cfg.vec_readout and self.mode not in ("xattnA", "xattnB", "xattnC"):
+            raise ValueError("vec_readout requires xattnA, xattnB, or xattnC mode")
         if self.mode == "text":
             return
         self.irreps = IrrepsTokenizer(cfg.encoder, n_elements=cfg.n_elements, cutoff=cfg.cutoff)
@@ -262,6 +283,12 @@ class YLMCausalLM(nn.Module):
             self.adapters.append(IrrepsAdapter(d, self.irreps.irreps_out, option, cross, cfg.key_dim,
                                                cfg.b_score_mode, cfg.c_tp_mode))
             layers[k].register_forward_hook(_LayerHook(self, i))
+        if cfg.vec_readout:
+            out_ir = o3.Irreps(cross)
+            self.vec_norm = nn.LayerNorm(d)
+            self.vec_gate = nn.Linear(d, out_ir.num_irreps)
+            self.vec_head = o3.Linear(out_ir, "1x1o")
+            self.register_buffer("_vec_expand", channel_index(out_ir), persistent=False)
 
     @property
     def needs_geometry(self) -> bool:
@@ -273,7 +300,7 @@ class YLMCausalLM(nn.Module):
         return x, geom["atom_mask"]
 
     def forward(self, input_ids, attention_mask, labels=None, geom=None, geom_feats=None,
-                output_hidden: bool = False) -> dict:
+                output_hidden: bool = False, vec_targets=None, vec_mask=None) -> dict:
         emb = self.lm.get_input_embeddings()(input_ids)
         mask = attention_mask.long()
         n_prefix = 0
@@ -298,11 +325,14 @@ class YLMCausalLM(nn.Module):
         capacity = getattr(self.lm.config, "max_position_embeddings", self.cfg.n_positions)
         if emb.shape[1] > capacity:
             raise ValueError(f"LM context {emb.shape[1]} exceeds capacity {capacity}; reduce max_len/prefix size")
+        self._vec_stream = None
         try:
             out = self.lm(inputs_embeds=emb, attention_mask=mask, position_ids=position_ids,
-                          output_hidden_states=output_hidden, use_cache=False)
+                          output_hidden_states=(output_hidden or self.vec_head is not None), use_cache=False)
+            vec_stream = self._vec_stream
         finally:
             self._ctx = None
+            self._vec_stream = None
         logits = out.logits[:, n_prefix:]
         res = {"logits": logits, "n_prefix": n_prefix}
         if output_hidden:
@@ -312,6 +342,38 @@ class YLMCausalLM(nn.Module):
             n = (labels[:, 1:] != -100).sum()
             res["nll"] = nll
             res["loss"] = nll.sum() / n.clamp(min=1)
+        if self.vec_head is not None:
+            with torch.autocast(device_type=emb.device.type, enabled=False):
+                vdtype = self.vec_head.weight.dtype
+                h_last = out.hidden_states[-1][:, n_prefix:].to(vdtype)
+                g_vec = torch.sigmoid(self.vec_gate(self.vec_norm(h_last)))[..., self._vec_expand]
+                vec_all = self.vec_head(g_vec * vec_stream.to(vdtype))
+            res["vec_all"] = vec_all
+            active = None
+            if vec_mask is not None:
+                active = vec_mask.bool() & attention_mask.bool()
+            elif self.cfg.vec_token_id is not None:
+                active = (input_ids == self.cfg.vec_token_id) & attention_mask.bool()
+            if active is not None:
+                res["vec_mask"] = active
+                res["vec"] = vec_all[active]
+            if vec_targets is not None:
+                if active is None or not bool(active.any()):
+                    raise ValueError("vec_targets requires at least one active <vec> position")
+                vt = vec_targets.to(device=vec_all.device, dtype=vec_all.dtype)
+                if vt.ndim == 3 and vt.shape == vec_all.shape:
+                    diff = (vec_all - vt)[active]
+                elif vt.ndim == 2 and vt.shape == (vec_all.shape[0], 3) and bool((active.sum(1) == 1).all()):
+                    diff = (vec_all - vt[:, None, :])[active]
+                elif vt.ndim == 2 and vt.shape == (int(active.sum()), 3):
+                    diff = vec_all[active] - vt
+                else:
+                    raise ValueError("vec_targets shape does not match active <vec> positions")
+                vec_loss = diff.square().mean()
+                res["vec_loss"] = vec_loss
+                res["loss"] = (res["loss"] if "loss" in res else 0.0) + self.cfg.vec_loss_weight * vec_loss
+        elif vec_targets is not None:
+            raise ValueError("vec_targets requires vec_readout=True")
         return res
 
     def param_counts(self) -> dict:
@@ -328,13 +390,15 @@ class YLMCausalLM(nn.Module):
         lm = count([self.lm])
         emb = count([self.lm.get_input_embeddings()])
         wpe = getattr(getattr(self.lm, "transformer", None), "wpe", None)
+        vec_mods = [self.vec_norm, self.vec_gate, self.vec_head]
         return {
             "lm": lm,
             "lm_non_embedding": lm - emb - count([wpe]),
             "encoder": count([self.irreps]),
             "adapters": count([self.adapters]),
             "prefix_projector": count([self.prefix]),
-            "geometry_pathway": count([self.irreps, self.adapters, self.prefix]),
+            "vec_readout": count(vec_mods),
+            "geometry_pathway": count([self.irreps, self.adapters, self.prefix] + vec_mods),
             "total": count([self]),
         }
 
