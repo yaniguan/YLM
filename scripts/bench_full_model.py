@@ -8,7 +8,10 @@ import argparse
 import json
 import os
 from pathlib import Path
-import resource
+try:
+    import resource
+except ImportError:
+    resource = None
 import subprocess
 import sys
 import time
@@ -26,7 +29,7 @@ TINY = dict(hidden_irreps='8x0e + 2x0o + 4x1o + 2x1e + 2x2e',
 def case(args, option, n, t):
     torch.set_num_threads(args.threads)
     torch.manual_seed(29)
-    model = YLM(32, option=option, **(TINY if args.preset == 'tiny' else {})).float()
+    model = YLM(32, option=option, c_tp_mode=args.c_tp_mode, **(TINY if args.preset == 'tiny' else {})).float()
     inputs = (torch.randint(1, 10, (1, n)), torch.randn(1, n, 3) * 2,
               torch.ones(1, n, dtype=torch.bool), torch.randn(1, t, 32),
               torch.ones(1, t, dtype=torch.bool), torch.zeros(1, dtype=torch.long))
@@ -61,9 +64,11 @@ def case(args, option, n, t):
             delta = model(*changed)[0] - y @ R.T
             errors[name] = dict(max_abs=delta.abs().max().item(),
                                 relative_l2=(delta.norm()/y.norm().clamp_min(1e-12)).item())
-    return dict(option=option, atoms=n, tokens=t, parameters=sum(p.numel() for p in model.parameters()),
+    rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024 if resource is not None else None
+    return dict(option=option, c_tp_mode=args.c_tp_mode, atoms=n, tokens=t,
+                parameters=sum(p.numel() for p in model.parameters()),
                 forward_ms=f, backward_ms=elapsed*1000/args.iterations, forward_backward_ms=fb,
-                peak_rss_mib=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024,
+                peak_rss_mib=rss,
                 equivariance=errors)
 
 
@@ -72,6 +77,7 @@ def main():
     p.add_argument('--atoms', nargs='+', type=int, default=[8, 24])
     p.add_argument('--tokens', nargs='+', type=int, default=[4, 16])
     p.add_argument('--options', nargs='+', choices=list('ABC'), default=list('ABC'))
+    p.add_argument('--c_tp_mode', choices=['fully_connected', 'channelwise'], default='fully_connected')
     p.add_argument('--preset', choices=['tiny', 'default'], default='tiny')
     p.add_argument('--threads', type=int, default=2)
     p.add_argument('--warmup', type=int, default=2)
@@ -89,6 +95,7 @@ def main():
         for n in args.atoms:
             for t in args.tokens:
                 command = [sys.executable, __file__, '--worker', '--options', option,
+                           '--c_tp_mode', args.c_tp_mode,
                            '--atoms', str(n), '--tokens', str(t), '--preset', args.preset,
                            '--threads', str(args.threads), '--warmup', str(args.warmup),
                            '--iterations', str(args.iterations)]

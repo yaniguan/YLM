@@ -47,6 +47,7 @@ def main():
                 cross_irreps="4x0e + 4x1o + 2x1e + 2x2e") if config.get("tiny") else {}
     model = YLM(text_dim=data["text_dim"], text_mode="taskid" if text == "taskid" else "text",
                 option=config.get("option", "A"), b_score_mode=config.get("b_score_mode", "legacy"),
+                c_tp_mode=config.get("c_tp_mode", "fully_connected"),
                 legacy_odd_scalars=config.get("legacy_odd_scalars", False),
                 n_cross_layers=config.get("n_cross_layers", 1),
                 **tiny).to(device)

@@ -30,7 +30,7 @@ class _TwoStreamStep(nn.Module):
     """One interactive YLM block: e_t invariants update h_t, then h_t re-queries atom irreps."""
 
     def __init__(self, d, atom_irreps, cross_irreps, option="A", legacy_odd_scalars=False,
-                 b_score_mode="legacy", n_heads=4):
+                 b_score_mode="legacy", n_heads=4, c_tp_mode="fully_connected"):
         super().__init__()
         self.cross_irreps = o3.Irreps(cross_irreps)
         self.legacy_odd_scalars = legacy_odd_scalars
@@ -43,7 +43,8 @@ class _TwoStreamStep(nn.Module):
         self.qkv = nn.Linear(d, 3 * d)
         self.out_sa = nn.Linear(d, d)
         self.cross = IrrepsToText(d, atom_irreps, cross_irreps, option=option,
-                                  legacy_odd_scalars=legacy_odd_scalars, b_score_mode=b_score_mode)
+                                  legacy_odd_scalars=legacy_odd_scalars, b_score_mode=b_score_mode,
+                                  c_tp_mode=c_tp_mode)
         self.mix_e = o3.Linear(cross_irreps, cross_irreps)
 
     def forward(self, h, e, x, atom_mask, text_mask):
@@ -71,7 +72,7 @@ class _TwoStreamStep(nn.Module):
 class YLM(nn.Module):
     def __init__(self, text_dim, text_mode="text", hidden_irreps="64x0e + 8x0o + 32x1o + 8x1e + 16x2e",
                  cross_irreps="32x0e + 32x1o + 8x1e + 8x2e", n_layers=3, n_tasks=2, option="A",
-                 legacy_odd_scalars=False, b_score_mode="legacy", n_cross_layers=1):
+                 legacy_odd_scalars=False, b_score_mode="legacy", c_tp_mode="fully_connected", n_cross_layers=1):
         super().__init__()
         if n_cross_layers < 1:
             raise ValueError("n_cross_layers must be >= 1")
@@ -81,11 +82,12 @@ class YLM(nn.Module):
         self.task_embed = nn.Embedding(n_tasks, text_dim)             # only used in "taskid"
         self.text_proj = nn.Sequential(nn.LayerNorm(text_dim), nn.Linear(text_dim, 256), nn.SiLU())
         self.cross = IrrepsToText(256, self.encoder.irreps_out, cross_irreps, option=option,
-                                  legacy_odd_scalars=legacy_odd_scalars, b_score_mode=b_score_mode)
+                                  legacy_odd_scalars=legacy_odd_scalars, b_score_mode=b_score_mode, c_tp_mode=c_tp_mode)
         if n_cross_layers > 1:
             self.extra_steps = nn.ModuleList([
                 _TwoStreamStep(256, self.encoder.irreps_out, cross_irreps, option=option,
-                               legacy_odd_scalars=legacy_odd_scalars, b_score_mode=b_score_mode)
+                               legacy_odd_scalars=legacy_odd_scalars, b_score_mode=b_score_mode,
+                               c_tp_mode=c_tp_mode)
                 for _ in range(n_cross_layers - 1)
             ])
         self.token_weight = nn.Linear(256, 1)
