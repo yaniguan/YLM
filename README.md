@@ -284,6 +284,15 @@ ylm serve --port 8765
 ylm export-hf --labels data/qm9_xtb.pkl --v0 data/tensorqa_v0.json --out dist/hf_tensorqa --anonymized
 ```
 
+## Optional MACE foundation backbone & live OpenMM/LAMMPS MD hooks
+
+`src/mace_backbone.py` (`MACEEncoder`) lets both `YLM` (`YLM.from_mace(...)`) and `YLMCausalLM`
+(`YLMConfig(encoder="mace-mp-0-small" | "mace-off23-medium", freeze_encoder=True)`) mount pretrained
+MACE-MP-0 (89 elements) or MACE-OFF23 equivariant node features plus conservative atomic forces (`1x1o`)
+directly into `IrrepsToText` (`pip install -e ".[mace]"`). For live reactive MD monitoring,
+`src/toolkit/md_hooks.py` provides `OpenMMReactionReporter`, `LAMMPSReactionHook`, and `--plot timeline.svg`
+on `ylm scan-traj` to log and plot bond-forming, bond-breaking, and proton-transfer timestamps.
+
 ## Citation
 
 Not published yet. Placeholder:

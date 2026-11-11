@@ -1,4 +1,5 @@
 """Out-of-the-box O(3)-equivariant directional chemistry toolkit around YLM."""
+from src.mace_backbone import MACEEncoder, load_mace_foundation_model
 from src.toolkit.domains import (
     TrajectoryScanResult,
     analyze_drug,
@@ -15,6 +16,13 @@ from src.toolkit.ingest import (
     load_structure,
     load_trajectory,
     smiles_to_frame,
+)
+from src.toolkit.md_hooks import (
+    LAMMPSReactionHook,
+    LiveReactionMonitor,
+    OpenMMReactionReporter,
+    ReactionEvent,
+    plot_reaction_timeline,
 )
 from src.toolkit.posttrain import (
     PhysicsLabeler,
@@ -33,9 +41,14 @@ from src.toolkit.probe import (
 from src.toolkit.viz import render_html_report, render_trajectory_html_report
 
 __all__ = [
+    "LAMMPSReactionHook",
+    "LiveReactionMonitor",
+    "MACEEncoder",
     "O3Verification",
+    "OpenMMReactionReporter",
     "PhysicsLabeler",
     "ProbeResult",
+    "ReactionEvent",
     "StructureFrame",
     "TrajectoryScanResult",
     "VectorPrediction",
@@ -50,8 +63,10 @@ __all__ = [
     "build_solvation_cluster",
     "detect_md_frame_events",
     "export_tensorqa_hf",
+    "load_mace_foundation_model",
     "load_structure",
     "load_trajectory",
+    "plot_reaction_timeline",
     "render_html_report",
     "render_trajectory_html_report",
     "run_posttrain",

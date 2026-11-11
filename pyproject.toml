@@ -27,6 +27,12 @@ crystals = [
     "pymatgen",
     "mp-api",
 ]
+mace = [
+    "mace-torch>=0.3.6",
+]
+md = [
+    "matplotlib>=3.7",
+]
 test = [
     "pytest>=7.0",
 ]

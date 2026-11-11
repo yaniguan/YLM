@@ -8,13 +8,16 @@ from typing import Optional, Sequence
 
 from src.toolkit.domains import analyze_drug, analyze_electrolyte, scan_md_trajectory
 from src.toolkit.hf_export import export_tensorqa_hf
-from src.toolkit.ingest import build_solvation_cluster
+from src.toolkit.ingest import build_solvation_cluster, load_trajectory
+from src.toolkit.md_hooks import LiveReactionMonitor, plot_reaction_timeline
 from src.toolkit.posttrain import run_posttrain
 from src.toolkit.probe import YLMProbe, verify_o3_equivariance
 from src.toolkit.server import create_studio_server
 
 
-def _load_probe(ckpt: Optional[str], device: str) -> YLMProbe:
+def _load_probe(ckpt: Optional[str], device: str, mace: Optional[str] = None) -> YLMProbe:
+    if mace:
+        return YLMProbe.from_mace(backbone=mace, device=device)
     return YLMProbe.from_checkpoint(ckpt, device=device) if ckpt else YLMProbe.default(device=device)
 
 
@@ -28,6 +31,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_ask.add_argument("question", help="Natural-language directional question")
     p_ask.add_argument("--domain", choices=["general", "electrolyte", "md", "drug"], default="general")
     p_ask.add_argument("--ckpt", help="Checkpoint file (.pt) or YLMCausalLM run directory")
+    p_ask.add_argument("--mace", help="Mount pretrained MACE backbone (e.g. mace-mp-0-small, mace-off23-medium)")
     p_ask.add_argument("--device", default="cpu")
     p_ask.add_argument("--verify-o3", action="store_true", help="Run live O(3) rotation+reflection verification")
     p_ask.add_argument("--html", help="Write standalone interactive 3D HTML report to this path")
@@ -51,10 +55,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_traj.add_argument("trajectory", help="Path to multi-frame .extxyz / .xyz / .traj")
     p_traj.add_argument("--query", default="What is the force vector on the transferring hydrogen atom?")
     p_traj.add_argument("--every", type=int, default=1)
+    p_traj.add_argument("--dt-fs", type=float, default=1.0, help="MD frame timestep in femtoseconds for timeline plots")
     p_traj.add_argument("--ckpt")
+    p_traj.add_argument("--mace", help="Mount pretrained MACE backbone (e.g. mace-mp-0-small, mace-off23-medium)")
     p_traj.add_argument("--device", default="cpu")
     p_traj.add_argument("--verify-o3", action="store_true")
     p_traj.add_argument("--html")
+    p_traj.add_argument("--plot", help="Write reaction timeline plot (.svg or .png) with frame/time markers")
     p_traj.add_argument("--json")
 
     # ylm drug
@@ -127,7 +134,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = build_parser().parse_args(argv)
 
     if args.command == "ask":
-        probe = _load_probe(args.ckpt, args.device)
+        probe = _load_probe(args.ckpt, args.device, mace=args.mace)
         res = probe.ask(args.structure, args.question, domain=args.domain, verify_o3=args.verify_o3)
         _emit_result(res, args.html, args.json)
         return 0
@@ -141,9 +148,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 0
 
     if args.command == "scan-traj":
-        probe = _load_probe(args.ckpt, args.device)
+        probe = _load_probe(args.ckpt, args.device, mace=args.mace)
         scan = scan_md_trajectory(args.trajectory, probe=probe, query=args.query,
                                   every=args.every, verify_o3=args.verify_o3)
+        if args.plot:
+            frames = load_trajectory(args.trajectory)
+            mon = LiveReactionMonitor(probe=probe)
+            for idx_f, fr in enumerate(frames):
+                mon.step(idx_f, idx_f * args.dt_fs, fr.Z, fr.pos_angstrom, fr.forces_ev_ang, fr.cell_angstrom, fr.pbc)
+            plot_reaction_timeline(mon.history, mon.events, args.plot)
         if args.html:
             scan.to_html(args.html)
         payload = scan.to_dict()
@@ -157,6 +170,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             "events": scan.events,
             "summary": scan.summary,
             "html": args.html,
+            "plot": args.plot,
         }, indent=2))
         return 0
 

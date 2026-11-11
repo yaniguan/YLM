@@ -100,6 +100,8 @@ Users inspect directional vectors and token-to-atom routing visually in a browse
 - **FR-008**: `src/toolkit/server.py` MUST provide a zero-extra-dependency HTTP server (`ylm serve`) serving an interactive browser studio (`GET /`) and JSON endpoints (`GET /api/health`, `POST /api/ask`).
 - **FR-009**: `src/toolkit/cli.py` and `pyproject.toml` MUST expose the `ylm` console script with subcommands `ask`, `scan-traj`, `solvation`, `drug`, `posttrain`, `verify-o3`, `serve`, and `export-hf`.
 - **FR-010**: `src/toolkit/hf_export.py` MUST export `TensorQA` (`v0_core`, optional `v0_compositional` T4/T5, and optional `v0_quadrupole` $l=2$) into self-contained Hugging Face Dataset JSONL splits with a complete Dataset Card (`--anonymized` option for double-blind review) and standalone $K=32$ $O(3)$ evaluation script (`evaluate_o3_protocol.py`).
+- **FR-011**: `src/mace_backbone.py` (`MACEEncoder`) MUST adapt pretrained `MACE-MP-0` (89 elements) and `MACE-OFF23` foundation models into both `YLM` (`YLM.from_mace`) and `YLMCausalLM` (`YLMConfig(encoder="mace-...")`), preserving exact $O(3)$ equivariance across `node_feats` and conservative atomic force (`1x1o`) channels under molecular and periodic boundary conditions.
+- **FR-012**: `src/toolkit/md_hooks.py` MUST provide `LiveReactionMonitor`, `OpenMMReactionReporter`, `LAMMPSReactionHook`, and `plot_reaction_timeline` (`--plot` on `ylm scan-traj`) for streaming detection and timestamped plotting of bond-forming, bond-breaking, and committed proton-transfer events during MD simulations.
 
 ### Key Entities
 

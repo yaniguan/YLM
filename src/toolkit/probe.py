@@ -13,6 +13,7 @@ import torch
 from e3nn import o3
 
 import src  # noqa: F401 - register safe globals for torch.load
+from src.mace_backbone import MACEEncoder
 from src.model import YLM
 from src.tasks.common import Example, Seg, collate, decode_with_vectors, load_run, model_inputs
 from src.tasks.tokenizer import CharTokenizer, VEC_TOKEN
@@ -285,6 +286,28 @@ class YLMProbe:
         raise ValueError(f"Unrecognized checkpoint format at {p}")
 
     @classmethod
+    def from_mace(
+        cls,
+        backbone: str = "mace-mp-0-small",
+        *,
+        mace_model: Optional[torch.nn.Module] = None,
+        text_encoder_name: str = "sentence-transformers/all-MiniLM-L6-v2",
+        text_dim: int = 384,
+        option: str = "A",
+        device: str = "cpu",
+        allow_download: bool = False,
+    ) -> "YLMProbe":
+        """Build a YLMProbe mounted on a MACE-MP-0 / MACE-OFF23 foundation backbone."""
+        model = YLM.from_mace(
+            text_dim=text_dim,
+            backbone=backbone,
+            mace_model=mace_model,
+            option=option,
+        )
+        enc = _TextStateEncoder(text_encoder_name, text_dim, allow_download=allow_download)
+        return cls("v0", model, device=device, text_encoder=enc, source_path=f"mace:{backbone}")
+
+    @classmethod
     def from_causal_lm(
         cls,
         run_or_model: Union[str, Path, torch.nn.Module],
@@ -301,10 +324,13 @@ class YLMProbe:
     def _ask_v0(self, frame: StructureFrame, question: str, task: Optional[int] = None) -> ProbeResult:
         warnings: list[str] = []
         chosen_task = infer_v0_task(question) if task is None else int(task)
-        n_elem = int(self.model.encoder.embed.num_embeddings)
-        mapped_z, warn_z = _map_elements_for_limit(frame.Z, n_elem)
-        if warn_z:
-            warnings.append(warn_z)
+        if isinstance(self.model.encoder, MACEEncoder):
+            mapped_z = np.asarray(frame.Z, dtype=np.int64)
+        else:
+            n_elem = int(self.model.encoder.embed.num_embeddings)
+            mapped_z, warn_z = _map_elements_for_limit(frame.Z, n_elem)
+            if warn_z:
+                warnings.append(warn_z)
         if self.text_encoder is not None and self.text_encoder.using_fallback and self.model.text_mode != "taskid":
             warnings.append(
                 f"Frozen HF encoder '{self.text_encoder.name}' not cached locally; using deterministic O(3)-invariant token projection."
@@ -330,7 +356,15 @@ class YLMProbe:
 
         h = self.model.text_proj(text_t)
         x = self.model.encoder(Z_t, pos_t, atom_mask, cell=cell_t, pbc=pbc_t)
+        if isinstance(self.model.encoder, MACEEncoder) and self.model.encoder.last_element_warnings:
+            warnings.extend(self.model.encoder.last_element_warnings)
         e, attn = self.model.cross(h, x, atom_mask)
+        if getattr(self.model, "n_cross_layers", 1) > 1:
+            attn_sum = attn
+            for step in self.model.extra_steps:
+                h, e, attn_step = step(h, e, x, atom_mask, text_mask)
+                attn_sum = attn_sum + attn_step
+            attn = attn_sum / float(self.model.n_cross_layers)
         w = self.model.token_weight(h).squeeze(-1).masked_fill(~text_mask, float("-inf")).softmax(-1)
         e_pool = torch.einsum("bt,btd->bd", w, e)
         attn_pool = torch.einsum("bt,btn->bn", w, attn)[0]

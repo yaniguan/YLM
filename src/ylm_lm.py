@@ -34,6 +34,7 @@ from e3nn import o3
 
 from src.encoder import Encoder
 from src.irreps_to_text import IrrepsToText, channel_index, invariants
+from src.mace_backbone import MACEEncoder
 
 MODES = ("text", "prefix", "xattnA", "xattnB", "xattnC")
 ROLES = {"molecule": 0, "salt": 1, "solvent": 2, "other": 3}
@@ -82,6 +83,8 @@ class YLMConfig:
     vec_token_id: Optional[int] = None
     vec_loss_weight: float = 1.0
     use_motion_1o: bool = False
+    freeze_encoder: bool = False
+    include_mace_forces: bool = True
     extra: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
@@ -135,14 +138,30 @@ def collate_geometry(geoms, device=None, dtype=None) -> dict:
 
 
 class IrrepsTokenizer(nn.Module):
-    """Equivariant encoder (n_elements=100) -> per-atom irreps ("irreps tokens") with mixture extras."""
+    """Equivariant encoder (n_elements=100 or MACE foundation model) -> per-atom irreps with mixture extras."""
 
-    def __init__(self, preset: str = "tiny", n_elements: int = 100, cutoff: float = 9.45, **overrides):
+    def __init__(self, preset: str = "tiny", n_elements: int = 100, cutoff: float = 9.45,
+                 mace_model: Optional[nn.Module] = None, freeze_encoder: bool = False,
+                 include_mace_forces: bool = True, **overrides):
         super().__init__()
-        kw = dict(ENCODER_PRESETS[preset])
-        kw.update(overrides)
-        self.encoder = Encoder(n_elements=n_elements, cutoff=cutoff, **kw)
-        n_scalar = self.encoder.hidden_irreps.count("0e")
+        if mace_model is not None or (isinstance(preset, str) and preset.lower().startswith("mace")):
+            self.encoder = MACEEncoder(
+                backbone=preset,
+                mace_model=mace_model,
+                freeze_mace=freeze_encoder,
+                include_mace_forces=include_mace_forces,
+                out_irreps=overrides.get("out_irreps"),
+                n_motion_vectors=int(overrides.get("n_motion_vectors", 0)),
+            )
+            n_scalar = max(1, self.encoder.n_scalar)
+        else:
+            kw = dict(ENCODER_PRESETS[preset])
+            kw.update(overrides)
+            self.encoder = Encoder(n_elements=n_elements, cutoff=cutoff, **kw)
+            if freeze_encoder:
+                for p in self.encoder.parameters():
+                    p.requires_grad_(False)
+            n_scalar = self.encoder.hidden_irreps.count("0e")
         self.role_embed = nn.Embedding(len(ROLES), n_scalar)
         self.amount_embed = nn.Linear(1, n_scalar, bias=False)
         nn.init.zeros_(self.role_embed.weight)    # start as the plain encoder
@@ -269,7 +288,7 @@ def token_nll(logits, labels):
 
 
 class YLMCausalLM(nn.Module):
-    def __init__(self, cfg: YLMConfig):
+    def __init__(self, cfg: YLMConfig, mace_model: Optional[nn.Module] = None):
         super().__init__()
         if cfg.mode not in MODES:
             raise ValueError(f"mode must be one of {MODES}")
@@ -293,6 +312,8 @@ class YLMCausalLM(nn.Module):
         if self.mode == "text":
             return
         self.irreps = IrrepsTokenizer(cfg.encoder, n_elements=cfg.n_elements, cutoff=cfg.cutoff,
+                                      mace_model=mace_model, freeze_encoder=cfg.freeze_encoder,
+                                      include_mace_forces=cfg.include_mace_forces,
                                       n_motion_vectors=(1 if cfg.use_motion_1o else 0))
         if self.mode == "prefix":
             n_inv = self.irreps.n_invariants
@@ -301,7 +322,7 @@ class YLMCausalLM(nn.Module):
         option = self.mode[-1]
         layers = _decoder_layers(self.lm)
         self.adapter_layers = list(cfg.adapter_layers) if cfg.adapter_layers else [len(layers) // 2]
-        cross = cfg.cross_irreps or CROSS_PRESETS[cfg.encoder][option]
+        cross = cfg.cross_irreps or CROSS_PRESETS.get(cfg.encoder, CROSS_PRESETS["small"])[option]
         for i, k in enumerate(self.adapter_layers):
             self.adapters.append(IrrepsAdapter(d, self.irreps.irreps_out, option, cross, cfg.key_dim,
                                                cfg.b_score_mode, cfg.c_tp_mode))
