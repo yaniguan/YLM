@@ -158,6 +158,16 @@ task and the tokens used in training. The default is `cartesian`. The mode is
 saved in the run config and must match when you resume. Older configs use
 `cartesian`.
 
+## Optional `<vec>` equivariant readout for `YLMCausalLM`
+
+Set `YLMConfig(mode="xattnA"|"xattnB"|"xattnC", vec_readout=True, vec_token_id=tok.vec_id)`
+to attach an O(3)-equivariant `1x1o` vector head to the adapter's equivariant side
+stream `e_t`, gated by final-layer invariant LM states. Text `logits` remain strictly
+O(3)-invariant while `out["vec"]` at `<vec>` positions rotates and reflects exactly
+with the input geometry. Passing `vec_targets` adds vector MSE (`vec_loss_weight`) to
+the causal LM token loss, and `decode_with_vectors` emits both decoded text and 3D
+vectors at generated `<vec>` tokens. Defaults keep `vec_readout=False`.
+
 ## Geometry control runs
 
 Downstream evaluation accepts `--geometry_control zero` or `donor`. The default,
