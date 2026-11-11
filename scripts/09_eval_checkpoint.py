@@ -49,6 +49,7 @@ def main():
                 option=config.get("option", "A"), b_score_mode=config.get("b_score_mode", "legacy"),
                 c_tp_mode=config.get("c_tp_mode", "fully_connected"),
                 legacy_odd_scalars=config.get("legacy_odd_scalars", False),
+                n_cross_layers=config.get("n_cross_layers", 1),
                 **tiny).to(device)
     model.load_state_dict(ck["state_dict"])
     scale = torch.tensor(ck["scale"])
