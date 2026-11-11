@@ -76,6 +76,7 @@ class YLMConfig:
     adapter_layers: Optional[list] = None  # default: [n_layer // 2]
     cross_irreps: Optional[str] = None     # default: CROSS_PRESETS[encoder][option]
     b_score_mode: str = "legacy"
+    c_tp_mode: str = "fully_connected"
     key_dim: int = 64
     extra: dict = field(default_factory=dict)
 
@@ -150,11 +151,12 @@ class IrrepsAdapter(nn.Module):
     """h <- h + tanh(gate) * Linear(LN(invariants(IrrepsToText(LN(h), atom_irreps))))."""
 
     def __init__(self, lm_dim: int, atom_irreps, option: str = "A", cross_irreps: Optional[str] = None,
-                 key_dim: int = 64, b_score_mode: str = "legacy"):
+                 key_dim: int = 64, b_score_mode: str = "legacy", c_tp_mode: str = "fully_connected"):
         super().__init__()
         cross_irreps = cross_irreps or CROSS_PRESETS["tiny"][option]
         self.norm_h = nn.LayerNorm(lm_dim)
-        self.cross = IrrepsToText(lm_dim, atom_irreps, cross_irreps, key_dim=key_dim, option=option, b_score_mode=b_score_mode)
+        self.cross = IrrepsToText(lm_dim, atom_irreps, cross_irreps, key_dim=key_dim, option=option,
+                                  b_score_mode=b_score_mode, c_tp_mode=c_tp_mode)
         n_inv = self.cross.out_irreps.num_irreps
         self.norm_e = nn.LayerNorm(n_inv)
         self.proj = nn.Linear(n_inv, lm_dim)
@@ -257,7 +259,8 @@ class YLMCausalLM(nn.Module):
         self.adapter_layers = list(cfg.adapter_layers) if cfg.adapter_layers else [len(layers) // 2]
         cross = cfg.cross_irreps or CROSS_PRESETS[cfg.encoder][option]
         for i, k in enumerate(self.adapter_layers):
-            self.adapters.append(IrrepsAdapter(d, self.irreps.irreps_out, option, cross, cfg.key_dim, cfg.b_score_mode))
+            self.adapters.append(IrrepsAdapter(d, self.irreps.irreps_out, option, cross, cfg.key_dim,
+                                               cfg.b_score_mode, cfg.c_tp_mode))
             layers[k].register_forward_hook(_LayerHook(self, i))
 
     @property

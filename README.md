@@ -149,6 +149,17 @@ multiplies it by a learned weight passed through `tanh`. The weight starts at ze
 The default is `legacy`, which keeps the original scores and checkpoint format.
 The tests do not show whether this improves how text selects atoms.
 
+## Optional channel-wise Option C
+
+Pass `--c_tp_mode channelwise` to `scripts/04_train.py` or `scripts/20_pretrain_lm.py`,
+or set `YLMConfig(c_tp_mode="channelwise")`, to replace Option C's fully connected
+Clebsch-Gordan self-product with a channel-wise (`uvu`) tensor product followed by an
+`o3.Linear` channel mix. This preserves all compatible angular paths (including
+`1o x 1o -> 2e` and `1o x 1o -> 1e`) and exact O(3) equivariance while cutting the
+per-token CG weight count from cubic to quadratic in channel multiplicity (reducing
+default Option C parameters from ~13.1M to ~0.85M and lowering `SliceBackward0`
+memory traffic). The default remains `fully_connected` for checkpoint compatibility.
+
 ## Optional invariant targets
 
 QM9 LM pretraining accepts `--target_mode invariant` in `scripts/20_pretrain_lm.py`.

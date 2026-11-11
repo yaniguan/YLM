@@ -48,13 +48,16 @@ def invariants(x, irreps, legacy_odd_scalars=False):
 
 
 class IrrepsToText(nn.Module):
-    def __init__(self, text_dim, atom_irreps, out_irreps, key_dim=64, option="A", legacy_odd_scalars=False, b_score_mode="legacy"):
+    def __init__(self, text_dim, atom_irreps, out_irreps, key_dim=64, option="A", legacy_odd_scalars=False, b_score_mode="legacy", c_tp_mode="fully_connected"):
         super().__init__()
         if option not in {"A", "B", "C"}:
             raise ValueError("option must be A, B, or C")
         if b_score_mode not in {"legacy", "normalized"}:
             raise ValueError("Unknown B score mode")
+        if c_tp_mode not in {"fully_connected", "channelwise"}:
+            raise ValueError("Unknown C tensor-product mode")
         self.b_score_mode = b_score_mode
+        self.c_tp_mode = c_tp_mode
         self.audit_enabled = False
         self.last_scores = None
         self.option = option
@@ -72,12 +75,30 @@ class IrrepsToText(nn.Module):
             self.direction_key = o3.Linear(self.atom_irreps, self.atom_irreps)
             self.direction_query = nn.Linear(text_dim, self.atom_irreps.num_irreps)
         if option == "C":
-            # C uses A's output and text-generated weights for every CG path.
-            self.tp = o3.FullyConnectedTensorProduct(
-                self.out_irreps, self.out_irreps, self.out_irreps,
-                internal_weights=False, shared_weights=False)
-            self.tp_weights = nn.Sequential(nn.Linear(text_dim, 64), nn.SiLU(),
-                                            nn.Linear(64, self.tp.weight_numel))
+            if c_tp_mode == "channelwise":
+                # Channel-wise ("uvu") CG product + o3.Linear channel mix avoids cubic weight_numel.
+                wanted = {ir for _, ir in self.out_irreps}
+                irreps_mid, instructions = [], []
+                for i, (m1, ir1) in enumerate(self.out_irreps):
+                    for j, (_, ir2) in enumerate(self.out_irreps):
+                        for ir_out in ir1 * ir2:
+                            if ir_out in wanted:
+                                instructions.append((i, j, len(irreps_mid), "uvu", True))
+                                irreps_mid.append((m1, ir_out))
+                irreps_mid = o3.Irreps(irreps_mid)
+                self.tp = o3.TensorProduct(
+                    self.out_irreps, self.out_irreps, irreps_mid, instructions,
+                    internal_weights=False, shared_weights=False)
+                self.tp_after = o3.Linear(irreps_mid, self.out_irreps)
+                self.tp_weights = nn.Sequential(nn.Linear(text_dim, 64), nn.SiLU(),
+                                                nn.Linear(64, max(1, self.tp.weight_numel)))
+            else:
+                # C uses A's output and text-generated weights for every CG path.
+                self.tp = o3.FullyConnectedTensorProduct(
+                    self.out_irreps, self.out_irreps, self.out_irreps,
+                    internal_weights=False, shared_weights=False)
+                self.tp_weights = nn.Sequential(nn.Linear(text_dim, 64), nn.SiLU(),
+                                                nn.Linear(64, self.tp.weight_numel))
         self.v = o3.Linear(self.atom_irreps, self.out_irreps)
         self.gate_attn = nn.Linear(text_dim, self.out_irreps.num_irreps)
         self.gate_sum = nn.Linear(text_dim, self.out_irreps.num_irreps)
@@ -128,5 +149,9 @@ class IrrepsToText(nn.Module):
         g_sum = self.gate_sum(h)[..., self.expand]
         e = g_attn * picked + g_sum * total
         if self.option == "C":
-            e = self.tp(e, e, self.tp_weights(h))
+            if self.c_tp_mode == "channelwise":
+                w = self.tp_weights(h)[..., :self.tp.weight_numel]
+                e = self.tp_after(self.tp(e, e, w))
+            else:
+                e = self.tp(e, e, self.tp_weights(h))
         return e, attn
