@@ -15,7 +15,7 @@ from src.tasks.downstream import (render_examples, controlled_examples, extract_
                                   mp_composition_features)
 
 
-def load_task(task, limit):
+def load_task(task, limit, mp_geom_mode='cluster'):
     if task == 'calisol':
         from src.tasks.calisol import load_calisol, split_calisol
         return load_calisol(limit=limit, seed=0), split_calisol, 'group'
@@ -23,7 +23,7 @@ def load_task(task, limit):
         from src.tasks.reddb import load_reddb, split_reddb
         return load_reddb(limit=limit, seed=0), split_reddb, 'scaffold'
     from src.tasks.mp_battery import load_mp_battery, split_mp
-    return load_mp_battery(limit=limit), split_mp, 'group'
+    return load_mp_battery(limit=limit, geom_mode=mp_geom_mode), split_mp, 'group'
 
 
 def assert_no_sft_leak(config, task, rows, split):
@@ -44,6 +44,8 @@ def main():
     p.add_argument('--multitarget', action='store_true', help='Train RedDB/MP targets together, ignoring missing labels')
     p.add_argument('--mp_composition_baseline', action='store_true',
                    help='Enable ridge regression using element fractions and the working ion')
+    p.add_argument('--mp_geom_mode', choices=['cluster', 'pbc'], default='cluster',
+                   help='Crystal geometry representation for mp_battery (default: cluster)')
     p.add_argument('--runs', nargs='+', required=True, help='Saved run directories, one per arm')
     p.add_argument('--tasks', nargs='+', choices=['calisol', 'reddb', 'mp_battery'], default=['calisol', 'reddb', 'mp_battery'])
     p.add_argument('--seeds', nargs='+', type=int, default=[0, 1, 2])
@@ -75,7 +77,7 @@ def main():
         raise ValueError('Use one checkpoint per arm in each invocation')
     with Profiler(args.profile_dir or out / 'profile', device) as profiler:
         for task in args.tasks:
-            rows, splitter, default_split = load_task(task, args.limit)
+            rows, splitter, default_split = load_task(task, args.limit, mp_geom_mode=args.mp_geom_mode)
             if not rows:
                 records.append({'task': task, 'skipped': 'No rows (MP requires MP_API_KEY)'})
                 continue

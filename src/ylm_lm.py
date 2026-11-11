@@ -88,7 +88,7 @@ class YLMConfig:
 
 
 def collate_geometry(geoms, device=None, dtype=None) -> dict:
-    """List of dicts {Z (N,), pos (N,3) bohr, role (N,), amount (N,)} -> padded tensors."""
+    """List of dicts {Z (N,), pos (N,3) bohr, role (N,), amount (N,), optional cell (3,3), pbc (3,)} -> padded tensors."""
     dtype = dtype or torch.get_default_dtype()
     B = len(geoms)
     N = max(1, max((len(g["Z"]) for g in geoms if g is not None), default=0))
@@ -97,6 +97,9 @@ def collate_geometry(geoms, device=None, dtype=None) -> dict:
     mask = torch.zeros(B, N, dtype=torch.bool)
     role = torch.zeros(B, N, dtype=torch.long)
     amount = torch.zeros(B, N, dtype=dtype)
+    has_cell = any(g is not None and g.get("cell") is not None for g in geoms)
+    cell = torch.zeros(B, 3, 3, dtype=dtype) if has_cell else None
+    pbc = torch.zeros(B, 3, dtype=torch.bool) if has_cell else None
     for b, g in enumerate(geoms):
         if g is None:
             continue
@@ -109,7 +112,14 @@ def collate_geometry(geoms, device=None, dtype=None) -> dict:
         if g.get("role") is not None:
             role[b, :n] = torch.as_tensor(np.asarray(g["role"]), dtype=torch.long)
         amount[b, :n] = torch.as_tensor(np.asarray(g["amount"]), dtype=dtype) if g.get("amount") is not None else 1.0
+        if has_cell and g.get("cell") is not None:
+            cell[b] = torch.as_tensor(np.asarray(g["cell"]), dtype=dtype)
+            pbc[b] = (torch.as_tensor(np.asarray(g["pbc"]), dtype=torch.bool)
+                      if g.get("pbc") is not None else (cell[b].norm(dim=-1) > 0))
     out = dict(Z=Z, pos=pos, atom_mask=mask, role=role, amount=amount)
+    if has_cell:
+        out["cell"] = cell
+        out["pbc"] = pbc
     return {k: v.to(device) for k, v in out.items()} if device is not None else out
 
 
@@ -132,14 +142,15 @@ class IrrepsTokenizer(nn.Module):
     def n_invariants(self) -> int:
         return self.irreps_out.num_irreps
 
-    def forward(self, Z, pos, atom_mask, role=None, amount=None):
+    def forward(self, Z, pos, atom_mask, role=None, amount=None, cell=None, pbc=None):
         dtype = self.role_embed.weight.dtype
         with torch.autocast(device_type=pos.device.type, enabled=False):
             pos = pos.to(dtype)
+            cell = cell.to(dtype) if cell is not None else None
             extra = self.role_embed(role if role is not None else torch.zeros_like(Z))
             if amount is not None:
                 extra = extra + self.amount_embed(amount.to(dtype)[..., None])
-            return self.encoder(Z, pos, atom_mask, extra_scalars=extra)
+            return self.encoder(Z, pos, atom_mask, extra_scalars=extra, cell=cell, pbc=pbc)
 
     def invariant_tokens(self, x):
         """Parity-correct invariants per atom (even scalars, |odd scalars|, channel norms)."""
@@ -266,7 +277,8 @@ class YLMCausalLM(nn.Module):
 
     def encode_geometry(self, geom: dict):
         """-> (atom irreps x, atom_mask). Reusable across decode steps."""
-        x = self.irreps(geom["Z"], geom["pos"], geom["atom_mask"], geom.get("role"), geom.get("amount"))
+        x = self.irreps(geom["Z"], geom["pos"], geom["atom_mask"], geom.get("role"), geom.get("amount"),
+                        geom.get("cell"), geom.get("pbc"))
         return x, geom["atom_mask"]
 
     def forward(self, input_ids, attention_mask, labels=None, geom=None, geom_feats=None,
