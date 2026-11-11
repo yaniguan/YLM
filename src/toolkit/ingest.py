@@ -260,6 +260,15 @@ def parse_xyz_frames(text: str, default_label: str = "xyz") -> list[StructureFra
             dnums = [float(x) for x in info["dipole"].split()]
             if len(dnums) == 3:
                 dipole_debye = np.array(dnums, dtype=np.float64)
+        for e_key in ("energy", "total_energy", "mace_energy", "nequip_energy", "dft_energy"):
+            if e_key in info:
+                try:
+                    info.setdefault("energy_ev", float(info[e_key]))
+                except ValueError:
+                    pass
+        for b_key in ("stereo_ok", "relaxed", "converged", "has_energy"):
+            if b_key in info and isinstance(info[b_key], str):
+                info[b_key] = info[b_key].strip().upper() in ("T", "TRUE", "1", "YES")
 
         # Parse optional Properties=species:S:1:pos:R:3:forces:R:3:role:I:1...
         prop_spec = info.get("Properties", "species:S:1:pos:R:3")
@@ -285,7 +294,7 @@ def parse_xyz_frames(text: str, default_label: str = "xyz") -> list[StructureFra
                         row_z = int(seg[0]) if seg[0].isdigit() else z_for_symbol(seg[0])
                     elif cname == "pos":
                         row_pos = [float(x) for x in seg]
-                    elif cname in ("forces", "force"):
+                    elif cname in ("forces", "force", "mace_forces", "nequip_forces", "dft_forces"):
                         forces.append([float(x) for x in seg])
                     elif cname in ("vel", "velo", "velocity", "delta_pos"):
                         vel.append([float(x) for x in seg])
@@ -563,13 +572,26 @@ def _from_ase_atoms(atoms, label: str = "ase") -> StructureFrame:
             forces = np.asarray(atoms.calc.results["forces"], dtype=np.float64)
     except Exception:
         forces = None
+    if forces is None and hasattr(atoms, "arrays"):
+        for f_key in ("forces", "mace_forces", "nequip_forces", "dft_forces"):
+            if f_key in atoms.arrays:
+                forces = np.asarray(atoms.arrays[f_key], dtype=np.float64)
+                break
+    meta = dict(getattr(atoms, "info", {}) or {})
+    for e_key in ("energy", "total_energy", "mace_energy", "nequip_energy"):
+        if e_key in meta:
+            try:
+                meta.setdefault("energy_ev", float(meta[e_key]))
+            except (TypeError, ValueError):
+                pass
     return StructureFrame(
         Z=atoms.get_atomic_numbers(),
         pos_bohr=np.asarray(atoms.get_positions(), dtype=np.float64) * ANGSTROM_TO_BOHR,
         cell_bohr=None if cell_ang is None else cell_ang * ANGSTROM_TO_BOHR,
         pbc=pbc if pbc.any() else None,
         forces_ev_ang=forces,
-        label=label,
+        label=str(meta.get("source_id") or meta.get("label") or label),
+        metadata=meta,
     )
 
 

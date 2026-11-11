@@ -11,6 +11,11 @@ from src.toolkit.hf_export import export_tensorqa_hf
 from src.toolkit.ingest import build_solvation_cluster, load_trajectory
 from src.toolkit.md_hooks import LiveReactionMonitor, plot_reaction_timeline
 from src.toolkit.mlip_md import MLIPTrajectoryRunner, TorchMLIPForceProvider
+from src.toolkit.ouroboros_bridge import (
+    load_any_ouroboros_input,
+    ouroboros_frames_to_universe_records,
+    probe_ouroboros_structures,
+)
 from src.toolkit.posttrain import run_posttrain
 from src.toolkit.probe import YLMProbe, verify_o3_equivariance
 from src.toolkit.server import create_studio_server
@@ -134,6 +139,28 @@ def build_parser() -> argparse.ArgumentParser:
     p_md.add_argument("--json", help="Write detected reaction events & history JSON")
     p_md.add_argument("--plot", help="Write SVG/PNG reaction timeline plot")
     p_md.add_argument("--html", help="Write interactive 3D HTML trajectory report")
+
+    # ylm from-ouroboros
+    p_ob = sub.add_parser(
+        "from-ouroboros",
+        help="Link yaniguan/ouroboros-ocsr (.extxyz, .manifest.jsonl, predictions.csv, image, or stereo SMILES) to YLM",
+    )
+    p_ob.add_argument("source", help="Path to Ouroboros .extxyz / .manifest.jsonl / predictions.csv / image or stereo SMILES")
+    p_ob.add_argument("--question", default="What is the 3D molecular dipole vector?", help="Directional question for YLMProbe")
+    p_ob.add_argument("--manifest", help="Optional explicit path to <stem>.manifest.jsonl")
+    p_ob.add_argument("--ouroboros-repo", help="Optional local path to yaniguan/ouroboros-ocsr clone")
+    p_ob.add_argument("--ouroboros-ckpt", help="Optional Ouroboros OCSR checkpoint when input is a 2D image")
+    p_ob.add_argument("--only-accepted", action="store_true", help="Filter out rejected Arm A+C OCSR abstentions")
+    p_ob.add_argument("--min-margin", type=float, help="Minimum Ouroboros confidence margin threshold")
+    p_ob.add_argument("--lot", default="wb97m", help="Level-of-Theory tag when exporting UniverseRecord JSONL")
+    p_ob.add_argument("--out-universe-jsonl", help="Export leak-free multi-task UniverseRecord JSONL dataset")
+    p_ob.add_argument("--ckpt", help="YLM checkpoint (.pt) or YLMCausalLM run dir")
+    p_ob.add_argument("--mace", help="Mount pretrained MACE backbone")
+    p_ob.add_argument("--nequip", help="Mount compiled NequIP/Allegro backbone")
+    p_ob.add_argument("--device", default="cpu")
+    p_ob.add_argument("--verify-o3", action="store_true")
+    p_ob.add_argument("--html", help="Write interactive 3D HTML report for the first conformer")
+    p_ob.add_argument("--json", help="Write full structured JSON summary across all conformers")
 
     return p
 
@@ -275,6 +302,60 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             out_html=args.html,
         )
         print(json.dumps(md_res.to_summary_dict(), indent=2))
+        return 0
+
+    if args.command == "from-ouroboros":
+        probe = _load_probe(args.ckpt, args.device, mace=args.mace, nequip=args.nequip)
+        frames = load_any_ouroboros_input(
+            args.source,
+            manifest_path=args.manifest,
+            ouroboros_repo=args.ouroboros_repo,
+            ouroboros_ckpt=args.ouroboros_ckpt,
+            only_stereo_ok=True,
+            only_accepted=args.only_accepted,
+            min_margin=args.min_margin,
+            device=args.device,
+        )
+        n_universe_rows = 0
+        if args.out_universe_jsonl:
+            recs = ouroboros_frames_to_universe_records(frames, lot=args.lot)
+            out_u = Path(args.out_universe_jsonl)
+            out_u.parent.mkdir(parents=True, exist_ok=True)
+            out_u.write_text("\n".join(r.to_json() for r in recs) + ("\n" if recs else ""), encoding="utf-8")
+            n_universe_rows = len(recs)
+
+        results = probe_ouroboros_structures(
+            args.source,
+            args.question,
+            probe=probe,
+            manifest_path=args.manifest,
+            ouroboros_repo=args.ouroboros_repo,
+            ouroboros_ckpt=args.ouroboros_ckpt,
+            only_stereo_ok=True,
+            only_accepted=args.only_accepted,
+            min_margin=args.min_margin,
+            verify_o3=args.verify_o3,
+        )
+        if args.html and results:
+            results[0].to_html(args.html)
+        summary = {
+            "n_conformers_loaded": len(results),
+            "n_universe_records_exported": n_universe_rows,
+            "universe_jsonl": args.out_universe_jsonl,
+            "results": [r.to_dict() for r in results],
+        }
+        if args.json:
+            jp = Path(args.json)
+            jp.parent.mkdir(parents=True, exist_ok=True)
+            jp.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+        print(json.dumps({
+            "n_conformers_loaded": len(results),
+            "n_universe_records_exported": n_universe_rows,
+            "first_answer": results[0].answer if results else None,
+            "first_domain_summary": results[0].domain_summary if results else None,
+            "html": args.html,
+            "universe_jsonl": args.out_universe_jsonl,
+        }, indent=2))
         return 0
 
     return 1
