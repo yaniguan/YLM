@@ -15,6 +15,7 @@ from e3nn import o3
 import src  # noqa: F401 - register safe globals for torch.load
 from src.mace_backbone import MACEEncoder
 from src.model import YLM
+from src.nequip_backbone import NequIPEncoder
 from src.tasks.common import Example, Seg, collate, decode_with_vectors, load_run, model_inputs
 from src.tasks.tokenizer import CharTokenizer, VEC_TOKEN
 from src.toolkit.ingest import (
@@ -308,6 +309,34 @@ class YLMProbe:
         return cls("v0", model, device=device, text_encoder=enc, source_path=f"mace:{backbone}")
 
     @classmethod
+    def from_nequip(
+        cls,
+        backbone: str = "nequip:deployed.pth",
+        *,
+        nequip_model: Optional[torch.nn.Module] = None,
+        atomic_numbers: Optional[list[int]] = None,
+        r_max: Optional[float] = None,
+        node_irreps: Optional[str] = None,
+        text_encoder_name: str = "sentence-transformers/all-MiniLM-L6-v2",
+        text_dim: int = 384,
+        option: str = "A",
+        device: str = "cpu",
+        allow_download: bool = False,
+    ) -> "YLMProbe":
+        """Build a YLMProbe mounted on a compiled TorchScript or Python NequIP / Allegro backbone."""
+        model = YLM.from_nequip(
+            text_dim=text_dim,
+            backbone=backbone,
+            nequip_model=nequip_model,
+            atomic_numbers=atomic_numbers,
+            r_max=r_max,
+            node_irreps=node_irreps,
+            option=option,
+        )
+        enc = _TextStateEncoder(text_encoder_name, text_dim, allow_download=allow_download)
+        return cls("v0", model, device=device, text_encoder=enc, source_path=f"nequip:{backbone}")
+
+    @classmethod
     def from_causal_lm(
         cls,
         run_or_model: Union[str, Path, torch.nn.Module],
@@ -324,7 +353,7 @@ class YLMProbe:
     def _ask_v0(self, frame: StructureFrame, question: str, task: Optional[int] = None) -> ProbeResult:
         warnings: list[str] = []
         chosen_task = infer_v0_task(question) if task is None else int(task)
-        if isinstance(self.model.encoder, MACEEncoder):
+        if isinstance(self.model.encoder, (MACEEncoder, NequIPEncoder)):
             mapped_z = np.asarray(frame.Z, dtype=np.int64)
         else:
             n_elem = int(self.model.encoder.embed.num_embeddings)
@@ -336,8 +365,7 @@ class YLMProbe:
                 f"Frozen HF encoder '{self.text_encoder.name}' not cached locally; using deterministic O(3)-invariant token projection."
             )
 
-        param = next(self.model.parameters())
-        dtype = param.dtype
+        dtype = self.model.text_proj[0].weight.dtype
         Z_t = torch.as_tensor(mapped_z[None, :], dtype=torch.long, device=self.device)
         pos_t = torch.as_tensor(frame.pos_bohr[None, :, :], dtype=dtype, device=self.device)
         atom_mask = torch.ones((1, frame.n_atoms), dtype=torch.bool, device=self.device)
@@ -356,7 +384,7 @@ class YLMProbe:
 
         h = self.model.text_proj(text_t)
         x = self.model.encoder(Z_t, pos_t, atom_mask, cell=cell_t, pbc=pbc_t)
-        if isinstance(self.model.encoder, MACEEncoder) and self.model.encoder.last_element_warnings:
+        if isinstance(self.model.encoder, (MACEEncoder, NequIPEncoder)) and self.model.encoder.last_element_warnings:
             warnings.extend(self.model.encoder.last_element_warnings)
         e, attn = self.model.cross(h, x, atom_mask)
         if getattr(self.model, "n_cross_layers", 1) > 1:
@@ -426,8 +454,7 @@ class YLMProbe:
         tok = self.causal_tokenizer
         geom = frame.to_geom_dict()
         warnings: list[str] = []
-        param = next(self.model.parameters())
-        dtype = param.dtype
+        dtype = self.model.lm.get_input_embeddings().weight.dtype
 
         prompt_ex = Example([Seg(question)], geom)
         if self.model.vec_head is not None:

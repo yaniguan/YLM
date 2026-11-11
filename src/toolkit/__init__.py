@@ -1,5 +1,6 @@
 """Out-of-the-box O(3)-equivariant directional chemistry toolkit around YLM."""
 from src.mace_backbone import MACEEncoder, load_mace_foundation_model
+from src.nequip_backbone import NequIPEncoder, load_nequip_model
 from src.toolkit.domains import (
     TrajectoryScanResult,
     analyze_drug,
@@ -24,6 +25,14 @@ from src.toolkit.md_hooks import (
     ReactionEvent,
     plot_reaction_timeline,
 )
+from src.toolkit.mlip_md import (
+    AnalyticalReactiveForceProvider,
+    MLIPMDRunResult,
+    MLIPTrajectoryRunner,
+    TorchMLIPForceProvider,
+    build_openmm_mlip_simulation,
+    write_extxyz_trajectory,
+)
 from src.toolkit.posttrain import (
     PhysicsLabeler,
     analytical_forces_and_dipole,
@@ -41,15 +50,20 @@ from src.toolkit.probe import (
 from src.toolkit.viz import render_html_report, render_trajectory_html_report
 
 __all__ = [
+    "AnalyticalReactiveForceProvider",
     "LAMMPSReactionHook",
     "LiveReactionMonitor",
     "MACEEncoder",
+    "MLIPMDRunResult",
+    "MLIPTrajectoryRunner",
+    "NequIPEncoder",
     "O3Verification",
     "OpenMMReactionReporter",
     "PhysicsLabeler",
     "ProbeResult",
     "ReactionEvent",
     "StructureFrame",
+    "TorchMLIPForceProvider",
     "TrajectoryScanResult",
     "VectorPrediction",
     "YLMProbe",
@@ -60,10 +74,12 @@ __all__ = [
     "analyze_electrolyte_geometry",
     "build_directional_dpo_pairs",
     "build_directional_sft_examples",
+    "build_openmm_mlip_simulation",
     "build_solvation_cluster",
     "detect_md_frame_events",
     "export_tensorqa_hf",
     "load_mace_foundation_model",
+    "load_nequip_model",
     "load_structure",
     "load_trajectory",
     "plot_reaction_timeline",
@@ -73,4 +89,5 @@ __all__ = [
     "scan_md_trajectory",
     "smiles_to_frame",
     "verify_o3_equivariance",
+    "write_extxyz_trajectory",
 ]

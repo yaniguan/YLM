@@ -24,6 +24,7 @@ from src.encoder import Encoder
 from src.irreps_to_text import IrrepsToText, invariants
 from src.mace_backbone import MACEEncoder
 from src.model import _TwoStreamStep, _has_irrep
+from src.nequip_backbone import NequIPEncoder
 from src.tensor_readout import TensorReadout, rotate_matrix
 
 LOT_VOCAB: tuple[str, ...] = ("unknown", "wb97m", "r2scan", "pbe_u", "ccsd", "xtb")
@@ -103,6 +104,8 @@ class YLMUniverseModel(nn.Module):
             self.encoder = backbone
         elif isinstance(backbone, str) and backbone.lower().startswith("mace"):
             self.encoder = MACEEncoder(backbone=backbone)
+        elif isinstance(backbone, str) and backbone.lower().startswith(("nequip", "allegro")):
+            self.encoder = NequIPEncoder(backbone=backbone)
         elif backbone == "e3nn":
             self.encoder = Encoder(
                 hidden_irreps=hidden_irreps,
@@ -111,7 +114,9 @@ class YLMUniverseModel(nn.Module):
                 n_elements=n_elements,
             )
         else:
-            raise ValueError(f"Unsupported backbone {backbone!r}; expected 'e3nn', 'mace-*', or nn.Module")
+            raise ValueError(
+                f"Unsupported backbone {backbone!r}; expected 'e3nn', 'mace-*', 'nequip:*', 'allegro:*', or nn.Module"
+            )
 
         self.atom_irreps = o3.Irreps(self.encoder.irreps_out)
         n_atom_0e = self.encoder.hidden_irreps.count("0e") if isinstance(self.encoder, Encoder) else 0
@@ -197,6 +202,34 @@ class YLMUniverseModel(nn.Module):
             mace_model=mace_model,
             freeze_mace=freeze_mace,
             include_mace_forces=include_mace_forces,
+            out_irreps=out_irreps,
+        )
+        return cls(text_dim=text_dim, backbone=enc, **kwargs)
+
+    @classmethod
+    def from_nequip(
+        cls,
+        text_dim: int = 128,
+        backbone: str = "nequip:deployed.pth",
+        *,
+        nequip_model: Optional[nn.Module] = None,
+        atomic_numbers: Optional[Sequence[int]] = None,
+        r_max: Optional[float] = None,
+        node_irreps: Optional[str] = None,
+        freeze_nequip: bool = True,
+        include_nequip_forces: bool = True,
+        out_irreps: Optional[str] = None,
+        **kwargs,
+    ) -> "YLMUniverseModel":
+        """Construct YLMUniverseModel mounted on a compiled TorchScript or Python NequIP / Allegro backbone."""
+        enc = NequIPEncoder(
+            backbone=backbone,
+            nequip_model=nequip_model,
+            atomic_numbers=atomic_numbers,
+            r_max=r_max,
+            node_irreps=node_irreps,
+            freeze_nequip=freeze_nequip,
+            include_nequip_forces=include_nequip_forces,
             out_irreps=out_irreps,
         )
         return cls(text_dim=text_dim, backbone=enc, **kwargs)

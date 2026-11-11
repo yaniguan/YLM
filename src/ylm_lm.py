@@ -35,6 +35,7 @@ from e3nn import o3
 from src.encoder import Encoder
 from src.irreps_to_text import IrrepsToText, channel_index, invariants
 from src.mace_backbone import MACEEncoder
+from src.nequip_backbone import NequIPEncoder
 
 MODES = ("text", "prefix", "xattnA", "xattnB", "xattnC")
 ROLES = {"molecule": 0, "salt": 1, "solvent": 2, "other": 3}
@@ -142,7 +143,8 @@ class IrrepsTokenizer(nn.Module):
 
     def __init__(self, preset: str = "tiny", n_elements: int = 100, cutoff: float = 9.45,
                  mace_model: Optional[nn.Module] = None, freeze_encoder: bool = False,
-                 include_mace_forces: bool = True, **overrides):
+                 include_mace_forces: bool = True, nequip_model: Optional[nn.Module] = None,
+                 **overrides):
         super().__init__()
         if mace_model is not None or (isinstance(preset, str) and preset.lower().startswith("mace")):
             self.encoder = MACEEncoder(
@@ -150,6 +152,19 @@ class IrrepsTokenizer(nn.Module):
                 mace_model=mace_model,
                 freeze_mace=freeze_encoder,
                 include_mace_forces=include_mace_forces,
+                out_irreps=overrides.get("out_irreps"),
+                n_motion_vectors=int(overrides.get("n_motion_vectors", 0)),
+            )
+            n_scalar = max(1, self.encoder.n_scalar)
+        elif nequip_model is not None or (isinstance(preset, str) and preset.lower().startswith(("nequip", "allegro"))):
+            self.encoder = NequIPEncoder(
+                backbone=preset,
+                nequip_model=nequip_model,
+                atomic_numbers=overrides.get("atomic_numbers"),
+                r_max=overrides.get("r_max"),
+                node_irreps=overrides.get("node_irreps"),
+                freeze_nequip=freeze_encoder,
+                include_nequip_forces=include_mace_forces,
                 out_irreps=overrides.get("out_irreps"),
                 n_motion_vectors=int(overrides.get("n_motion_vectors", 0)),
             )
@@ -288,7 +303,12 @@ def token_nll(logits, labels):
 
 
 class YLMCausalLM(nn.Module):
-    def __init__(self, cfg: YLMConfig, mace_model: Optional[nn.Module] = None):
+    def __init__(
+        self,
+        cfg: YLMConfig,
+        mace_model: Optional[nn.Module] = None,
+        nequip_model: Optional[nn.Module] = None,
+    ):
         super().__init__()
         if cfg.mode not in MODES:
             raise ValueError(f"mode must be one of {MODES}")
@@ -314,6 +334,7 @@ class YLMCausalLM(nn.Module):
         self.irreps = IrrepsTokenizer(cfg.encoder, n_elements=cfg.n_elements, cutoff=cfg.cutoff,
                                       mace_model=mace_model, freeze_encoder=cfg.freeze_encoder,
                                       include_mace_forces=cfg.include_mace_forces,
+                                      nequip_model=nequip_model,
                                       n_motion_vectors=(1 if cfg.use_motion_1o else 0))
         if self.mode == "prefix":
             n_inv = self.irreps.n_invariants
