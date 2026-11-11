@@ -139,6 +139,15 @@ nearby, and far atom choices. Each force question is counted once, without rotat
 the molecule. Nearby means less than 3.4 bohr apart; it does not mean bonded.
 The report is off by default.
 
+## Optional multi-layer cross-attention
+
+Pass `--n_cross_layers K` (`K >= 2`) to `scripts/04_train.py`, or `YLM(..., n_cross_layers=K)`,
+to stack `K` interactive two-stream blocks from `03_technical_design.md`. After each
+cross-attention step, O(3) invariants of the equivariant side stream `e_t` feed back
+into the text stream `h_t` alongside masked token self-attention before the next
+`IrrepsToText` query and equivariant residual mix. The default `n_cross_layers=1`
+keeps the original architecture and v0 checkpoint format.
+
 ## Optional normalized scores
 
 To use normalized scores for Option B, pass `--b_score_mode normalized` to

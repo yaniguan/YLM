@@ -218,6 +218,8 @@ def main():
     p.add_argument("--attn_sup", type=float, default=0.0,
                    help="weight of auxiliary CE loss pushing pooled attention onto the asked atom (force questions); 0 = off")
     p.add_argument("--name", required=True)
+    p.add_argument("--n_cross_layers", type=int, default=1,
+                   help="number of interactive two-stream IrrepsToText blocks (default 1)")
     p.add_argument("--epochs", type=int, default=60)
     p.add_argument("--batch_size", type=int, default=128)
     p.add_argument("--lr", type=float, default=1e-3)
@@ -267,7 +269,8 @@ def main():
         tiny = dict(hidden_irreps="8x0e + 2x0o + 4x1o + 2x1e + 2x2e",
                     cross_irreps="4x0e + 4x1o + 2x1e + 2x2e") if args.tiny else {}
         model = YLM(text_dim=data["text_dim"], text_mode="taskid" if args.text == "taskid" else "text",
-                    option=args.option, b_score_mode=args.b_score_mode, legacy_odd_scalars=args.legacy_odd_scalars, **tiny).to(device)
+                    option=args.option, b_score_mode=args.b_score_mode, legacy_odd_scalars=args.legacy_odd_scalars,
+                    n_cross_layers=args.n_cross_layers, **tiny).to(device)
     say("parameters", sum(p.numel() for p in model.parameters()))
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-5)
     steps_per_epoch = math.ceil(len(train["mol"]) / args.batch_size)
@@ -284,6 +287,8 @@ def main():
                 raise ValueError(f"Resume configuration differs: {key}")
         if saved["args"].get("b_score_mode", "legacy") != args.b_score_mode:
             raise ValueError("Resume B score mode differs")
+        if saved["args"].get("n_cross_layers", 1) != args.n_cross_layers:
+            raise ValueError("Resume n_cross_layers differs")
         model.load_state_dict(saved["model"])
         opt.load_state_dict(saved["optimizer"])
         sched.load_state_dict(saved["scheduler"])
