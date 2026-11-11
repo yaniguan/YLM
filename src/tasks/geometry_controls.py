@@ -49,6 +49,10 @@ def geometry_control(rows, mode='original', *, indices=None, donor_indices=None,
             continue
         if mode == 'zero':
             result[i]['example'].geom['pos'] = np.zeros_like(geom['pos'])
+            if geom.get('cell') is not None:
+                result[i]['example'].geom['cell'] = np.zeros_like(geom['cell'])
+            if geom.get('pbc') is not None:
+                result[i]['example'].geom['pbc'] = np.zeros_like(geom['pbc'], dtype=bool)
         else:
             candidates = []
             for j in donors:
@@ -66,7 +70,15 @@ def geometry_control(rows, mode='original', *, indices=None, donor_indices=None,
                 continue
             digest = hashlib.sha256(f'{seed}|{rows[i]["id"]}'.encode()).digest()
             _, j, mapping = candidates[int.from_bytes(digest[:8], 'big') % len(candidates)]
-            result[i]['example'].geom['pos'] = np.asarray(rows[j]['example'].geom['pos'])[mapping].copy()
+            donor_geom = rows[j]['example'].geom
+            result[i]['example'].geom['pos'] = np.asarray(donor_geom['pos'])[mapping].copy()
+            if donor_geom.get('cell') is not None:
+                result[i]['example'].geom['cell'] = np.asarray(donor_geom['cell']).copy()
+                if donor_geom.get('pbc') is not None:
+                    result[i]['example'].geom['pbc'] = np.asarray(donor_geom['pbc'], dtype=bool).copy()
+            elif 'cell' in result[i]['example'].geom:
+                result[i]['example'].geom.pop('cell', None)
+                result[i]['example'].geom.pop('pbc', None)
             report['donors'][str(rows[i]['id'])] = str(rows[j]['id'])
         report['changed'] += 1
     return result, report

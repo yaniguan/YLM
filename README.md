@@ -239,6 +239,19 @@ sites or repeating the cell does not change them. Ridge regression fits scaling
 on training rows and chooses its penalty on validation rows. Results appear as
 `composition/ridge`. Inputs exclude atom positions and electrochemical targets.
 
+## Optional periodic crystal graph and packaging
+
+`Encoder.forward` and `YLMCausalLM` accept optional periodic lattice vectors
+`cell` (`(B, 3, 3)` rows in bohr) and `pbc` (`(B, 3)` boolean mask) to construct
+minimum-image / multi-image neighbor graphs across periodic boundaries, including
+periodic self-images (`i == j` at non-zero lattice shifts) in small unit cells.
+When `cell` is omitted, the molecular pair graph is unchanged. For Materials
+Project insertion electrodes in `scripts/22_downstream_eval.py`, pass
+`--mp_geom_mode pbc` to encode unit cells with 3D periodic boundary conditions
+instead of cutting a finite 6 Å cluster (`--mp_geom_mode cluster`, default). The
+repository can also be installed as an editable Python package with
+`pip install -e .`.
+
 ## Citation
 
 Not published yet. Placeholder:

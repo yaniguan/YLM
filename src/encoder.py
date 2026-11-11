@@ -69,6 +69,81 @@ class Layer(nn.Module):
         return x + out if self.residual else out
 
 
+def _periodic_edges(pos, mask, cell, pbc, cutoff):
+    """Build neighbor edges (dst, src, vec, dist) under 1D/2D/3D periodic boundary conditions.
+
+    cell: (B, 3, 3) or (3, 3) lattice vectors as rows in bohr.
+    pbc:  optional (B, 3) or (3,) bool mask per lattice vector; defaults to non-zero rows of cell.
+    Self-images (i == j) at non-zero lattice shifts S != 0 are included when within cutoff;
+    only the trivial zero-shift self-pair (i == j, S == 0) is excluded.
+    """
+    B, N, _ = pos.shape
+    if cell.ndim == 2:
+        cell = cell.unsqueeze(0).expand(B, 3, 3)
+    if cell.shape != (B, 3, 3):
+        raise ValueError(f"Expected cell shape {(B, 3, 3)}, got {tuple(cell.shape)}")
+    if pbc is None:
+        pbc_mask = cell.norm(dim=-1) > 0
+    else:
+        pbc_mask = torch.as_tensor(pbc, dtype=torch.bool, device=pos.device)
+        if pbc_mask.ndim == 1:
+            pbc_mask = pbc_mask.unsqueeze(0).expand(B, 3)
+        if pbc_mask.shape != (B, 3):
+            raise ValueError(f"Expected pbc shape {(B, 3)}, got {tuple(pbc_mask.shape)}")
+
+    dst_list, src_list, vec_list, dist_list = [], [], [], []
+    for b in range(B):
+        idx = mask[b].nonzero(as_tuple=False).squeeze(-1)
+        M = idx.numel()
+        if M == 0:
+            continue
+        pos_b = pos[b, idx]
+        pbc_b = pbc_mask[b]
+        if not pbc_b.any():
+            rel_b = pos_b[:, None, :] - pos_b[None, :, :]
+            dist_b = rel_b.norm(dim=-1)
+            keep = (dist_b < cutoff) & ~torch.eye(M, dtype=torch.bool, device=pos.device)
+            ii, jj = keep.nonzero(as_tuple=True)
+            dst_list.append(b * N + idx[ii])
+            src_list.append(b * N + idx[jj])
+            vec_list.append(rel_b[ii, jj])
+            dist_list.append(dist_b[ii, jj])
+            continue
+
+        basis = cell[b, pbc_b]                                        # (n_per, 3)
+        if (torch.linalg.svdvals(basis) <= 1e-8).any():
+            raise ValueError("Singular periodic cell vectors")
+        pinv = torch.linalg.pinv(basis)                               # (3, n_per)
+        pos_wrapped = pos_b - torch.floor((pos_b @ pinv).detach()) @ basis
+
+        max_shifts = (torch.ceil(cutoff * pinv.norm(dim=0)).long() + 1).tolist()
+        grids = [torch.arange(-m, m + 1, device=pos.device, dtype=torch.long) for m in max_shifts]
+        shifts = torch.cartesian_prod(*grids)
+        if shifts.ndim == 1:
+            shifts = shifts.unsqueeze(-1)
+        zero_shift = (shifts == 0).all(dim=-1)
+        shift_vecs = shifts.to(pos.dtype) @ basis                     # (K, 3)
+        eye = torch.eye(M, dtype=torch.bool, device=pos.device)[:, :, None]
+
+        for start in range(0, shift_vecs.shape[0], 64):
+            sv = shift_vecs[start:start + 64]
+            zs = zero_shift[start:start + 64]
+            rel_b = pos_wrapped[:, None, None, :] - (pos_wrapped[None, :, None, :] + sv[None, None, :, :])
+            dist_b = rel_b.norm(dim=-1)
+            keep = (dist_b < cutoff) & ~(eye & zs[None, None, :])
+            ii, jj, kk = keep.nonzero(as_tuple=True)
+            if ii.numel():
+                dst_list.append(b * N + idx[ii])
+                src_list.append(b * N + idx[jj])
+                vec_list.append(rel_b[ii, jj, kk])
+                dist_list.append(dist_b[ii, jj, kk])
+
+    if not dst_list:
+        empty_i = torch.empty(0, dtype=torch.long, device=pos.device)
+        return empty_i, empty_i, torch.empty(0, 3, dtype=pos.dtype, device=pos.device), torch.empty(0, dtype=pos.dtype, device=pos.device)
+    return torch.cat(dst_list), torch.cat(src_list), torch.cat(vec_list), torch.cat(dist_list)
+
+
 class Encoder(nn.Module):
     def __init__(self, hidden_irreps="64x0e + 8x0o + 32x1o + 8x1e + 16x2e",
                  n_layers=3, lmax=2, cutoff=9.45, n_radial=8, n_elements=10, avg_neighbors=15.0):
@@ -89,21 +164,26 @@ class Encoder(nn.Module):
         self.layers = nn.ModuleList(layers)
         self.irreps_out = irreps_in
 
-    def forward(self, Z, pos, mask, extra_scalars=None):
+    def forward(self, Z, pos, mask, extra_scalars=None, cell=None, pbc=None):
         """extra_scalars: optional (B, N, n_scalar) invariant features added to the l=0 input embedding
-        (e.g. species role / mole fraction for mixtures). None keeps the original behaviour."""
+        (e.g. species role / mole fraction for mixtures). None keeps the original behaviour.
+        cell: optional (B, 3, 3) periodic lattice vectors as rows in bohr; pbc: optional (B, 3) bool."""
         B, N = Z.shape
-        # all pairs (i, j) inside the same molecule, both real atoms, i != j, closer than cutoff
-        rel = pos[:, :, None, :] - pos[:, None, :, :]            # (B, N, N, 3): pos_i - pos_j
-        dist = rel.norm(dim=-1)
-        pair = mask[:, :, None] & mask[:, None, :] & (dist < self.cutoff)
-        pair &= ~torch.eye(N, dtype=torch.bool, device=Z.device)[None]
-        b, i, j = pair.nonzero(as_tuple=True)
-        dst = b * N + i                                           # receiver, flat index
-        src = b * N + j                                           # sender, flat index
-        vec = rel[b, i, j]                                        # r_i - r_j
+        if cell is None:
+            # all pairs (i, j) inside the same molecule, both real atoms, i != j, closer than cutoff
+            rel = pos[:, :, None, :] - pos[:, None, :, :]            # (B, N, N, 3): pos_i - pos_j
+            dist = rel.norm(dim=-1)
+            pair = mask[:, :, None] & mask[:, None, :] & (dist < self.cutoff)
+            pair &= ~torch.eye(N, dtype=torch.bool, device=Z.device)[None]
+            b, i, j = pair.nonzero(as_tuple=True)
+            dst = b * N + i                                           # receiver, flat index
+            src = b * N + j                                           # sender, flat index
+            vec = rel[b, i, j]                                        # r_i - r_j
+            edge_dist = dist[b, i, j]
+        else:
+            dst, src, vec, edge_dist = _periodic_edges(pos, mask, cell, pbc, self.cutoff)
         sh = o3.spherical_harmonics(self.irreps_sh, vec, normalize=True, normalization="component")
-        radial = bessel_basis(dist[b, i, j], self.cutoff, self.n_radial)
+        radial = bessel_basis(edge_dist, self.cutoff, self.n_radial)
 
         x = self.embed(Z.reshape(-1))                             # (B*N, n_scalar)
         if extra_scalars is not None:
