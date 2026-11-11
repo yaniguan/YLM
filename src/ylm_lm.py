@@ -81,6 +81,7 @@ class YLMConfig:
     vec_readout: bool = False
     vec_token_id: Optional[int] = None
     vec_loss_weight: float = 1.0
+    use_motion_1o: bool = False
     extra: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
@@ -104,6 +105,8 @@ def collate_geometry(geoms, device=None, dtype=None) -> dict:
     has_cell = any(g is not None and g.get("cell") is not None for g in geoms)
     cell = torch.zeros(B, 3, 3, dtype=dtype) if has_cell else None
     pbc = torch.zeros(B, 3, dtype=torch.bool) if has_cell else None
+    has_delta = any(g is not None and g.get("delta_pos") is not None for g in geoms)
+    delta_pos = torch.zeros(B, N, 3, dtype=dtype) if has_delta else None
     for b, g in enumerate(geoms):
         if g is None:
             continue
@@ -120,10 +123,14 @@ def collate_geometry(geoms, device=None, dtype=None) -> dict:
             cell[b] = torch.as_tensor(np.asarray(g["cell"]), dtype=dtype)
             pbc[b] = (torch.as_tensor(np.asarray(g["pbc"]), dtype=torch.bool)
                       if g.get("pbc") is not None else (cell[b].norm(dim=-1) > 0))
+        if has_delta and g.get("delta_pos") is not None:
+            delta_pos[b, :n] = torch.as_tensor(np.asarray(g["delta_pos"]), dtype=dtype)
     out = dict(Z=Z, pos=pos, atom_mask=mask, role=role, amount=amount)
     if has_cell:
         out["cell"] = cell
         out["pbc"] = pbc
+    if has_delta:
+        out["delta_pos"] = delta_pos
     return {k: v.to(device) for k, v in out.items()} if device is not None else out
 
 
@@ -146,15 +153,16 @@ class IrrepsTokenizer(nn.Module):
     def n_invariants(self) -> int:
         return self.irreps_out.num_irreps
 
-    def forward(self, Z, pos, atom_mask, role=None, amount=None, cell=None, pbc=None):
+    def forward(self, Z, pos, atom_mask, role=None, amount=None, cell=None, pbc=None, delta_pos=None):
         dtype = self.role_embed.weight.dtype
         with torch.autocast(device_type=pos.device.type, enabled=False):
             pos = pos.to(dtype)
             cell = cell.to(dtype) if cell is not None else None
+            extra_v = delta_pos.to(dtype) if delta_pos is not None else None
             extra = self.role_embed(role if role is not None else torch.zeros_like(Z))
             if amount is not None:
                 extra = extra + self.amount_embed(amount.to(dtype)[..., None])
-            return self.encoder(Z, pos, atom_mask, extra_scalars=extra, cell=cell, pbc=pbc)
+            return self.encoder(Z, pos, atom_mask, extra_scalars=extra, cell=cell, pbc=pbc, extra_vectors=extra_v)
 
     def invariant_tokens(self, x):
         """Parity-correct invariants per atom (even scalars, |odd scalars|, channel norms)."""
@@ -176,14 +184,16 @@ class IrrepsAdapter(nn.Module):
         self.proj = nn.Linear(n_inv, lm_dim)
         self.gate = nn.Parameter(torch.zeros(()))
 
-    def forward(self, h, x, atom_mask, has_atoms=None, return_side: bool = False):
+    def forward(self, h, x, atom_mask, has_atoms=None, return_side: bool = False, return_attn: bool = False):
         dtype = self.proj.weight.dtype
         with torch.autocast(device_type=h.device.type, enabled=False):
-            e, _ = self.cross(self.norm_h(h.to(dtype)), x.to(dtype), atom_mask)
+            e, attn = self.cross(self.norm_h(h.to(dtype)), x.to(dtype), atom_mask)
             if has_atoms is not None:
                 e = e * has_atoms[:, None, None].to(dtype)
             delta = torch.tanh(self.gate) * self.proj(self.norm_e(invariants(e, self.cross.out_irreps)))
         out = h + delta.to(h.dtype)
+        if return_attn:
+            return out, e, attn
         return (out, e) if return_side else out
 
 
@@ -200,22 +210,21 @@ class _LayerHook:
             return output
         adapter = self.owner.adapters[self.index]
         x, mask, has = ctx
-        need_side = self.owner.vec_head is not None
-        if isinstance(output, tuple):
-            res = adapter(output[0], x, mask, has, return_side=need_side)
-            if need_side:
-                out_h, e = res
-                self.owner._vec_stream = e if self.owner._vec_stream is None else self.owner._vec_stream + e
-                return (out_h,) + tuple(output[1:])
-            return (res,) + tuple(output[1:])
-        if torch.is_tensor(output):
-            res = adapter(output, x, mask, has, return_side=need_side)
-            if need_side:
-                out_h, e = res
-                self.owner._vec_stream = e if self.owner._vec_stream is None else self.owner._vec_stream + e
-                return out_h
-            return res
-        raise TypeError(f"unsupported decoder layer output type {type(output)}")
+        need_attn = bool(getattr(self.owner, "_capture_routing", False))
+        need_side = (self.owner.vec_head is not None) or need_attn
+        h_in = output[0] if isinstance(output, tuple) else output
+        if not torch.is_tensor(h_in):
+            raise TypeError(f"unsupported decoder layer output type {type(output)}")
+        if need_attn:
+            out_h, e, attn = adapter(h_in, x, mask, has, return_side=True, return_attn=True)
+            self.owner._attn_stream.append(attn)
+            self.owner._vec_stream = e if self.owner._vec_stream is None else self.owner._vec_stream + e
+        elif need_side:
+            out_h, e = adapter(h_in, x, mask, has, return_side=True)
+            self.owner._vec_stream = e if self.owner._vec_stream is None else self.owner._vec_stream + e
+        else:
+            out_h = adapter(h_in, x, mask, has)
+        return (out_h,) + tuple(output[1:]) if isinstance(output, tuple) else out_h
 
 
 def _decoder_layers(lm) -> nn.ModuleList:
@@ -277,11 +286,14 @@ class YLMCausalLM(nn.Module):
         self.vec_head: Optional[nn.Module] = None
         self._ctx = None
         self._vec_stream = None
+        self._capture_routing = False
+        self._attn_stream = []
         if cfg.vec_readout and self.mode not in ("xattnA", "xattnB", "xattnC"):
             raise ValueError("vec_readout requires xattnA, xattnB, or xattnC mode")
         if self.mode == "text":
             return
-        self.irreps = IrrepsTokenizer(cfg.encoder, n_elements=cfg.n_elements, cutoff=cfg.cutoff)
+        self.irreps = IrrepsTokenizer(cfg.encoder, n_elements=cfg.n_elements, cutoff=cfg.cutoff,
+                                      n_motion_vectors=(1 if cfg.use_motion_1o else 0))
         if self.mode == "prefix":
             n_inv = self.irreps.n_invariants
             self.prefix = nn.Sequential(nn.LayerNorm(n_inv), nn.Linear(n_inv, d), nn.GELU(), nn.Linear(d, d))
@@ -308,11 +320,12 @@ class YLMCausalLM(nn.Module):
     def encode_geometry(self, geom: dict):
         """-> (atom irreps x, atom_mask). Reusable across decode steps."""
         x = self.irreps(geom["Z"], geom["pos"], geom["atom_mask"], geom.get("role"), geom.get("amount"),
-                        geom.get("cell"), geom.get("pbc"))
+                        geom.get("cell"), geom.get("pbc"), geom.get("delta_pos"))
         return x, geom["atom_mask"]
 
     def forward(self, input_ids, attention_mask, labels=None, geom=None, geom_feats=None,
-                output_hidden: bool = False, vec_targets=None, vec_mask=None) -> dict:
+                output_hidden: bool = False, vec_targets=None, vec_mask=None,
+                output_routing: bool = False) -> dict:
         emb = self.lm.get_input_embeddings()(input_ids)
         mask = attention_mask.long()
         n_prefix = 0
@@ -338,15 +351,24 @@ class YLMCausalLM(nn.Module):
         if emb.shape[1] > capacity:
             raise ValueError(f"LM context {emb.shape[1]} exceeds capacity {capacity}; reduce max_len/prefix size")
         self._vec_stream = None
+        self._capture_routing = bool(output_routing and len(self.adapters) > 0)
+        self._attn_stream = []
         try:
             out = self.lm(inputs_embeds=emb, attention_mask=mask, position_ids=position_ids,
                           output_hidden_states=(output_hidden or self.vec_head is not None), use_cache=False)
             vec_stream = self._vec_stream
+            attn_stream = list(self._attn_stream)
         finally:
             self._ctx = None
             self._vec_stream = None
+            self._capture_routing = False
+            self._attn_stream = []
         logits = out.logits[:, n_prefix:]
         res = {"logits": logits, "n_prefix": n_prefix}
+        if output_routing and attn_stream:
+            res["atom_attention"] = torch.stack(attn_stream, dim=0).mean(dim=0)[:, n_prefix:]
+            if vec_stream is not None:
+                res["side_irreps"] = vec_stream[:, n_prefix:]
         if output_hidden:
             res["hidden"] = out.hidden_states[-1][:, n_prefix:]
         if labels is not None:

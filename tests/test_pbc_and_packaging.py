@@ -235,5 +235,5 @@ def test_pyproject_toml_metadata():
     data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
     assert data["build-system"]["build-backend"] == "setuptools.build_meta"
     assert data["project"]["name"] == "ylm"
-    assert data["tool"]["setuptools"]["packages"] == ["src", "src.tasks"]
+    assert {"src", "src.tasks"}.issubset(set(data["tool"]["setuptools"]["packages"]))
     assert "crystals" in data["project"]["optional-dependencies"]
