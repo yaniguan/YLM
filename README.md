@@ -130,6 +130,17 @@ colab/        GPU notebooks
 - The Qwen2.5-0.5B coordinates-as-text baseline did not learn the force, so it is not evidence that an end-to-end LLM cannot.
 - The text encoder is frozen and the model does not generate text yet. Attention often lands on a bonded neighbour, not the exact atom.
 
+## Optional equivariant baselines
+
+Pass `--model equillm` or `--model frame_avg` to `scripts/04_train.py` to run two
+additional symmetry-preserving baselines from [`src/baselines.py`](src/baselines.py):
+- `equillm`: uses the same `Encoder`, feeds only O(3) invariants and text tokens into a
+  Transformer, and scales bypassed `1o` atom vectors afterwards.
+- `frame_avg`: projects centered coordinates onto all 8 sign choices of the covariance
+  eigenvectors, runs a plain Transformer in each canonical frame, and averages the 3D
+  predictions back in the lab frame (exact O(3) equivariance when principal eigenvalues
+  are distinct).
+
 ## Optional routing report
 
 Add `--routing_audit` to `scripts/04_train.py` to save a `routing` report for
@@ -138,6 +149,15 @@ entropy, target attention and rank, and top-k accuracy. It also counts correct,
 nearby, and far atom choices. Each force question is counted once, without rotating
 the molecule. Nearby means less than 3.4 bohr apart; it does not mean bonded.
 The report is off by default.
+
+## Optional multi-layer cross-attention
+
+Pass `--n_cross_layers K` (`K >= 2`) to `scripts/04_train.py`, or `YLM(..., n_cross_layers=K)`,
+to stack `K` interactive two-stream blocks from `03_technical_design.md`. After each
+cross-attention step, O(3) invariants of the equivariant side stream `e_t` feed back
+into the text stream `h_t` alongside masked token self-attention before the next
+`IrrepsToText` query and equivariant residual mix. The default `n_cross_layers=1`
+keeps the original architecture and v0 checkpoint format.
 
 ## Optional normalized scores
 
@@ -149,6 +169,17 @@ multiplies it by a learned weight passed through `tanh`. The weight starts at ze
 The default is `legacy`, which keeps the original scores and checkpoint format.
 The tests do not show whether this improves how text selects atoms.
 
+## Optional channel-wise Option C
+
+Pass `--c_tp_mode channelwise` to `scripts/04_train.py` or `scripts/20_pretrain_lm.py`,
+or set `YLMConfig(c_tp_mode="channelwise")`, to replace Option C's fully connected
+Clebsch-Gordan self-product with a channel-wise (`uvu`) tensor product followed by an
+`o3.Linear` channel mix. This preserves all compatible angular paths (including
+`1o x 1o -> 2e` and `1o x 1o -> 1e`) and exact O(3) equivariance while cutting the
+per-token CG weight count from cubic to quadratic in channel multiplicity (reducing
+default Option C parameters from ~13.1M to ~0.85M and lowering `SliceBackward0`
+memory traffic). The default remains `fully_connected` for checkpoint compatibility.
+
 ## Optional invariant targets
 
 QM9 LM pretraining accepts `--target_mode invariant` in `scripts/20_pretrain_lm.py`.
@@ -157,6 +188,16 @@ components. Use the same mode for all runs you compare: it changes the predictio
 task and the tokens used in training. The default is `cartesian`. The mode is
 saved in the run config and must match when you resume. Older configs use
 `cartesian`.
+
+## Optional `<vec>` equivariant readout for `YLMCausalLM`
+
+Set `YLMConfig(mode="xattnA"|"xattnB"|"xattnC", vec_readout=True, vec_token_id=tok.vec_id)`
+to attach an O(3)-equivariant `1x1o` vector head to the adapter's equivariant side
+stream `e_t`, gated by final-layer invariant LM states. Text `logits` remain strictly
+O(3)-invariant while `out["vec"]` at `<vec>` positions rotates and reflects exactly
+with the input geometry. Passing `vec_targets` adds vector MSE (`vec_loss_weight`) to
+the causal LM token loss, and `decode_with_vectors` emits both decoded text and 3D
+vectors at generated `<vec>` tokens. Defaults keep `vec_readout=False`.
 
 ## Geometry control runs
 
@@ -204,6 +245,19 @@ on training rows and chooses its penalty on validation rows. Results appear as
 3x3 matrix. The default model still returns one vector, and the v0 checkpoints
 still load. Quadrupole matrices from `scripts/12_make_quadrupole.py` can be
 trained with `scripts/16_train_quad.py`. That script stays unused unless you run it.
+
+## Optional periodic crystal graph and packaging
+
+`Encoder.forward` and `YLMCausalLM` accept optional periodic lattice vectors
+`cell` (`(B, 3, 3)` rows in bohr) and `pbc` (`(B, 3)` boolean mask) to construct
+minimum-image / multi-image neighbor graphs across periodic boundaries, including
+periodic self-images (`i == j` at non-zero lattice shifts) in small unit cells.
+When `cell` is omitted, the molecular pair graph is unchanged. For Materials
+Project insertion electrodes in `scripts/22_downstream_eval.py`, pass
+`--mp_geom_mode pbc` to encode unit cells with 3D periodic boundary conditions
+instead of cutting a finite 6 Å cluster (`--mp_geom_mode cluster`, default). The
+repository can also be installed as an editable Python package with
+`pip install -e .`.
 
 ## Citation
 

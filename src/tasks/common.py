@@ -186,6 +186,51 @@ def greedy_decode(model: YLMCausalLM, tok, prompts: list, max_new: int = 12, bat
     return outs
 
 
+@torch.no_grad()
+def decode_with_vectors(model: YLMCausalLM, tok, prompts: list, max_new: int = 12, batch_size: int = 32,
+                        max_len: int = 1024, device="cpu") -> list:
+    """Greedy decode text and read equivariant 3D vectors emitted at each generated <vec> token."""
+    if model.vec_head is None:
+        raise ValueError("decode_with_vectors requires model with vec_readout=True")
+    vec_id = model.cfg.vec_token_id if model.cfg.vec_token_id is not None else getattr(tok, "vec_id", None)
+    if vec_id is None:
+        raise ValueError("Tokenizer/config must define a <vec> token id")
+    was_training = model.training
+    model.eval()
+    outs = []
+    for start in range(0, len(prompts), batch_size):
+        chunk = prompts[start:start + batch_size]
+        enc = [encode_example(tok, ex, max_len - max_new, add_eos=False)[0] for ex in chunk]
+        B, L = len(enc), max(len(e) for e in enc)
+        ids = torch.full((B, L), tok.pad_id, dtype=torch.long)
+        attn = torch.zeros(B, L, dtype=torch.long)
+        for b, e in enumerate(enc):
+            ids[b, L - len(e):] = torch.tensor(e)
+            attn[b, L - len(e):] = 1
+        ids, attn = ids.to(device), attn.to(device)
+        feats = model.encode_geometry(
+            collate_geometry([ex.geom for ex in chunk], device=device, dtype=next(model.parameters()).dtype)
+        )
+        gen = []
+        for _ in range(max_new):
+            logits = model(ids, attn, geom_feats=feats)["logits"]
+            nxt = logits[:, -1].argmax(-1)
+            gen.append(nxt)
+            ids = torch.cat([ids, nxt[:, None]], dim=1)
+            attn = torch.cat([attn, torch.ones(B, 1, dtype=attn.dtype, device=device)], dim=1)
+            if bool((nxt == tok.eos_id).all()):
+                break
+        vec_all = model(ids, attn, geom_feats=feats)["vec_all"][:, L:].cpu()
+        gen_cpu = torch.stack(gen, dim=1).cpu().tolist()
+        for b, g in enumerate(gen_cpu):
+            end = g.index(tok.eos_id) if tok.eos_id in g else len(g)
+            trimmed = g[:end]
+            vecs = [vec_all[b, pos].tolist() for pos, tid in enumerate(trimmed) if tid == vec_id]
+            outs.append({"text": tok.decode(trimmed), "vectors": vecs})
+    model.train(was_training)
+    return outs
+
+
 # ----------------------------------------------------------------------------- splits
 
 def random_split(n: int, seed: int, fracs=(0.8, 0.1, 0.1)) -> dict:

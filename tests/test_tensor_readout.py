@@ -272,7 +272,7 @@ def test_tensor_readout_is_the_last_argument():
     params = inspect.signature(YLM.__init__).parameters
     names = list(params)
     assert names[-1] == "tensor_readout"
-    assert names[-2] == "b_score_mode"
+    assert names[-2] == "n_cross_layers"
     assert params["tensor_readout"].default is False
     assert params["b_score_mode"].default == "legacy"
     assert params["option"].default == "A"

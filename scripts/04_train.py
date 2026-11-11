@@ -203,10 +203,12 @@ def attach_parsed_atoms(splits, sdf, labels_path, questions_path, say, cache_pat
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--text", choices=["minilm", "matscibert", "taskid"], required=True)
-    p.add_argument("--model", choices=["ylm", "pipeline", "scalar"], default="ylm",
-                   help="ylm = Option A; pipeline = parse text -> atom index -> force model; "
-                        "scalar = invariants only (see src/baselines.py)")
+    p.add_argument("--model", choices=["ylm", "pipeline", "scalar", "equillm", "frame_avg"], default="ylm",
+                   help="ylm = IrrepsToText; pipeline = parse text -> atom index -> force model; "
+                        "scalar = invariants only; equillm = invariant Transformer + post-LLM vector gate; "
+                        "frame_avg = PCA O(3) frame averaging (see src/baselines.py)")
     p.add_argument("--b_score_mode", choices=["legacy", "normalized"], default="legacy")
+    p.add_argument("--c_tp_mode", choices=["fully_connected", "channelwise"], default="fully_connected")
     p.add_argument("--routing_audit", action="store_true")
     p.add_argument("--option", choices=list("ABC"), default="A")
     p.add_argument("--legacy_odd_scalars", action="store_true",
@@ -218,6 +220,8 @@ def main():
     p.add_argument("--attn_sup", type=float, default=0.0,
                    help="weight of auxiliary CE loss pushing pooled attention onto the asked atom (force questions); 0 = off")
     p.add_argument("--name", required=True)
+    p.add_argument("--n_cross_layers", type=int, default=1,
+                   help="number of interactive two-stream IrrepsToText blocks (default 1)")
     p.add_argument("--epochs", type=int, default=60)
     p.add_argument("--batch_size", type=int, default=128)
     p.add_argument("--lr", type=float, default=1e-3)
@@ -263,11 +267,24 @@ def main():
     elif args.model == "scalar":
         from src.baselines import ScalarCollapse
         model = ScalarCollapse(text_dim=data["text_dim"]).to(device)
+    elif args.model == "equillm":
+        from src.baselines import EquiLLMBaseline
+        eq_kw = dict(hidden_irreps="8x0e + 2x0o + 4x1o + 2x1e + 2x2e", d=32, n_vec=4,
+                     n_bridge_layers=1) if args.tiny else {}
+        model = EquiLLMBaseline(text_dim=data["text_dim"],
+                                text_mode="taskid" if args.text == "taskid" else "text", **eq_kw).to(device)
+    elif args.model == "frame_avg":
+        from src.baselines import FrameAveragingBaseline
+        fa_kw = dict(d=32, n_atom_layers=1) if args.tiny else {}
+        model = FrameAveragingBaseline(text_dim=data["text_dim"],
+                                       text_mode="taskid" if args.text == "taskid" else "text", **fa_kw).to(device)
     else:
         tiny = dict(hidden_irreps="8x0e + 2x0o + 4x1o + 2x1e + 2x2e",
                     cross_irreps="4x0e + 4x1o + 2x1e + 2x2e") if args.tiny else {}
         model = YLM(text_dim=data["text_dim"], text_mode="taskid" if args.text == "taskid" else "text",
-                    option=args.option, b_score_mode=args.b_score_mode, legacy_odd_scalars=args.legacy_odd_scalars, **tiny).to(device)
+                    option=args.option, b_score_mode=args.b_score_mode, c_tp_mode=args.c_tp_mode,
+                    legacy_odd_scalars=args.legacy_odd_scalars,
+                    n_cross_layers=args.n_cross_layers, **tiny).to(device)
     say("parameters", sum(p.numel() for p in model.parameters()))
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-5)
     steps_per_epoch = math.ceil(len(train["mol"]) / args.batch_size)
@@ -284,6 +301,10 @@ def main():
                 raise ValueError(f"Resume configuration differs: {key}")
         if saved["args"].get("b_score_mode", "legacy") != args.b_score_mode:
             raise ValueError("Resume B score mode differs")
+        if saved["args"].get("c_tp_mode", "fully_connected") != args.c_tp_mode:
+            raise ValueError("Resume C tensor-product mode differs")
+        if saved["args"].get("n_cross_layers", 1) != args.n_cross_layers:
+            raise ValueError("Resume n_cross_layers differs")
         model.load_state_dict(saved["model"])
         opt.load_state_dict(saved["optimizer"])
         sched.load_state_dict(saved["scheduler"])

@@ -12,6 +12,7 @@ from __future__ import annotations
 import re
 
 SPECIALS = ["<pad>", "<bos>", "<eos>", "<unk>", "<mol>", "</mol>", "<xyz>", "</xyz>"]
+VEC_TOKEN = "<vec>"
 SMILES_MULTI = [
     "Cl", "Br", "@@",
     "[nH]", "[NH+]", "[NH2+]", "[NH3+]", "[N+]", "[N-]", "[n+]", "[n-]", "[O-]", "[O+]", "[OH+]",
@@ -20,7 +21,7 @@ SMILES_MULTI = [
     "[2H]", "[H]",
 ]
 _SMILES_RE = re.compile(r"(\[[^\]]+\]|Br|Cl|@@|%\d{2}|.)", re.S)
-_TEXT_RE = re.compile(r"(<mol>|</mol>|<xyz>|</xyz>|.)", re.S)
+_TEXT_RE = re.compile(r"(<mol>|</mol>|<xyz>|</xyz>|<vec>|.)", re.S)
 
 
 class CharTokenizer:
@@ -28,12 +29,13 @@ class CharTokenizer:
 
     def __init__(self):
         itos = []
-        for t in SPECIALS + [chr(i) for i in range(32, 127)] + SMILES_MULTI:
+        for t in SPECIALS + [chr(i) for i in range(32, 127)] + SMILES_MULTI + [VEC_TOKEN]:
             if t not in itos:
                 itos.append(t)
         self.itos = itos
         self.stoi = {t: i for i, t in enumerate(itos)}
         self.pad_id, self.bos_id, self.eos_id, self.unk_id = (self.stoi[t] for t in SPECIALS[:4])
+        self.vec_id = self.stoi[VEC_TOKEN]
         self._special_ids = {self.pad_id, self.bos_id, self.eos_id}
 
     @property

@@ -36,7 +36,32 @@ def crystal_cluster(structure, radius=6.0, max_atoms=64):
     return single_geometry([a[1] for a in atoms], np.array([a[2] for a in atoms]) * ANGSTROM_TO_BOHR)
 
 
-def load_mp_battery(limit=None, cache_path='data/electrolyte/mp_battery.json', log=print):
+def crystal_periodic(structure, max_atoms=128):
+    """Represent an ordered crystal directly as its unit cell with 3D periodic boundary conditions."""
+    lattice = np.asarray(structure.lattice.matrix, dtype=np.float64)
+    if lattice.shape != (3, 3) or abs(np.linalg.det(lattice)) <= 1e-8:
+        raise ValueError('Singular or malformed crystal lattice')
+    zs, frac = [], []
+    for site in structure:
+        if not site.is_ordered:
+            raise ValueError('Disordered crystal has no integer atomic numbers')
+        z = int(site.specie.Z)
+        if not 1 <= z < 100:
+            raise ValueError('Unsupported element for periodic encoder')
+        zs.append(z)
+        frac.append(np.asarray(site.frac_coords, dtype=np.float64) % 1.0)
+    if not zs or len(zs) > max_atoms:
+        raise ValueError('Empty unit cell or unit cell exceeds max_atoms')
+    pos_ang = np.asarray(frac, dtype=np.float64) @ lattice
+    geom = single_geometry(zs, pos_ang * ANGSTROM_TO_BOHR)
+    geom['cell'] = lattice * ANGSTROM_TO_BOHR
+    geom['pbc'] = np.array([True, True, True], dtype=bool)
+    return geom
+
+
+def load_mp_battery(limit=None, cache_path='data/electrolyte/mp_battery.json', log=print, geom_mode='cluster'):
+    if geom_mode not in ('cluster', 'pbc'):
+        raise ValueError("geom_mode must be 'cluster' or 'pbc'")
     if not os.environ.get('MP_API_KEY'):
         log('MP_API_KEY is unset; skipping Materials Project insertion electrodes.')
         return []
@@ -77,7 +102,7 @@ def load_mp_battery(limit=None, cache_path='data/electrolyte/mp_battery.json', l
         try:
             structure = Structure.from_dict(r['structure'])
             fractions = elemental_fractions(structure)
-            geom = crystal_cluster(structure)
+            geom = crystal_periodic(structure) if geom_mode == 'pbc' else crystal_cluster(structure)
             targets = {k: float(v) for k, v in r['targets'].items() if v is not None and np.isfinite(float(v))}
         except (ValueError, TypeError):
             continue
