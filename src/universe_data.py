@@ -1,6 +1,6 @@
 """Multi-dataset Universe data pipeline, chemical substructure paraphraser, and CPU smoke generator.
 
-Unifies molecular DFT (`SPICE-v2`, `OMol25`, SES AI `MU`), periodic crystal (`MPtrj`), and
+Unifies molecular DFT (`SPICE-v2`, `OMol25`), periodic crystal (`MPtrj`), and
 reactive transition-state (`Transition1x`) structures into one JSONL schema with:
   - Symmetry-unambiguous chemical site & functional-group descriptors (supporting 3D PBC MIC)
   - 28+ diverse natural-language templates split into `train` vs. `test_heldout` phrasings
