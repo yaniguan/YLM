@@ -284,29 +284,22 @@ ylm serve --port 8765
 ylm export-hf --labels data/qm9_xtb.pkl --v0 data/tensorqa_v0.json --out dist/hf_tensorqa --anonymized
 ```
 
-## Optional MACE foundation backbone & live OpenMM/LAMMPS MD hooks
+## Optional MACE / NequIP / Allegro backbones, MLIP MD runner & Ouroboros-OCSR bridge
 
-`src/mace_backbone.py` (`MACEEncoder`) lets both `YLM` (`YLM.from_mace(...)`) and `YLMCausalLM`
-(`YLMConfig(encoder="mace-mp-0-small" | "mace-off23-medium", freeze_encoder=True)`) mount pretrained
-MACE-MP-0 (89 elements) or MACE-OFF23 equivariant node features plus conservative atomic forces (`1x1o`)
-directly into `IrrepsToText` (`pip install -e ".[mace]"`). For live reactive MD monitoring,
-`src/toolkit/md_hooks.py` provides `OpenMMReactionReporter`, `LAMMPSReactionHook`, and `--plot timeline.svg`
-on `ylm scan-traj` to log and plot bond-forming, bond-breaking, and proton-transfer timestamps
-(demo: `python scripts/33_demo_live_md_hooks.py`).
+- **MACE & NequIP / Allegro backbones**: `src/mace_backbone.py` (`MACEEncoder`) and `src/nequip_backbone.py` (`NequIPEncoder`) let `YLM` (`YLM.from_mace(...)`, `YLM.from_nequip(...)`), `YLMUniverseModel`, `YLMCausalLM`, and `YLMProbe` (`--mace` / `--nequip`) mount pretrained MACE-MP-0, MACE-OFF23, or compiled TorchScript `nequip-deploy` / `allegro` `.pth` checkpoints with exact `O(3)` periodic shifts and conservative `1x1o` forces.
+- **Turnkey reactive MLIP MD & OpenMM/LAMMPS hooks**: `src/toolkit/mlip_md.py` (`MLIPTrajectoryRunner`, `build_openmm_mlip_simulation`, CLI `ylm run-md`) and `src/toolkit/md_hooks.py` (`OpenMMReactionReporter`, `LAMMPSReactionHook`) run and monitor reactive trajectories with live bond-forming, bond-breaking, and proton-transfer event logs, SVG/PNG timelines, and 3D HTML reports (`python scripts/33_demo_live_md_hooks.py`).
+- **Cross-repo `yaniguan/ouroboros-ocsr` stereochemical bridge**: `src/toolkit/ouroboros_bridge.py` (`ylm from-ouroboros`, `python scripts/34_ouroboros_to_ylm.py`) ingests Ouroboros `.extxyz` + `.manifest.jsonl` forcefield bundles, `predictions.csv`, stereo SMILES, or 2D chemical images into 3D CIP-audited conformers and leak-free Universe QA splits.
 
-## Multi-rank Universe Foundation Model (`YLMUniverseModel`) & Uni-Mol / GraphMVP benchmarks
+## Multi-rank (`0e + 0o + 1o + 2e`) Universe Foundation Model & Chiral / Uni-Mol Benchmarks
 
-`src/universe_fm.py` (`YLMUniverseModel`) unifies `0e` invariant scalars, `1o` covariant vectors
-(dipole, atom-addressed force, T4 force difference, T5 bond projection), `0e+2e` symmetric 3x3
-tensors (polarizability, quadrupole, crystal stress), and `1o` coordinate denoising on one shared
-two-stream representation with Level-of-Theory (`wb97m`, `r2scan`, `pbe_u`, `ccsd`, `xtb`) magnitude
-calibration and explicit atom-routing supervision. `src/fm_baselines.py` provides fair head-to-head
-`UniMolStyle3DBaseline`, `GraphMVP3DInfoMaxBaseline`, and `EquiLLMMultiTaskBaseline` controls:
+`src/universe_fm.py` (`YLMUniverseModel`) unifies **all four symmetry ranks** on one shared two-stream representation:
+`0e` invariant scalars, `0o` parity-odd chiral pseudoscalars (`out["chiral"]`: exact enantiomer handedness sign flipping under mirror reflection while vanishing on achiral planar geometries), `1o` covariant vectors (dipole, atom-addressed force, T4 force difference, T5 bond projection), `0e+2e` symmetric 3x3 tensors (polarizability, quadrupole, crystal stress), and `1o` coordinate denoising, with Level-of-Theory (`wb97m`, `r2scan`, `pbe_u`, `ccsd`, `xtb`) magnitude calibration. `src/fm_baselines.py` provides fair head-to-head `UniMolStyle3DBaseline`, `GraphMVP3DInfoMaxBaseline`, and `EquiLLMMultiTaskBaseline` controls:
 
 ```bash
 python scripts/31_prepare_universe_data.py --smoke --out data/universe_smoke
 python scripts/30_train_universe_fm.py --name universe_smoke --data_dir data/universe_smoke --tiny --epochs 20 --device cpu
 python scripts/32_benchmark_vs_unimol.py --data_dir data/universe_smoke --tiny --epochs 20 --device cpu
+python scripts/35_build_and_eval_chiral_benchmark.py --tiny --epochs 24 --out_dir runs/chiral_universe_benchmark
 ```
 
 ## Citation

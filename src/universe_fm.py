@@ -30,7 +30,7 @@ from src.tensor_readout import TensorReadout, rotate_matrix
 LOT_VOCAB: tuple[str, ...] = ("unknown", "wb97m", "r2scan", "pbe_u", "ccsd", "xtb")
 LOT_TO_ID: dict[str, int] = {name: idx for idx, name in enumerate(LOT_VOCAB)}
 
-TASK_VOCAB: tuple[str, ...] = ("scalar", "vector", "tensor")
+TASK_VOCAB: tuple[str, ...] = ("scalar", "vector", "tensor", "chiral")
 TASK_TO_ID: dict[str, int] = {name: idx for idx, name in enumerate(TASK_VOCAB)}
 
 _INV_SOFTPLUS_ONE = math.log(math.e - 1.0)
@@ -63,6 +63,14 @@ def resolve_lot_id(lot: Union[str, int, None]) -> int:
 def is_direction_only_lot(lot_id: torch.Tensor) -> torch.Tensor:
     """Semi-empirical rows (LOT == 'xtb') supervise directions only, never DFT magnitude scales."""
     return lot_id == LOT_TO_ID["xtb"]
+
+
+def _equivariant_triple_0o(u: torch.Tensor, v: torch.Tensor, w: torch.Tensor) -> torch.Tensor:
+    """Exact parity-odd (`0o`) Levi-Civita scalar triple product `(u x v) . w` with O(3)-invariant norm damping."""
+    u_n = u / (u.pow(2).sum(dim=-1, keepdim=True) + 1.0).sqrt()
+    v_n = v / (v.pow(2).sum(dim=-1, keepdim=True) + 1.0).sqrt()
+    w_n = w / (w.pow(2).sum(dim=-1, keepdim=True) + 1.0).sqrt()
+    return (torch.cross(u_n, v_n, dim=-1) * w_n).sum(dim=-1)
 
 
 class YLMUniverseModel(nn.Module):
@@ -183,6 +191,68 @@ class YLMUniverseModel(nn.Module):
             if _has_irrep(self.atom_irreps, 1, -1)
             else None
         )
+
+        # 5) 0o Parity-odd chiral pseudoscalar head (`out["chiral"]`: SO(3)-invariant, flips sign under reflection!)
+        # Combines Levi-Civita `1o x 1o x 1o -> 0o` scalar triple products `(u x v) . w`, `1o x 1e -> 0o`
+        # contractions, and per-atom `0o` channels gated by O(3)-invariant (`0e`) text+geometry features.
+        n_chiral_chan = 0
+        self.chiral_cross_u1o = o3.Linear(self.cross_irreps, "8x1o")
+        self.chiral_cross_v1o = o3.Linear(self.cross_irreps, "8x1o")
+        self.chiral_cross_w1o = o3.Linear(self.cross_irreps, "8x1o")
+        n_chiral_chan += 8
+
+        self._has_cross_chiral_tp = _has_irrep(self.cross_irreps, 1, -1) and _has_irrep(self.cross_irreps, 1, 1)
+        if self._has_cross_chiral_tp:
+            self.chiral_cross_1o = o3.Linear(self.cross_irreps, "8x1o")
+            self.chiral_cross_1e = o3.Linear(self.cross_irreps, "8x1e")
+            self.chiral_cross_tp = o3.ElementwiseTensorProduct("8x1o", "8x1e", ["0o"])
+            n_chiral_chan += 8
+        else:
+            self.chiral_cross_1o = None
+            self.chiral_cross_1e = None
+            self.chiral_cross_tp = None
+
+        self._has_atom_triple = sum(mul for mul, ir in self.atom_irreps if ir.l == 1 and ir.p == -1) >= 3
+        if self._has_atom_triple:
+            self.chiral_atom_u1o = o3.Linear(self.atom_irreps, "8x1o")
+            self.chiral_atom_v1o = o3.Linear(self.atom_irreps, "8x1o")
+            self.chiral_atom_w1o = o3.Linear(self.atom_irreps, "8x1o")
+            n_chiral_chan += 16  # 8 atom-routed + 8 global-mean
+        else:
+            self.chiral_atom_u1o = None
+            self.chiral_atom_v1o = None
+            self.chiral_atom_w1o = None
+
+        self._has_atom_0o = _has_irrep(self.atom_irreps, 0, -1)
+        if self._has_atom_0o:
+            self.chiral_atom_0o = o3.Linear(self.atom_irreps, "8x0o")
+            n_chiral_chan += 16  # 8 atom-routed + 8 global-mean
+        else:
+            self.chiral_atom_0o = None
+
+        self._has_atom_1o1e = _has_irrep(self.atom_irreps, 1, -1) and _has_irrep(self.atom_irreps, 1, 1)
+        if self._has_atom_1o1e:
+            self.chiral_atom_1o = o3.Linear(self.atom_irreps, "8x1o")
+            self.chiral_atom_1e = o3.Linear(self.atom_irreps, "8x1e")
+            self.chiral_atom_tp = o3.ElementwiseTensorProduct("8x1o", "8x1e", ["0o"])
+            n_chiral_chan += 16  # 8 atom-routed + 8 global-mean
+        else:
+            self.chiral_atom_1o = None
+            self.chiral_atom_1e = None
+            self.chiral_atom_tp = None
+
+        self._n_chiral_chan = n_chiral_chan
+        if n_chiral_chan > 0:
+            self.chiral_gate = nn.Sequential(
+                nn.LayerNorm(scalar_in_dim),
+                nn.Linear(scalar_in_dim, self.d_text),
+                nn.SiLU(),
+                nn.Linear(self.d_text, n_chiral_chan),
+            )
+        else:
+            self.chiral_gate = None
+        self.lot_chiral_logscale = nn.Embedding(n_lots, 1)
+        nn.init.zeros_(self.lot_chiral_logscale.weight)
 
     @classmethod
     def from_mace(
@@ -336,8 +406,43 @@ class YLMUniverseModel(nn.Module):
             else torch.zeros(B, N, 3, dtype=pos.dtype, device=pos.device)
         )
 
+        # 0o chiral pseudoscalar output (`chiral(pos @ Q.T) == det(Q) * chiral(pos)`)
+        if self._n_chiral_chan > 0 and self.chiral_gate is not None:
+            chiral_parts: list[torch.Tensor] = []
+            mask_f = atom_mask[..., None].to(pos.dtype)
+            cu = self.chiral_cross_u1o(e_pool).reshape(B, 8, 3)
+            cv = self.chiral_cross_v1o(e_pool).reshape(B, 8, 3)
+            cw = self.chiral_cross_w1o(e_pool).reshape(B, 8, 3)
+            chiral_parts.append(_equivariant_triple_0o(cu, cv, cw))
+            if self._has_cross_chiral_tp:
+                c_1o = self.chiral_cross_1o(e_pool)
+                c_1e = self.chiral_cross_1e(e_pool)
+                chiral_parts.append(self.chiral_cross_tp(c_1o, c_1e))
+            if self._has_atom_triple:
+                au = self.chiral_atom_u1o(x).reshape(B, N, 8, 3)
+                av = self.chiral_atom_v1o(x).reshape(B, N, 8, 3)
+                aw = self.chiral_atom_w1o(x).reshape(B, N, 8, 3)
+                a_tri = _equivariant_triple_0o(au, av, aw) * mask_f
+                chiral_parts.append(torch.einsum("bn,bnd->bd", attn_pool, a_tri))
+                chiral_parts.append(a_tri.sum(dim=1) / atom_count)
+            if self._has_atom_0o:
+                a_0o = self.chiral_atom_0o(x) * mask_f
+                chiral_parts.append(torch.einsum("bn,bnd->bd", attn_pool, a_0o))
+                chiral_parts.append(a_0o.sum(dim=1) / atom_count)
+            if self._has_atom_1o1e:
+                a_tp = self.chiral_atom_tp(self.chiral_atom_1o(x), self.chiral_atom_1e(x)) * mask_f
+                chiral_parts.append(torch.einsum("bn,bnd->bd", attn_pool, a_tp))
+                chiral_parts.append(a_tp.sum(dim=1) / atom_count)
+            chiral_0o = torch.cat(chiral_parts, dim=-1)
+            gate_0e = self.chiral_gate(torch.cat([h_pool, inv_e, inv_atom], dim=-1))
+            ch_scale = F.softplus(self.lot_chiral_logscale(lot_id) + _INV_SOFTPLUS_ONE)
+            chiral_out = ch_scale * (gate_0e * chiral_0o).sum(dim=-1, keepdim=True)
+        else:
+            chiral_out = torch.zeros(B, 1, dtype=pos.dtype, device=pos.device)
+
         return {
             "scalar": scalar_out,
+            "chiral": chiral_out,
             "vector": vector_out,
             "tensor": tensor_out,
             "denoise": denoise_out,
@@ -476,6 +581,7 @@ def compute_universe_loss(
     is_sc = task_kind == TASK_TO_ID["scalar"]
     is_vec = task_kind == TASK_TO_ID["vector"]
     is_ten = task_kind == TASK_TO_ID["tensor"]
+    is_ch = task_kind == TASK_TO_ID["chiral"]
 
     sc_mask = is_sc & (~dir_only if dir_only is not None else is_sc)
     if sc_mask.any():
@@ -484,6 +590,19 @@ def compute_universe_loss(
         l_scalar = F.huber_loss(pred_sc, targ_sc, delta=1.0)
     else:
         l_scalar = zero
+
+    if is_ch.any() and "chiral" in outputs:
+        pred_ch = outputs["chiral"][is_ch].reshape(-1)
+        targ_ch = scalar_target[is_ch].reshape(-1)
+        nz_ch = targ_ch.abs() > 1e-6
+        sign_term = (
+            F.softplus(-torch.sign(targ_ch[nz_ch]) * pred_ch[nz_ch]).mean()
+            if nz_ch.any()
+            else zero
+        )
+        l_chiral = 0.5 * sign_term + 0.5 * F.huber_loss(pred_ch, targ_ch, delta=1.0)
+    else:
+        l_chiral = zero
 
     if is_vec.any():
         l_vector = decoupled_vector_loss(
@@ -508,11 +627,21 @@ def compute_universe_loss(
 
     l_route = routing_supervision_loss(outputs["attn"], target_atom_mask)
 
-    active_terms = [t for flag, t in ((sc_mask.any(), l_scalar), (is_vec.any(), l_vector), (is_ten.any(), l_tensor)) if flag]
+    active_terms = [
+        t
+        for flag, t in (
+            (sc_mask.any(), l_scalar),
+            (is_ch.any() and "chiral" in outputs, l_chiral),
+            (is_vec.any(), l_vector),
+            (is_ten.any(), l_tensor),
+        )
+        if flag
+    ]
     total = (sum(active_terms) if active_terms else zero) + attn_loss_weight * l_route
     return {
         "loss": total,
         "scalar_loss": l_scalar,
+        "chiral_loss": l_chiral,
         "vector_loss": l_vector,
         "tensor_loss": l_tensor,
         "routing_loss": l_route,
@@ -544,6 +673,9 @@ def evaluate_universe_o3(
 
     sc_abs_err: list[float] = []
     sc_inv_err: list[float] = []
+    ch_sign_hits: list[float] = []
+    ch_abs_err: list[float] = []
+    ch_parity_err: list[float] = []
     vec_cos: list[float] = []
     vec_mae: list[float] = []
     vec_mag_mae: list[float] = []
@@ -608,6 +740,21 @@ def evaluate_universe_o3(
                     s0 = out0["scalar"][is_sc].reshape(-1)
                     sc_inv_err.extend((pred_s - s0).abs().cpu().tolist())
 
+            is_ch = task_kind == TASK_TO_ID["chiral"]
+            if is_ch.any() and "chiral" in out_r:
+                det_sign = 1.0 if float(torch.linalg.det(R).item()) >= 0.0 else -1.0
+                pred_c = out_r["chiral"][is_ch].reshape(-1)
+                targ_c = sc_targ[is_ch].reshape(-1) * det_sign
+                ch_abs_err.extend((pred_c - targ_c).abs().cpu().tolist())
+                nz_c = targ_c.abs() > 1e-6
+                if nz_c.any():
+                    # Strict sign match (> 0 for + target, < 0 for - target; 0 counts as miss!)
+                    strict_match = ((pred_c[nz_c] * targ_c[nz_c]) > 1e-8).float()
+                    ch_sign_hits.extend(strict_match.cpu().tolist())
+                if r_idx > 0 and "chiral" in out0:
+                    c0_rot = out0["chiral"][is_ch].reshape(-1) * det_sign
+                    ch_parity_err.extend((pred_c - c0_rot).abs().cpu().tolist())
+
             is_vec = task_kind == TASK_TO_ID["vector"]
             if is_vec.any():
                 pv = out_r["vector"][is_vec]
@@ -667,6 +814,9 @@ def evaluate_universe_o3(
     metrics: dict[str, float] = {
         "scalar_mae": _mean(sc_abs_err),
         "scalar_inv_err": _mean(sc_inv_err),
+        "chiral_sign_acc": _mean(ch_sign_hits),
+        "chiral_mae": _mean(ch_abs_err),
+        "chiral_parity_err": _mean(ch_parity_err),
         "vector_cos": _mean(vec_cos),
         "vector_mae": _mean(vec_mae),
         "vector_mag_mae": _mean(vec_mag_mae),

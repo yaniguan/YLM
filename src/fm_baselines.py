@@ -170,6 +170,12 @@ class _InvariantLanguageHead(nn.Module):
             nn.SiLU(),
             nn.Linear(d_model, 9),
         )
+        self.chiral_head = nn.Sequential(
+            nn.LayerNorm(2 * d_model),
+            nn.Linear(2 * d_model, d_model),
+            nn.SiLU(),
+            nn.Linear(d_model, 1),
+        )
 
     def forward(
         self,
@@ -208,11 +214,13 @@ class _InvariantLanguageHead(nn.Module):
 
         joint = torch.cat([pooled_geom, pooled_text], dim=-1)
         scalar_out = self.scalar_head(joint)
+        chiral_out = self.chiral_head(joint)
         vector_out = self.vector_head(joint)
         raw_m = self.tensor_head(joint).reshape(-1, 3, 3)
         tensor_out = 0.5 * (raw_m + raw_m.transpose(-1, -2))
         return {
             "scalar": scalar_out,
+            "chiral": chiral_out,
             "vector": vector_out,
             "tensor": tensor_out,
             "attn": attn_pool,
@@ -500,6 +508,12 @@ class EquiLLMMultiTaskBaseline(nn.Module):
             nn.SiLU(),
             nn.Linear(d_model, n_scalars),
         )
+        self.chiral_head = nn.Sequential(
+            nn.LayerNorm(d_model),
+            nn.Linear(d_model, d_model),
+            nn.SiLU(),
+            nn.Linear(d_model, 1),
+        )
         self.denoise_head = o3.Linear(self.encoder.irreps_out, "1x1o")
 
     def predict_denoise(
@@ -562,6 +576,7 @@ class EquiLLMMultiTaskBaseline(nn.Module):
 
         return {
             "scalar": self.scalar_head(z_global),
+            "chiral": self.chiral_head(z_global),
             "vector": vec_out,
             "tensor": ten_out,
             "denoise": self.denoise_head(x) * atom_mask[..., None].to(pos.dtype),
