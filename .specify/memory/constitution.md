@@ -21,7 +21,7 @@ Internal coordinates use atomic units (`bohr`), while user-facing SDKs, CLI outp
 
 ## Architectural Constraints
 
-- **Monorepo Layout**: Core equivariant modules remain in `src/`, benchmark tasks in `src/tasks/`, and the out-of-the-box application toolkit lives in `src/toolkit/`.
+- **Monorepo Layout**: Core equivariant modules remain in `src/`, benchmark tasks in `src/tasks/`, and the user-facing application toolkit lives in `src/toolkit/`.
 - **Core Dependencies**: Only `torch`, `e3nn`, `numpy`, `scipy`, and `transformers` are required at runtime; `rdkit`, `ase`, `pymatgen`, and `tblite` are optional extras.
 
 ## Development Workflow & Quality Gates

@@ -1,8 +1,7 @@
-"""MACE foundation-model backbone adapter (MACE-MP-0 / MACE-OFF23) for YLM and YLMCausalLM.
+"""Adapter that plugs pretrained MACE models (`MACE-MP-0` / `MACE-OFF23`) into `YLM`.
 
-Bridges pretrained MACE equivariant node features (`node_feats`) and exact conservative
-atomic forces (`1x1o`) directly into YLM's `IrrepsToText` cross-attention without breaking
-exact O(3) rotation and reflection equivariance.
+Passes MACE's 3D atom features and exact forces (`F = -dE/dx`) into YLM's text-to-3D attention
+so rotating or mirroring the atoms rotates or mirrors the output arrows the exact same way.
 """
 from __future__ import annotations
 

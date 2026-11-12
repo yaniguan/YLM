@@ -259,41 +259,41 @@ instead of cutting a finite 6 Å cluster (`--mp_geom_mode cluster`, default). Th
 repository can also be installed as an editable Python package with
 `pip install -e .`.
 
-## Out-of-the-box directional chemistry toolkit (`ylm` CLI, SDK & Studio)
+## Command-line tools and browser Studio (`ylm`)
 
-Install the package in editable mode (`pip install -e .`) to unlock the `ylm` CLI,
-`src.toolkit` Python SDK, standalone 3D HTML reports (`3Dmol.js` + offline HTML5
-`<canvas>` fallback), and local Web Studio (`ylm serve`). Specification and
-120-paper domain literature reviews live in
+Install the repo in editable mode (`pip install -e .`) to get the `ylm` command,
+the `src.toolkit` Python helpers, 3D HTML reports, and the local browser Studio
+(`ylm serve`). Design notes and paper tables are in
 [`specs/001-ylm-probe-toolkit/`](specs/001-ylm-probe-toolkit/spec.md).
 
 ```bash
-# Instant zero-training directional probe + live O(3) rotation/reflection check + 3D HTML report
+# Ask a question on a molecule, check 3D rotation + mirror rules, and save a 3D HTML report
 ylm ask examples/water.xyz "What is the force vector on the oxygen atom?" --verify-o3 --html water_probe.html
 
-# Domain packs: Electrolyte solvation/crystals, Reactive MD (1o motion + Grotthuss CV), Drug SBDD exit vectors
+# Topic tools: battery solvation shells, reactive MD trajectories, and drug pockets
 ylm solvation examples/li_ec_shell.xyz --verify-o3 --html solvation.html
 ylm scan-traj examples/proton_transfer_traj.extxyz --verify-o3 --html md_traj.html
 ylm drug examples/indole_pocket.xyz --verify-o3 --html drug_lead_opt.html
 
-# Post-train YLMCausalLM + IrrepsAdapter + <vec> readout with SFT and counterfactual DPO
+# Fine-tune a small language model with <vec> 3D vector output
 ylm posttrain --input examples/proton_transfer_traj.extxyz --out runs/demo_lm --steps 20 --dpo-steps 4 --freeze-lm
 
-# Launch interactive browser Studio or export TensorQA for Hugging Face Datasets
+# Check all 8 physics rules (64-bit) or open the 5-tab browser Studio
+ylm audit-physics r_fec_chiral --precision float64 --rotations 8
 ylm serve --port 8765
 ylm export-hf --labels data/qm9_xtb.pkl --v0 data/tensorqa_v0.json --out dist/hf_tensorqa --anonymized
 ```
 
-## Optional MACE / NequIP / Allegro backbones, MLIP MD runner & Ouroboros-OCSR bridge
+## Optional MACE / NequIP backbones, MD monitor, and Ouroboros bridge
 
-- **MACE & NequIP / Allegro backbones**: `src/mace_backbone.py` (`MACEEncoder`) and `src/nequip_backbone.py` (`NequIPEncoder`) let `YLM` (`YLM.from_mace(...)`, `YLM.from_nequip(...)`), `YLMUniverseModel`, `YLMCausalLM`, and `YLMProbe` (`--mace` / `--nequip`) mount pretrained MACE-MP-0, MACE-OFF23, or compiled TorchScript `nequip-deploy` / `allegro` `.pth` checkpoints with exact `O(3)` periodic shifts and conservative `1x1o` forces.
-- **Turnkey reactive MLIP MD & OpenMM/LAMMPS hooks**: `src/toolkit/mlip_md.py` (`MLIPTrajectoryRunner`, `build_openmm_mlip_simulation`, CLI `ylm run-md`) and `src/toolkit/md_hooks.py` (`OpenMMReactionReporter`, `LAMMPSReactionHook`) run and monitor reactive trajectories with live bond-forming, bond-breaking, and proton-transfer event logs, SVG/PNG timelines, and 3D HTML reports (`python scripts/33_demo_live_md_hooks.py`).
-- **Cross-repo `yaniguan/ouroboros-ocsr` stereochemical bridge**: `src/toolkit/ouroboros_bridge.py` (`ylm from-ouroboros`, `python scripts/34_ouroboros_to_ylm.py`) ingests Ouroboros `.extxyz` + `.manifest.jsonl` forcefield bundles, `predictions.csv`, stereo SMILES, or 2D chemical images into 3D CIP-audited conformers and leak-free Universe QA splits.
+- **MACE and NequIP / Allegro backbones**: `src/mace_backbone.py` (`MACEEncoder`) and `src/nequip_backbone.py` (`NequIPEncoder`) plug pretrained MACE-MP-0, MACE-OFF23, or TorchScript NequIP/Allegro `.pth` models into `YLM` (`--mace` / `--nequip`), keeping exact 3D forces (`F = -dE/dx`) and crystal repeat boxes.
+- **Live MD reaction monitor**: `src/toolkit/mlip_md.py` (`ylm run-md`) and `src/toolkit/md_hooks.py` (`OpenMMReactionReporter`, `LAMMPSReactionHook`) watch simulations step by step and log when bonds form, break, or transfer a proton (`H+`), saving SVG timelines and 3D HTML animations (`python scripts/33_demo_live_md_hooks.py`).
+- **Ouroboros 2D-to-3D stereo bridge**: `src/toolkit/ouroboros_bridge.py` (`ylm from-ouroboros`, `python scripts/34_ouroboros_to_ylm.py`) reads 2D drawings, stereo SMILES (`@/@@`, `/\`), `predictions.csv`, or `.extxyz` files from `yaniguan/ouroboros-ocsr` and checks 3D left/right handedness (`R`/`S`) and `cis`/`trans` double bonds.
 
-## Multi-rank (`0e + 0o + 1o + 2e`) Universe Foundation Model & Chiral / Uni-Mol Benchmarks
+## Multi-task 3D model (`YLMUniverseModel`) and Uni-Mol comparison
 
-`src/universe_fm.py` (`YLMUniverseModel`) unifies **all four symmetry ranks** on one shared two-stream representation:
-`0e` invariant scalars, `0o` parity-odd chiral pseudoscalars (`out["chiral"]`: exact enantiomer handedness sign flipping under mirror reflection while vanishing on achiral planar geometries), `1o` covariant vectors (dipole, atom-addressed force, T4 force difference, T5 bond projection), `0e+2e` symmetric 3x3 tensors (polarizability, quadrupole, crystal stress), and `1o` coordinate denoising, with Level-of-Theory (`wb97m`, `r2scan`, `pbe_u`, `ccsd`, `xtb`) magnitude calibration. `src/fm_baselines.py` provides fair head-to-head `UniMolStyle3DBaseline`, `GraphMVP3DInfoMaxBaseline`, and `EquiLLMMultiTaskBaseline` controls:
+`src/universe_fm.py` (`YLMUniverseModel`) predicts four types of outputs from one shared model:
+plain numbers (energy, gap), left/right handedness (`out["chiral"]`, which flips sign in a mirror and equals `0` on flat molecules), 3D arrows (dipole and atom forces), and symmetric 3x3 matrices (polarizability, quadrupole, stress). `src/fm_baselines.py` compares it against `UniMolStyle3DBaseline`, `GraphMVP3DInfoMaxBaseline`, and `EquiLLMMultiTaskBaseline`:
 
 ```bash
 python scripts/31_prepare_universe_data.py --smoke --out data/universe_smoke

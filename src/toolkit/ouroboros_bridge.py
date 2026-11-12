@@ -1,14 +1,11 @@
-"""Cross-repository bridge linking `yaniguan/ouroboros-ocsr` (SE(2) stereo OCSR) to `YLM` (O(3) tensor FM).
+"""Bridge from `yaniguan/ouroboros-ocsr` (2D chemical drawings & stereo SMILES) to 3D `YLM`.
 
-Connects Ouroboros-OCSR's three output artifacts directly to YLM's directional & chiral stack:
-  1. `<stem>.extxyz` + `<stem>.manifest.jsonl` (`scripts/image_to_forcefield.py` output with
-     `mace_energy`, `mace_forces`, `stereo_ok`, unescaped `@/@@` & `E/Z` SMILES, and `margin`)
-  2. `predictions.csv` (`Arm A+C` ensemble OCSR predictions with confidence abstention `accepted`)
-  3. Stereo SMILES or 2D structure images (`.png`/`.jpg` when `ouroboros` is installed locally)
+Loads three kinds of Ouroboros outputs into 3D `StructureFrame` objects and `YLM` training rows:
+  1. `<stem>.extxyz` + `<stem>.manifest.jsonl` (3D conformers with MACE energy/forces and `stereo_ok`)
+  2. `predictions.csv` (predicted SMILES with confidence scores)
+  3. Stereo SMILES strings (`@/@@`, `/\\`) or 2D molecule images (`.png`/`.jpg`)
 
-Preserves the full symmetry chain:
-  2D `SE(2)` (`C8` steerable CNN, no `O(2)` reflection) -> 3D CIP-audited `ETKDGv3` conformer ->
-  `O(3)` `YLMProbe` & `YLMUniverseModel` (`0e` scalar + `0o` chiral + `1o` vector + `0e+2e` tensor).
+Keeps left/right handedness (`R`/`S`) and `cis`/`trans` double-bond geometry intact from 2D to 3D.
 """
 from __future__ import annotations
 

@@ -52,14 +52,34 @@
 
 ## 4. CPU Smoke Tests
 
-Run these two commands on CPU before using GPU time. They train tiny models on a small built-in dataset and print a results table:
+Run these two commands on CPU before using GPU time. They train tiny models on a small built-in dataset:
 
 ```bash
 python scripts/32_benchmark_vs_unimol.py --tiny --epochs 20
 python scripts/35_build_and_eval_chiral_benchmark.py --tiny --epochs 24
 ```
 
-No benchmark numbers are listed here until their result files are committed to the repo.
+Results from one CPU run on Nov 12, 2026 are saved in [`results/cpu_smoke_nov12/`](results/cpu_smoke_nov12/README.md). The tables below are copied from those files. These are tiny smoke tests, not final results.
+
+### 4.1 Multi-task 3D comparison (`unimol_benchmark.json`, test split)
+
+| Model | Energy MAE ↓ | Atom Pick Acc ↑ | 3D Arrow Cos ↑ | Rotation Error ↓ | 3x3 Matrix Cos ↑ | New Wording Arrow Cos ↑ |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| GraphMVP / 3D-InfoMax | 0.1678 | 0.750 | +0.0351 | 1.31e+00 | +0.6500 | +0.0551 |
+| Uni-Mol (3D Dist-Transformer) | 0.1895 | 0.764 | +0.0661 | 1.31e+00 | +0.6586 | +0.0227 |
+| EquiLLM (Inv-Bridge + 1o) | 0.1940 | 0.653 | +0.5356 | 7.77e-07 | +0.9256 | +0.3095 |
+| YLM-Universe FM (Ours) | 0.1754 | 0.875 | +0.6292 | 8.05e-07 | +0.9915 | +0.4963 |
+
+### 4.2 Left vs. right handedness (`chiral_benchmark.json`)
+
+| Model | Left/Right Acc (Test) ↑ | New Wording Acc ↑ | Unseen Molecule Acc ↑ | Mirror Flip Error ↓ | Flat Molecule Output ↓ | 3D Arrow Cos ↑ | 3x3 Matrix Cos ↑ |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| GraphMVP / 3D-InfoMax | 52.1% | 47.9% | 50.0% | 6.92e-01 | 1.10e+00 | +0.0743 | +0.7201 |
+| Uni-Mol (3D Dist-Transformer) | 52.1% | 52.1% | 48.4% | 7.62e-01 | 7.99e-01 | +0.0488 | +0.7218 |
+| EquiLLM (Inv-Bridge + 1o) | 54.2% | 52.1% | 48.4% | 6.66e-01 | 7.35e-01 | +0.6574 | +0.9715 |
+| YLM-Universe FM (Ours) | 100.0% | 100.0% | 100.0% | 4.27e-07 | 3.92e-08 | +0.7275 | +0.9982 |
+
+What this run shows: the distance-only (`Uni-Mol`) and 2D graph (`GraphMVP`) models stay near 50% on mirror twins and fail the rotation check. `YLM-Universe` tells mirror twins apart in this tiny set and keeps 3D arrows correct under rotation, but it does not have the lowest energy MAE here.
 
 ---
 

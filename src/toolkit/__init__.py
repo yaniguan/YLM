@@ -1,4 +1,4 @@
-"""Out-of-the-box O(3)-equivariant directional chemistry toolkit around YLM."""
+"""Command-line tools, Python helpers, and local browser app for YLM."""
 from src.mace_backbone import MACEEncoder, load_mace_foundation_model
 from src.nequip_backbone import NequIPEncoder, load_nequip_model
 from src.toolkit.domains import (
@@ -43,6 +43,11 @@ from src.toolkit.ouroboros_bridge import (
     load_ouroboros_predictions_csv,
     ouroboros_frames_to_universe_records,
     probe_ouroboros_structures,
+)
+from src.toolkit.physics_audit import (
+    evaluate_pose_sandbox,
+    get_builtin_presets,
+    run_physics_compliance_audit,
 )
 from src.toolkit.posttrain import (
     PhysicsLabeler,
@@ -91,7 +96,9 @@ __all__ = [
     "compute_signed_chiral_volumes",
     "detect_md_frame_events",
     "embed_stereo_smiles",
+    "evaluate_pose_sandbox",
     "export_tensorqa_hf",
+    "get_builtin_presets",
     "load_any_ouroboros_input",
     "load_mace_foundation_model",
     "load_nequip_model",
@@ -105,6 +112,7 @@ __all__ = [
     "probe_ouroboros_structures",
     "render_html_report",
     "render_trajectory_html_report",
+    "run_physics_compliance_audit",
     "run_posttrain",
     "scan_md_trajectory",
     "smiles_to_frame",

@@ -1,9 +1,7 @@
-"""Live MD reaction monitor & drop-in hooks for OpenMM and LAMMPS with timeline plotting.
+"""Watch MD simulations in real time for bond forming, bond breaking, and H+ jumps.
 
-Streams MD frames in real time (zero LLM memory overhead on non-reactive steps), detects
-bond-forming, bond-breaking, and committed Grotthuss proton-transfer events with hysteresis,
-triggers optional YLMProbe directional force-vs-displacement attribution on reactive frames,
-and exports publication-ready SVG / PNG timeline plots.
+Checks atom distances step by step with two-threshold hysteresis (so thermal jiggling does not cause
+false alarms), logs frame numbers and timestamps, attaches to OpenMM or LAMMPS, and draws SVG/PNG timelines.
 """
 from __future__ import annotations
 
