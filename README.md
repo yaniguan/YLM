@@ -259,6 +259,40 @@ instead of cutting a finite 6 Å cluster (`--mp_geom_mode cluster`, default). Th
 repository can also be installed as an editable Python package with
 `pip install -e .`.
 
+## Out-of-the-box directional chemistry toolkit (`ylm` CLI, SDK & Studio)
+
+Install the package in editable mode (`pip install -e .`) to unlock the `ylm` CLI,
+`src.toolkit` Python SDK, standalone 3D HTML reports (`3Dmol.js` + offline HTML5
+`<canvas>` fallback), and local Web Studio (`ylm serve`). Specification and
+120-paper domain literature reviews live in
+[`specs/001-ylm-probe-toolkit/`](specs/001-ylm-probe-toolkit/spec.md).
+
+```bash
+# Instant zero-training directional probe + live O(3) rotation/reflection check + 3D HTML report
+ylm ask examples/water.xyz "What is the force vector on the oxygen atom?" --verify-o3 --html water_probe.html
+
+# Domain packs: Electrolyte solvation/crystals, Reactive MD (1o motion + Grotthuss CV), Drug SBDD exit vectors
+ylm solvation examples/li_ec_shell.xyz --verify-o3 --html solvation.html
+ylm scan-traj examples/proton_transfer_traj.extxyz --verify-o3 --html md_traj.html
+ylm drug examples/indole_pocket.xyz --verify-o3 --html drug_lead_opt.html
+
+# Post-train YLMCausalLM + IrrepsAdapter + <vec> readout with SFT and counterfactual DPO
+ylm posttrain --input examples/proton_transfer_traj.extxyz --out runs/demo_lm --steps 20 --dpo-steps 4 --freeze-lm
+
+# Launch interactive browser Studio or export TensorQA for Hugging Face Datasets
+ylm serve --port 8765
+ylm export-hf --labels data/qm9_xtb.pkl --v0 data/tensorqa_v0.json --out dist/hf_tensorqa --anonymized
+```
+
+## Optional MACE foundation backbone & live OpenMM/LAMMPS MD hooks
+
+`src/mace_backbone.py` (`MACEEncoder`) lets both `YLM` (`YLM.from_mace(...)`) and `YLMCausalLM`
+(`YLMConfig(encoder="mace-mp-0-small" | "mace-off23-medium", freeze_encoder=True)`) mount pretrained
+MACE-MP-0 (89 elements) or MACE-OFF23 equivariant node features plus conservative atomic forces (`1x1o`)
+directly into `IrrepsToText` (`pip install -e ".[mace]"`). For live reactive MD monitoring,
+`src/toolkit/md_hooks.py` provides `OpenMMReactionReporter`, `LAMMPSReactionHook`, and `--plot timeline.svg`
+on `ylm scan-traj` to log and plot bond-forming, bond-breaking, and proton-transfer timestamps.
+
 ## Citation
 
 Not published yet. Placeholder:

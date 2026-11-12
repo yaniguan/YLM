@@ -27,12 +27,21 @@ crystals = [
     "pymatgen",
     "mp-api",
 ]
+mace = [
+    "mace-torch>=0.3.6",
+]
+md = [
+    "matplotlib>=3.7",
+]
 test = [
     "pytest>=7.0",
 ]
 
+[project.scripts]
+ylm = "src.toolkit.cli:main"
+
 [tool.setuptools]
-packages = ["src", "src.tasks"]
+packages = ["src", "src.tasks", "src.toolkit"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

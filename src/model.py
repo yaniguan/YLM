@@ -27,6 +27,7 @@ from e3nn import o3
 
 from src.encoder import Encoder
 from src.irreps_to_text import IrrepsToText, invariants
+from src.mace_backbone import MACEEncoder
 from src.tensor_readout import TensorReadout
 
 
@@ -88,7 +89,12 @@ class YLM(nn.Module):
         self.text_mode = text_mode
         self.n_cross_layers = n_cross_layers
         self.tensor_readout = bool(tensor_readout)
-        self.encoder = Encoder(hidden_irreps=hidden_irreps, n_layers=n_layers)
+        if isinstance(hidden_irreps, nn.Module):
+            self.encoder = hidden_irreps
+        elif isinstance(hidden_irreps, str) and hidden_irreps.lower().startswith("mace"):
+            self.encoder = MACEEncoder(backbone=hidden_irreps)
+        else:
+            self.encoder = Encoder(hidden_irreps=hidden_irreps, n_layers=n_layers)
         self.task_embed = nn.Embedding(n_tasks, text_dim)             # only used in "taskid"
         self.text_proj = nn.Sequential(nn.LayerNorm(text_dim), nn.Linear(text_dim, 256), nn.SiLU())
         self.cross = IrrepsToText(256, self.encoder.irreps_out, cross_irreps, option=option,
@@ -108,12 +114,35 @@ class YLM(nn.Module):
         else:
             self.readout = o3.Linear(cross_irreps, "1x1o")
 
-    def forward(self, Z, pos, atom_mask, text, text_mask, task):
+    @classmethod
+    def from_mace(
+        cls,
+        text_dim: int,
+        backbone: str = "mace-mp-0-small",
+        *,
+        mace_model: nn.Module = None,
+        freeze_mace: bool = True,
+        include_mace_forces: bool = True,
+        out_irreps: str = None,
+        **ylm_kwargs,
+    ) -> "YLM":
+        """Construct YLM mounted on a pretrained MACE-MP-0 / MACE-OFF23 backbone."""
+        enc = MACEEncoder(
+            backbone=backbone,
+            mace_model=mace_model,
+            freeze_mace=freeze_mace,
+            include_mace_forces=include_mace_forces,
+            out_irreps=out_irreps,
+        )
+        return cls(text_dim=text_dim, hidden_irreps=enc, **ylm_kwargs)
+
+    def forward(self, Z, pos, atom_mask, text, text_mask, task, cell=None, pbc=None):
         if self.text_mode == "taskid":
             text = self.task_embed(task)[:, None, :]                  # (B, 1, d)
             text_mask = torch.ones(text.shape[:2], dtype=torch.bool, device=text.device)
         h = self.text_proj(text)                                      # (B, T, 256) invariant
-        x = self.encoder(Z, pos, atom_mask)                           # (B, N, D)   equivariant
+        x = (self.encoder(Z, pos, atom_mask, cell=cell, pbc=pbc)
+             if cell is not None else self.encoder(Z, pos, atom_mask))  # (B, N, D)   equivariant
         e, attn = self.cross(h, x, atom_mask)                         # (B, T, D')  equivariant
         if self.n_cross_layers > 1:
             attn_sum = attn

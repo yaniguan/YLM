@@ -146,17 +146,20 @@ def _periodic_edges(pos, mask, cell, pbc, cutoff):
 
 class Encoder(nn.Module):
     def __init__(self, hidden_irreps="64x0e + 8x0o + 32x1o + 8x1e + 16x2e",
-                 n_layers=3, lmax=2, cutoff=9.45, n_radial=8, n_elements=10, avg_neighbors=15.0):
+                 n_layers=3, lmax=2, cutoff=9.45, n_radial=8, n_elements=10, avg_neighbors=15.0,
+                 n_motion_vectors: int = 0):
         super().__init__()
         # cutoff 9.45 bohr = 5 Angstrom
         self.cutoff = cutoff
         self.n_radial = n_radial
+        self.n_motion_vectors = int(n_motion_vectors)
         self.irreps_sh = o3.Irreps.spherical_harmonics(lmax)
         self.hidden_irreps = o3.Irreps(hidden_irreps)
         n_scalar = self.hidden_irreps.count("0e")
         self.embed = nn.Embedding(n_elements, n_scalar)
         layers = []
-        irreps_in = o3.Irreps(f"{n_scalar}x0e")
+        irreps_in = (o3.Irreps(f"{n_scalar}x0e + {self.n_motion_vectors}x1o")
+                     if self.n_motion_vectors > 0 else o3.Irreps(f"{n_scalar}x0e"))
         for _ in range(n_layers):
             layer = Layer(irreps_in, self.hidden_irreps, self.irreps_sh, n_radial, avg_neighbors)
             layers.append(layer)
@@ -164,10 +167,11 @@ class Encoder(nn.Module):
         self.layers = nn.ModuleList(layers)
         self.irreps_out = irreps_in
 
-    def forward(self, Z, pos, mask, extra_scalars=None, cell=None, pbc=None):
+    def forward(self, Z, pos, mask, extra_scalars=None, cell=None, pbc=None, extra_vectors=None):
         """extra_scalars: optional (B, N, n_scalar) invariant features added to the l=0 input embedding
         (e.g. species role / mole fraction for mixtures). None keeps the original behaviour.
-        cell: optional (B, 3, 3) periodic lattice vectors as rows in bohr; pbc: optional (B, 3) bool."""
+        cell: optional (B, 3, 3) periodic lattice vectors as rows in bohr; pbc: optional (B, 3) bool.
+        extra_vectors: optional (B, N, 3) or (B, N, n_motion_vectors, 3) 1o vectors (e.g. MD delta_pos)."""
         B, N = Z.shape
         if cell is None:
             # all pairs (i, j) inside the same molecule, both real atoms, i != j, closer than cutoff
@@ -188,6 +192,13 @@ class Encoder(nn.Module):
         x = self.embed(Z.reshape(-1))                             # (B*N, n_scalar)
         if extra_scalars is not None:
             x = x + extra_scalars.reshape(B * N, -1).to(x.dtype)
+        if self.n_motion_vectors > 0:
+            if extra_vectors is None:
+                v = torch.zeros(B * N, self.n_motion_vectors * 3, device=x.device, dtype=x.dtype)
+            else:
+                v = extra_vectors.to(device=x.device, dtype=x.dtype).reshape(B * N, self.n_motion_vectors * 3)
+                v = v * mask.reshape(B * N, 1).to(x.dtype)
+            x = torch.cat([x, v], dim=-1)
         for layer in self.layers:
             x = layer(x, src, dst, sh, radial)
         x = x.reshape(B, N, -1) * mask[..., None]
