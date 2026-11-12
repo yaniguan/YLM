@@ -8,10 +8,10 @@
 
 | Task | Runs on CPU? | Notes |
 | :--- | :---: | :--- |
-| **`ylm` CLI, 3D HTML reports, and browser Studio (`ylm serve`)** | **Yes** | Default checkpoint is `1.7 MB` and takes ~`30 ms` per molecule on CPU. |
-| **Testing `MACE-MP-0-small` or `MACE-OFF23-small` on 1 molecule or a short trajectory** | **Yes** | ~`0.2–0.8 s` per frame on CPU — fast enough to verify forces and reaction timelines. |
+| **`ylm` CLI, 3D HTML reports, and browser Studio (`ylm serve`)** | **Yes** | Uses the small default checkpoint in `checkpoints/v0`. |
+| **Testing `MACE-MP-0-small` or `MACE-OFF23-small` on 1 molecule or a short trajectory** | **Yes** | Fast enough to check forces and reaction timelines. |
 | **Data prep and small smoke tests (100–600 rows)** | **Yes (do this first)** | Catches path or data-format bugs before spending GPU hours. |
-| **Million-molecule DFT training vs. Uni-Mol / GraphMVP** | **Needs GPU** | 50–100x faster on GPU than CPU. |
+| **Million-molecule DFT training vs. Uni-Mol / GraphMVP** | **Needs GPU** | Too slow on CPU. |
 | **Long reactive MD runs (20–100 ps with MACE / NequIP)** | **Needs GPU** | Tens of thousands of force steps need a single GPU. |
 
 ---
@@ -50,33 +50,16 @@
 
 ---
 
-## 4. CPU Smoke-Test Results Already Verified
+## 4. CPU Smoke Tests
 
-### 4.1 Multi-Task 3D Benchmark (`564` training rows, `20` epochs, `8` random 3D rotations + mirror flips)
+Run these two commands on CPU before using GPU time. They train tiny models on a small built-in dataset and print a results table:
 
-Command: `python scripts/32_benchmark_vs_unimol.py --tiny --epochs 20`
+```bash
+python scripts/32_benchmark_vs_unimol.py --tiny --epochs 20
+python scripts/35_build_and_eval_chiral_benchmark.py --tiny --epochs 24
+```
 
-| Model | Energy MAE ↓ | Atom Pick Acc ↑ | 3D Arrow Cos ↑ | Atom Force Cos ↑ | Rotation Error ↓ | 3x3 Matrix Cos ↑ | New Wording Arrow Cos ↑ |
-| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| **GraphMVP / 3D-InfoMax** | 0.1585 | 0.750 | +0.0577 | +0.0658 | `1.32e+00` (fails) | +0.6621 | +0.0435 |
-| **Uni-Mol (3D Distance)** | 0.1698 | 0.722 | +0.0676 | +0.0501 | `1.28e+00` (fails) | +0.6585 | +0.0380 |
-| **EquiLLM (Scalar Bridge)** | 0.1576 | **0.861** | +0.4923 | +0.3133 | `8.12e-07` | +0.9482 | +0.4427 |
-| **YLM-Universe (Ours)** | **0.1455** | 0.833 | **+0.4974** | **+0.4253** | **`1.05e-06`** | **+0.9936** | **+0.4756** |
-
-### 4.2 Left vs. Right Handedness Benchmark (`8` mirror-twin families, `24` epochs, including unseen molecule shapes)
-
-Command: `python scripts/35_build_and_eval_chiral_benchmark.py --tiny --epochs 24`
-
-| Model | Left/Right Acc (Test) ↑ | New Wording Acc ↑ | **Unseen Molecule Acc ↑** | Mirror Flip Error ↓ | Flat Molecule Output (should be 0) ↓ | 3D Arrow Cos ↑ | 3x3 Matrix Cos ↑ |
-| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| **GraphMVP / 3D-InfoMax** | 54.2% | 47.9% | 50.0% | `6.77e-01` | `1.04e+00` | +0.0202 | +0.7107 |
-| **Uni-Mol (3D Distance)** | 52.1% | 52.1% | 48.4% | `8.05e-01` | `8.19e-01` | +0.0197 | +0.6953 |
-| **EquiLLM (Scalar Bridge)** | 52.1% | 50.0% | 50.0% | `6.65e-01` | `4.21e-01` | +0.7007 | +0.9874 |
-| **YLM-Universe (Ours)** | **100.0%** | **100.0%** | **100.0%** | **`3.20e-07`** | **`1.88e-07` (exact zero)** | **+0.7694** | **+0.9974** |
-
-**What these two tables show**:
-1. Distance-only models (`Uni-Mol`) and 2D graph models (`GraphMVP`) guess near 50% (like flipping a coin) on left/right-handed mirror twins and lose 3D arrow directions when a molecule spins.
-2. `YLM-Universe` reaches **100% accuracy** even on unseen chiral molecule shapes, outputs `0` (`1.88e-7`) on flat molecules like water, and gets the lowest energy MAE (`0.1455`).
+No benchmark numbers are listed here until their result files are committed to the repo.
 
 ---
 
@@ -84,7 +67,7 @@ Command: `python scripts/35_build_and_eval_chiral_benchmark.py --tiny --epochs 2
 
 - **Tier 1: Single 16–24 GB GPU (Colab T4 / L4, RTX 3090 / 4090)**
   - Freeze `MACE-OFF23-small` or `MACE-MP-0-small` (`--freeze_mace`) + train `YLM` (`option="C"`, `c_tp_mode="channelwise"`, `n_cross_layers=2`) + frozen `MatSciBERT`.
-  - Uses `< 6 GB` VRAM at batch size 64–128. Finishes 200k–500k `SPICE-v2` conformations in ~1 day.
+  - Start with a 200k–500k `SPICE-v2` subset.
 - **Tier 2: Single 40–80 GB GPU (A100 / H100)**
   - Use `MACE-OFF23-medium` or `MACE-MP-0-medium`. Freeze MACE for the first 10 epochs, then unfreeze with a small learning rate (`1e-5`).
   - Fits full `SPICE-v2` (2M conformations) + `MPtrj` (1.5M crystal frames) + `Transition1x` reaction paths.
@@ -105,7 +88,7 @@ Command: `python scripts/35_build_and_eval_chiral_benchmark.py --tiny --epochs 2
 
 ### Three Simple Training Rules When Mixing Datasets
 1. **Split direction loss from length loss**: train cosine angle (`1 - cos`) separately from vector length (`| ||pred|| - ||true|| |`).
-2. **Tag each quantum method (`[LOT=wb97m]`, `[LOT=pbe_u]`, `[LOT=xtb]`)**: fast `xtb` labels have good directions (`cos > 0.99`) but 5–15% length error, so `xtb` rows train direction only (`length weight = 0`).
+2. **Tag each quantum method (`[LOT=wb97m]`, `[LOT=pbe_u]`, `[LOT=xtb]`)**: fast `xtb` labels tend to get directions closer than lengths, so `xtb` rows train direction only (`length weight = 0`).
 3. **Supervise which atom the text picks**: add a small cross-entropy loss (`--attn_loss_weight 0.2`) so questions about an `-OH` hydrogen focus on that `H` atom rather than sliding onto the neighbor `O` atom.
 
 ---
