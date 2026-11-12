@@ -6,17 +6,17 @@
 
 **Status**: Approved
 
-**Input**: User description: "让 irreps 带方向的性质和 llm text token 融合在一起实现让 llm 读方向，覆盖药物分子、电解液分子、MD 轨迹应用与 IrrepsAdapter + <vec> 后训练，设计开箱即用的 CLI + SDK + 3D 可视化 + Web 小工具系统"
+**Input**: User description: "Combine 3D directional atom features with language model tokens so the model can read and output 3D directions across drug molecules, battery electrolytes, and reactive MD trajectories, with an easy CLI, Python SDK, 3D HTML viewer, and local browser app."
 
 ## Clarifications
 
 ### Session 2026-11-10
 
-- Q: 新工具系统采用哪种代码仓库组织与远端交付方式？ → A: 直接在现有 `yaniguan/YLM` 仓库内新建特性分支与 PR（Monorepo 模式，统一维护核心模型与应用工具包）。
-- Q: 推理底座采用哪种模型运行时策略以兼顾“零训练开箱即用”与“自然语言+方向生成”？ → A: 双引擎架构：同时支持现成 `checkpoints/v0` 秒级向量探针（零训练即用）与 `YLMCausalLM` + `IrrepsAdapter` + `<vec>` 生成引擎（支持本地微调与挂载 HuggingFace 模型）。
-- Q: 药物分子、电解液与 MD 轨迹三大领域包在底层几何特征与接口上如何统一？ → A: 底层编码器扩展帧间位移/速度 `1o` 等变输入通道，上层内置 `drug`、`electrolyte`、`md` 三大专用领域包。
-- Q: LLM 后训练（`IrrepsAdapter` + `<vec>` 的 SFT/DPO）采用哪种训练数据生成与回退方案？ → A: 内置三级可插拔数据生成器：离线零依赖 MMFF94/几何解析力场 + 可选 xTB/ASE 接口 + 已有带力/偶极轨迹（`.extxyz`/QM9）自动转 SFT 与反事实 DPO 数据集。
-- Q: 面向终端用户的交互界面与三维可视化交付包含哪些形态？ → A: CLI 命令行 + Python SDK + 零依赖单文件 `3Dmol.js` 交互式 HTML 报告 + 轻量本地 Web 交互服务（`ylm serve`）。
+- Q: How should the toolkit be organized in Git? → A: Keep everything in the `yaniguan/YLM` repository using feature branches and pull requests.
+- Q: Which model runtime should power inference? → A: Support two engines: fast `checkpoints/v0` vector probes (ready right away with no training) and `YLMCausalLM` + `IrrepsAdapter` + `<vec>` generation (for local fine-tuning and Hugging Face models).
+- Q: How should drug, electrolyte, and MD workflows share geometry features? → A: Add an optional frame-to-frame motion vector channel (`1o`) to the 3D encoder and build `drug`, `electrolyte`, and `md` topic helpers on top.
+- Q: How should post-training generate force and dipole labels when quantum packages are missing? → A: Provide three label options: built-in analytical/MMFF forces (works offline anywhere), optional xTB/ASE quantum labels, and importing pre-labeled `.extxyz` trajectories.
+- Q: What user interfaces should be included? → A: `ylm` CLI commands, Python functions, single-file 3D HTML reports (`3Dmol.js` + offline `<canvas>` fallback), and a local browser app (`ylm serve`).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -24,7 +24,7 @@
 
 A researcher has a molecular structure (`.xyz`, `.sdf`, `.poscar`, or SMILES) and wants to ask a natural-language directional question (e.g., *"Which way does the dipole point?"* or *"What is the force vector on the hydroxyl hydrogen?"*) immediately after `pip install -e .`, getting back unit-labeled 3D covariant vectors, per-token atom-attention routing weights, spherical-harmonic `l`-channel contributions (`0e/1o/1e/2e`), a live $O(3)$ rotation+reflection self-check badge, and a standalone interactive 3D HTML report.
 
-**Why this priority**: Delivers immediate out-of-the-box utility in under 10 seconds using packaged `checkpoints/v0/*.pt` or saved `YLMCausalLM` checkpoints without requiring training or external software.
+**Why this priority**: Works right away in under 10 seconds using packaged `checkpoints/v0/*.pt` or saved `YLMCausalLM` checkpoints without requiring training or external software.
 
 **Independent Test**: Run `ylm ask examples/water.xyz "What is the dipole vector?" --verify-o3 --html report.html` offline on CPU; verify non-zero 3D vector output, $O(3)$ equivariance error $< 10^{-5}$, and valid self-contained HTML generation.
 
@@ -121,4 +121,4 @@ Users inspect directional vectors and token-to-atom routing visually in a browse
 ## Assumptions
 
 - Users installing core dependencies (`pip install -e .`) have Python $\ge 3.10$, `torch`, `e3nn`, `numpy`, `scipy`, and `transformers`.
-- Optional packages (`rdkit`, `ase`, `pymatgen`, `tblite`) enrich conformer embedding and quantum labels when installed, while offline parser and analytical force-field fallbacks guarantee every CLI command works out-of-the-box without them.
+- Optional packages (`rdkit`, `ase`, `pymatgen`, `tblite`) enrich conformer embedding and quantum labels when installed, while offline parser and analytical force-field fallbacks guarantee every CLI command works right away without them.

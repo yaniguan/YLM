@@ -1,17 +1,14 @@
-"""Fair 3D Foundation-Model Baselines for head-to-head comparison against YLMUniverseModel:
+"""Baseline 3D models compared side by side against `YLMUniverseModel`:
 
-1. UniMolStyle3DBaseline (Zhou et al., ICLR 2023):
-   SE(3)-invariant 3D Transformer operating on atomic types + Gaussian radial basis expansion
-   of the pairwise Euclidean distance matrix d_ij = ||r_i - r_j||, with persistent pair bias
-   updates and pair-weighted 3D coordinate denoising head, followed by text cross-attention.
+1. `UniMolStyle3DBaseline` (Zhou et al., ICLR 2023):
+   3D Transformer built from atom-to-atom distances `d_ij = ||r_i - r_j||`. Because distances do not
+   change under rotation or mirror reflection, its scalar features cannot rotate arrows or tell `(R)` from `(S)`.
 
-2. GraphMVP3DInfoMaxBaseline (Liu et al., ICLR 2022; Stark et al., ICML 2022):
-   2D topological message-passing GNN (connectivity graph A_ij only at inference) aligned to a
-   3D geometric teacher encoder during training via symmetric InfoNCE mutual-information loss.
+2. `GraphMVP3DInfoMaxBaseline` (Liu et al., ICLR 2022; Stark et al., ICML 2022):
+   2D bond-graph network trained to match a 3D teacher during pretraining, using only 2D bonds at test time.
 
-3. EquiLLMMultiTaskBaseline:
-   Multi-task extension of EquiLLMBaseline (invariant-only Transformer bridge + post-hoc 1o
-   vector bypass and bilinear symmetric outer-product tensor head).
+3. `EquiLLMMultiTaskBaseline`:
+   Passes only plain numbers through the text bridge and scales atom 3D vectors at the end.
 """
 from __future__ import annotations
 

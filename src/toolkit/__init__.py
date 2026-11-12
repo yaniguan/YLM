@@ -1,4 +1,4 @@
-"""Out-of-the-box O(3)-equivariant directional chemistry toolkit around YLM."""
+"""Command-line tools, Python helpers, and local browser app for YLM."""
 from src.mace_backbone import MACEEncoder, load_mace_foundation_model
 from src.nequip_backbone import NequIPEncoder, load_nequip_model
 from src.toolkit.domains import (

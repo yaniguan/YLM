@@ -1,14 +1,14 @@
-"""Unified multi-task O(3)-equivariant 3D Science Foundation Model (YLMUniverseModel).
+"""Multi-task 3D chemistry model (`YLMUniverseModel`) for numbers, handedness, arrows, and 3x3 matrices.
 
-Unifies four symmetry ranks on one shared two-stream equivariant representation:
-  1. scalar_head  (0e invariant) : energies, HOMO-LUMO gap, solvation/redox/docking scalars
-  2. vector_head  (1o covariant) : dipole, atom-addressed force, force diff (T4), bond proj (T5)
-  3. tensor_head  (0e+2e symm)   : quadrupole, molecular polarizability, dielectric & virial stress
-  4. denoise_head (1o per-atom)  : 3D coordinate denoising / non-equilibrium score pretraining
+Predicts four kinds of physical quantities from one shared text + 3D atom network:
+  1. `scalar`  (`0e`): plain numbers like energy, HOMO-LUMO gap, or solubility
+  2. `chiral`  (`0o`): left vs. right handedness (flips `+` to `-` in a mirror; `0` on flat molecules)
+  3. `vector`  (`1o`): 3D arrows like dipole moment or the force on a chosen atom
+  4. `tensor`  (`0e+2e`): symmetric 3x3 matrices like polarizability, quadrupole, or crystal stress
+  5. `denoise` (`1o`): per-atom 3D step back toward clean coordinates
 
-Includes Level-of-Theory (LOT) conditioning (`wb97m`, `r2scan`, `pbe_u`, `ccsd`, `xtb`) with
-strictly positive O(3)-preserving magnitude calibration and `direction_only` semi-empirical loss
-masking so multi-dataset pretraining sharpens directions without blurring DFT magnitude scales.
+Also tags each training row with its quantum method (`wb97m`, `r2scan`, `pbe_u`, `ccsd`, `xtb`)
+so fast `xtb` rows help train 3D arrow directions without shifting high-accuracy DFT sizes.
 """
 from __future__ import annotations
 

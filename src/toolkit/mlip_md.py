@@ -1,14 +1,10 @@
-"""Unified MLIP Molecular Dynamics Runner & OpenMM / MACE / NequIP Tooling Bridge.
+"""Molecular dynamics runner and OpenMM / MACE / NequIP force helpers.
 
-Provides:
-  1. `TorchMLIPForceProvider`: uniform `(energy_ev, forces_ev_ang)` wrapper over `MACEEncoder`,
-     `NequIPEncoder`, ASE calculators (`MACECalculator` / `NequIPCalculator`), or custom callables.
-  2. `AnalyticalReactiveForceProvider`: zero-dependency smooth O(3)-invariant Morse potential with
-     exact conservative forces (`-dE/dr`) for CPU testing and rapid reactive prototyping.
-  3. `MLIPTrajectoryRunner`: Velocity-Verlet + BAOAB-style Langevin MD engine wired directly to
-     `LiveReactionMonitor`, `YLMProbe`, `.extxyz` export, SVG/PNG timeline plots, and 3D HTML reports.
-  4. `build_openmm_mlip_simulation`: turnkey helper wiring TorchScript NequIP/MACE potentials into
-     `OpenMM` (`openmm-torch` / `openmm-ml`) with `OpenMMReactionReporter` pre-attached.
+Includes:
+  1. `TorchMLIPForceProvider`: computes `(energy_ev, forces_ev_ang)` from MACE, NequIP, ASE, or custom functions.
+  2. `AnalyticalReactiveForceProvider`: fast built-in Morse bond potential (`F = -dE/dx`) for CPU testing.
+  3. `MLIPTrajectoryRunner`: runs Velocity-Verlet / Langevin MD steps while watching for bond changes and H+ jumps.
+  4. `build_openmm_mlip_simulation`: connects MACE or NequIP TorchScript models to OpenMM with reaction logging.
 """
 from __future__ import annotations
 
@@ -389,7 +385,7 @@ def build_openmm_mlip_simulation(
     dt_ps: float = 0.0005,
     probe: Optional[YLMProbe] = None,
 ):
-    """Turnkey builder wiring OpenMM (`openmm-ml` or `openmm-torch`) + `OpenMMReactionReporter`.
+    """Connect OpenMM (`openmm-ml` or `openmm-torch`) with `OpenMMReactionReporter` in one helper.
 
     Accepts either an `openmm-ml` potential name (`'mace-off23-small'`, `'ani2x'`) or a path to a
     compiled TorchScript `.pt`/`.pth` potential (`NequIP` / `MACE` via `openmmtorch.TorchForce`).
