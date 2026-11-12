@@ -279,7 +279,8 @@ ylm drug examples/indole_pocket.xyz --verify-o3 --html drug_lead_opt.html
 # Post-train YLMCausalLM + IrrepsAdapter + <vec> readout with SFT and counterfactual DPO
 ylm posttrain --input examples/proton_transfer_traj.extxyz --out runs/demo_lm --steps 20 --dpo-steps 4 --freeze-lm
 
-# Launch interactive browser Studio or export TensorQA for Hugging Face Datasets
+# Run the 8-Law Physical & O(3) Compliance Certification Suite (float64) or launch the 5-tab interactive Studio UI
+ylm audit-physics r_fec_chiral --precision float64 --rotations 8
 ylm serve --port 8765
 ylm export-hf --labels data/qm9_xtb.pkl --v0 data/tensorqa_v0.json --out dist/hf_tensorqa --anonymized
 ```

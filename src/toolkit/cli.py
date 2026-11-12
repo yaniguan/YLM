@@ -16,6 +16,7 @@ from src.toolkit.ouroboros_bridge import (
     ouroboros_frames_to_universe_records,
     probe_ouroboros_structures,
 )
+from src.toolkit.physics_audit import run_physics_compliance_audit
 from src.toolkit.posttrain import run_posttrain
 from src.toolkit.probe import YLMProbe, verify_o3_equivariance
 from src.toolkit.server import create_studio_server
@@ -108,6 +109,24 @@ def build_parser() -> argparse.ArgumentParser:
     p_ver.add_argument("structure", help="Structure path or SMILES")
     p_ver.add_argument("--question", default="What is the force vector on the oxygen atom?")
     p_ver.add_argument("--ckpt")
+
+    # ylm audit-physics
+    p_aud = sub.add_parser(
+        "audit-physics",
+        help="Run the 8-Law Physical & O(3) Compliance Certification Suite (0e, 0o, 1o, 2e, Curie, F=-dE/dr, PBC)",
+    )
+    p_aud.add_argument(
+        "structure",
+        nargs="?",
+        default="r_fec_chiral",
+        help="Builtin preset (r_fec_chiral, water_c2v, trans_difluoroethene_c2h, lifepo4_pbc_crystal, ...) or structure/SMILES",
+    )
+    p_aud.add_argument("--question", default="What is the 3D molecular dipole moment vector?")
+    p_aud.add_argument("--precision", choices=["float64", "float32"], default="float64")
+    p_aud.add_argument("--rotations", type=int, default=8)
+    p_aud.add_argument("--ckpt")
+    p_aud.add_argument("--device", default="cpu")
+    p_aud.add_argument("--json", help="Write full structured audit report JSON to this path")
 
     # ylm serve
     p_srv = sub.add_parser("serve", help="Launch local interactive YLM Directional Chemistry Studio in browser")
@@ -258,6 +277,31 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             "invariance_error": chk.invariance_error,
         }, indent=2))
         return 0 if chk.passed else 1
+
+    if args.command == "audit-physics":
+        probe = _load_probe(args.ckpt, args.device)
+        audit = run_physics_compliance_audit(
+            frame_or_source=args.structure,
+            question=args.question,
+            precision=args.precision,
+            n_rotations=args.rotations,
+            probe=probe,
+        )
+        if args.json:
+            jp = Path(args.json)
+            jp.parent.mkdir(parents=True, exist_ok=True)
+            jp.write_text(json.dumps(audit, indent=2), encoding="utf-8")
+        print(f"=== YLM 8-Law Physics Compliance Audit ({audit['preset_title']} | {audit['precision']}) ===")
+        for law in audit["laws"]:
+            tag = "PASS" if law["passed"] else "FAIL"
+            print(f"  [{tag}] {law['name']:<72} err={law['ylm_error']:.2e} (tol={law['tolerance']:.1e})")
+        v0 = audit["v0_probe_check"]
+        print(
+            f"  [{'PASS' if v0['passed'] else 'FAIL'}] Shipped YLMProbe ({v0['engine']}) O(3) check"
+            f"                                     vec_err={v0['vector_equivariance_error']:.2e}"
+        )
+        print(f"Overall: {audit['passed_count']}/{audit['total_laws']} laws passed | passed_all={audit['passed_all']}")
+        return 0 if audit["passed_all"] else 1
 
     if args.command == "serve":
         probe = _load_probe(args.ckpt, args.device)
