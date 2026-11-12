@@ -10,14 +10,22 @@ from src.toolkit.domains import analyze_drug, analyze_electrolyte, scan_md_traje
 from src.toolkit.hf_export import export_tensorqa_hf
 from src.toolkit.ingest import build_solvation_cluster, load_trajectory
 from src.toolkit.md_hooks import LiveReactionMonitor, plot_reaction_timeline
+from src.toolkit.mlip_md import MLIPTrajectoryRunner, TorchMLIPForceProvider
 from src.toolkit.posttrain import run_posttrain
 from src.toolkit.probe import YLMProbe, verify_o3_equivariance
 from src.toolkit.server import create_studio_server
 
 
-def _load_probe(ckpt: Optional[str], device: str, mace: Optional[str] = None) -> YLMProbe:
+def _load_probe(
+    ckpt: Optional[str],
+    device: str,
+    mace: Optional[str] = None,
+    nequip: Optional[str] = None,
+) -> YLMProbe:
     if mace:
         return YLMProbe.from_mace(backbone=mace, device=device)
+    if nequip:
+        return YLMProbe.from_nequip(backbone=nequip, device=device)
     return YLMProbe.from_checkpoint(ckpt, device=device) if ckpt else YLMProbe.default(device=device)
 
 
@@ -32,6 +40,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_ask.add_argument("--domain", choices=["general", "electrolyte", "md", "drug"], default="general")
     p_ask.add_argument("--ckpt", help="Checkpoint file (.pt) or YLMCausalLM run directory")
     p_ask.add_argument("--mace", help="Mount pretrained MACE backbone (e.g. mace-mp-0-small, mace-off23-medium)")
+    p_ask.add_argument("--nequip", help="Mount compiled TorchScript or Python NequIP/Allegro backbone (.pth)")
     p_ask.add_argument("--device", default="cpu")
     p_ask.add_argument("--verify-o3", action="store_true", help="Run live O(3) rotation+reflection verification")
     p_ask.add_argument("--html", help="Write standalone interactive 3D HTML report to this path")
@@ -58,6 +67,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_traj.add_argument("--dt-fs", type=float, default=1.0, help="MD frame timestep in femtoseconds for timeline plots")
     p_traj.add_argument("--ckpt")
     p_traj.add_argument("--mace", help="Mount pretrained MACE backbone (e.g. mace-mp-0-small, mace-off23-medium)")
+    p_traj.add_argument("--nequip", help="Mount compiled TorchScript or Python NequIP/Allegro backbone (.pth)")
     p_traj.add_argument("--device", default="cpu")
     p_traj.add_argument("--verify-o3", action="store_true")
     p_traj.add_argument("--html")
@@ -110,6 +120,21 @@ def build_parser() -> argparse.ArgumentParser:
     p_hf.add_argument("--quad", help="Optional path to qm9_quad.pkl (PySCF l=2 quadrupole)")
     p_hf.add_argument("--anonymized", action="store_true", help="Omit repo/author identifiers for double-blind review")
 
+    # ylm run-md
+    p_md = sub.add_parser("run-md", help="Run live reactive MLIP MD (MACE / NequIP / analytical) with reaction detection")
+    p_md.add_argument("structure", help="Initial structure path (.xyz/.extxyz/.sdf/POSCAR/.cif) or SMILES")
+    p_md.add_argument("--steps", type=int, default=20, help="Number of Velocity-Verlet steps")
+    p_md.add_argument("--dt-fs", type=float, default=0.5, help="Timestep in femtoseconds")
+    p_md.add_argument("--temp", type=float, default=300.0, help="Langevin thermostat temperature (K)")
+    p_md.add_argument("--mace", help="Drive MD with MACE backbone (e.g. mace-mp-0-small, mace-off23-small)")
+    p_md.add_argument("--nequip", help="Drive MD with NequIP/Allegro backbone (.pth)")
+    p_md.add_argument("--ckpt", help="Optional YLM probe checkpoint for reactive-frame directional attribution")
+    p_md.add_argument("--device", default="cpu")
+    p_md.add_argument("--out-traj", help="Write multi-frame .extxyz trajectory with energies & forces")
+    p_md.add_argument("--json", help="Write detected reaction events & history JSON")
+    p_md.add_argument("--plot", help="Write SVG/PNG reaction timeline plot")
+    p_md.add_argument("--html", help="Write interactive 3D HTML trajectory report")
+
     return p
 
 
@@ -134,7 +159,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = build_parser().parse_args(argv)
 
     if args.command == "ask":
-        probe = _load_probe(args.ckpt, args.device, mace=args.mace)
+        probe = _load_probe(args.ckpt, args.device, mace=args.mace, nequip=args.nequip)
         res = probe.ask(args.structure, args.question, domain=args.domain, verify_o3=args.verify_o3)
         _emit_result(res, args.html, args.json)
         return 0
@@ -148,7 +173,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 0
 
     if args.command == "scan-traj":
-        probe = _load_probe(args.ckpt, args.device, mace=args.mace)
+        probe = _load_probe(args.ckpt, args.device, mace=args.mace, nequip=args.nequip)
         scan = scan_md_trajectory(args.trajectory, probe=probe, query=args.query,
                                   every=args.every, verify_o3=args.verify_o3)
         if args.plot:
@@ -229,6 +254,27 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             anonymized=args.anonymized,
         )
         print(json.dumps(summary, indent=2))
+        return 0
+
+    if args.command == "run-md":
+        provider = TorchMLIPForceProvider.from_spec(mace=args.mace, nequip=args.nequip, device=args.device)
+        probe = _load_probe(args.ckpt, args.device, mace=args.mace, nequip=args.nequip)
+        runner = MLIPTrajectoryRunner(
+            provider,
+            probe=probe,
+            dt_fs=args.dt_fs,
+            temperature_k=args.temp,
+            device=args.device,
+        )
+        md_res = runner.run(
+            args.structure,
+            steps=args.steps,
+            out_extxyz=args.out_traj,
+            out_events_json=args.json,
+            out_plot=args.plot,
+            out_html=args.html,
+        )
+        print(json.dumps(md_res.to_summary_dict(), indent=2))
         return 0
 
     return 1

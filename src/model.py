@@ -28,6 +28,7 @@ from e3nn import o3
 from src.encoder import Encoder
 from src.irreps_to_text import IrrepsToText, invariants
 from src.mace_backbone import MACEEncoder
+from src.nequip_backbone import NequIPEncoder
 from src.tensor_readout import TensorReadout
 
 
@@ -93,6 +94,8 @@ class YLM(nn.Module):
             self.encoder = hidden_irreps
         elif isinstance(hidden_irreps, str) and hidden_irreps.lower().startswith("mace"):
             self.encoder = MACEEncoder(backbone=hidden_irreps)
+        elif isinstance(hidden_irreps, str) and hidden_irreps.lower().startswith(("nequip", "allegro")):
+            self.encoder = NequIPEncoder(backbone=hidden_irreps)
         else:
             self.encoder = Encoder(hidden_irreps=hidden_irreps, n_layers=n_layers)
         self.task_embed = nn.Embedding(n_tasks, text_dim)             # only used in "taskid"
@@ -132,6 +135,34 @@ class YLM(nn.Module):
             mace_model=mace_model,
             freeze_mace=freeze_mace,
             include_mace_forces=include_mace_forces,
+            out_irreps=out_irreps,
+        )
+        return cls(text_dim=text_dim, hidden_irreps=enc, **ylm_kwargs)
+
+    @classmethod
+    def from_nequip(
+        cls,
+        text_dim: int,
+        backbone: str = "nequip:deployed.pth",
+        *,
+        nequip_model: nn.Module = None,
+        atomic_numbers=None,
+        r_max: float = None,
+        node_irreps: str = None,
+        freeze_nequip: bool = True,
+        include_nequip_forces: bool = True,
+        out_irreps: str = None,
+        **ylm_kwargs,
+    ) -> "YLM":
+        """Construct YLM mounted on a compiled TorchScript or Python NequIP / Allegro backbone."""
+        enc = NequIPEncoder(
+            backbone=backbone,
+            nequip_model=nequip_model,
+            atomic_numbers=atomic_numbers,
+            r_max=r_max,
+            node_irreps=node_irreps,
+            freeze_nequip=freeze_nequip,
+            include_nequip_forces=include_nequip_forces,
             out_irreps=out_irreps,
         )
         return cls(text_dim=text_dim, hidden_irreps=enc, **ylm_kwargs)
