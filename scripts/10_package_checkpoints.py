@@ -1,6 +1,6 @@
 """Bundle trained runs into small release checkpoints (state_dict + scale + metadata).
 
-  python scripts/10_package_checkpoints.py --runs runs_expanse --out checkpoints/v0
+  python scripts/10_package_checkpoints.py --runs runs_slurm --out checkpoints/v0
 """
 import argparse
 import json
@@ -15,7 +15,7 @@ NAMES = {  # packaged name -> run directory
 }
 
 p = argparse.ArgumentParser()
-p.add_argument("--runs", default="runs_expanse")
+p.add_argument("--runs", default="runs_slurm")
 p.add_argument("--out", default="checkpoints/v0")
 args = p.parse_args()
 os.makedirs(args.out, exist_ok=True)

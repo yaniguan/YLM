@@ -4,7 +4,7 @@ Output: results.md (and printed)
 
 Run:
   python scripts/07_make_table.py            # all runs in runs/
-  python scripts/07_make_table.py runs_expanse runs_mac   # several folders
+  python scripts/07_make_table.py runs_slurm runs_mac   # several folders
 """
 import glob
 import json
