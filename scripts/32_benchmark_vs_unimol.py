@@ -1,8 +1,7 @@
-"""Head-to-head Foundation Model benchmark: YLM-Universe vs Uni-Mol, GraphMVP/3D-InfoMax, and EquiLLM.
+"""Compare 3D models side by side: YLM-Universe vs Uni-Mol, GraphMVP/3D-InfoMax, and EquiLLM.
 
-Trains all four architectures under identical splits, optimizer settings, auxiliary pretraining
-losses (InfoNCE 3D-2D for GraphMVP; 3D coordinate denoising for Uni-Mol, EquiLLM, and YLM),
-and evaluates under K-rotation O(3) + reflection protocol on both `test` and `test_heldout`.
+Trains all four models on the same splits and optimizer settings, then tests them under
+random 3D rotations and mirror flips (`O(3)`) on both `test` and `test_heldout`.
 
 Examples:
   # Fast CPU smoke benchmark (~45s on CPU)
@@ -141,7 +140,7 @@ def _train_one_model(
 
 def _render_markdown(rows: list[dict], eval_rotations: int) -> str:
     lines = [
-        f"# Head-to-Head 3D Foundation Model Benchmark ($K={eval_rotations}$ Random $O(3)$ Rotations + Reflections)",
+        f"# 3D Model Comparison ($K={eval_rotations}$ Random $O(3)$ Rotations + Mirror Flips)",
         "",
         "## Table A: Invariant Scalar (`0e`) & Language-to-Atom Routing Performance",
         "",

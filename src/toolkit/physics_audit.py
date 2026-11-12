@@ -1,22 +1,22 @@
-"""Comprehensive Physical Law & O(3) Equivariance Compliance Audit Engine (`ylm audit-physics` & Studio UI).
+"""Check 8 basic physics rules on 3D molecules and crystals (`ylm audit-physics` and Studio UI).
 
-Audits 8 fundamental physical & symmetry laws in live PyTorch (`float32` or `float64`) and compares
-`YLMUniverseModel` (`0e + 0o + 1o + 2e`) + `YLMProbe` + conservative MLIP mechanics head-to-head
-against `UniMolStyle3DBaseline`, `GraphMVP3DInfoMaxBaseline`, and `EquiLLMMultiTaskBaseline`:
+Runs live PyTorch checks (`float64` or `float32`) and compares `YLMUniverseModel` against
+`UniMolStyle3DBaseline`, `GraphMVP3DInfoMaxBaseline`, and `EquiLLMMultiTaskBaseline`:
 
-  1. Spatial Translation Invariance (`r_i -> r_i + a`, homogeneity of 3D space)
-  2. Proper SO(3) Rotational Equivariance (`det(R) = +1`, Simultaneous `0e`, `0o`, `1o`, `0e+2e` Wigner laws)
-  3. Improper O(3) Reflection / Spatial Inversion & Chiral Enantiomer Anti-Symmetry (`det(Q) = -1`)
-  4. Bosonic / Atomic Index Permutation Symmetry (`P in S_N`: global invariance + per-atom covariance)
-  5. Rank-2 Response Tensor Transpose Symmetry & Trace-Traceless (`0e + 2e`) Irreducible Decomposition
-  6. Curie's Principle Point-Group Selection Rules (Planar mirror `sigma_h` & Inversion center `C_i` zeros)
-  7. Conservative Potential Mechanics: Newton's 3rd Law (`sum F_i = 0`), Zero Net Torque (`sum r_i x F_i = 0`),
-     Conservative Finite-Difference Gradient (`F_i = -dE/dr_i`), & Symmetric Force-Constant Hessian (`curl F = 0`)
-  8. 3D Bravais Lattice Periodic Boundary Condition (PBC) Shift & Co-Rotation Invariance
+  1. Move in space: shifting all atoms together does not change the answer.
+  2. Spin in 3D: plain numbers stay the same, and output arrows spin by the same angle.
+  3. Mirror flip: energy stays the same, arrows flip, and left/right handedness flips sign (`+` to `-`).
+  4. Swap atom row order: changing atom numbering in the file does not change the physics.
+  5. Balanced 3x3 matrix: response matrices equal their transpose (`T[i, j] == T[j, i]`).
+  6. Balanced shape cancels out: flat molecules have zero out-of-plane arrow and zero handedness;
+     molecules with a center of symmetry have zero total dipole.
+  7. Newton's laws & energy slope: internal forces add to zero, total torque is zero, and `F = -dE/dx`.
+  8. Crystal repeat box: shifting an atom by one full crystal box vector gives the exact same answer.
 """
 from __future__ import annotations
 
 import copy
+from functools import lru_cache
 import math
 from pathlib import Path
 from typing import Optional, Union
@@ -27,7 +27,6 @@ import torch
 from src.tensor_readout import rotate_matrix
 from src.toolkit.ingest import (
     ANGSTROM_TO_BOHR,
-    BOHR_TO_ANGSTROM,
     StructureFrame,
     covalent_radius,
     load_structure,
@@ -42,19 +41,20 @@ from src.universe_fm import YLMUniverseModel
 from e3nn import o3  # import after src.universe_fm registers PyTorch >= 2.6 safe_globals
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+_FEATURIZER = QuestionFeaturizer(mode="fast", dim=64)
+_FORCE_PROVIDER = AnalyticalReactiveForceProvider()
 
 
 def get_builtin_presets() -> dict[str, dict]:
-    """Return curated molecular & crystal presets spanning C2v, C2h, chiral (R)/(S), MD TS, drug, and 3D PBC."""
+    """Return built-in example molecules and crystals for physics checks and UI demos."""
     presets: dict[str, dict] = {}
 
-    # 1. Exact planar C2v water
     presets["water_c2v"] = {
         "id": "water_c2v",
-        "title": "Water H2O (Planar C2v — Mirror Plane Selection Rule)",
+        "title": "Water H2O (Flat molecule — zero out-of-plane arrow & zero handedness)",
         "domain": "general",
         "default_question": "What is the 3D molecular dipole moment vector?",
-        "symmetry_hint": "C2v (planar xy mirror: 0o chiral == 0, out-of-plane 1o == 0)",
+        "symmetry_hint": "Flat molecule in the xy plane: handedness = 0 and z-arrow = 0",
         "frame": StructureFrame(
             Z=[8, 1, 1],
             pos_bohr=np.array([[0.0, 0.0, 0.0], [0.9572, 0.0, 0.0], [-0.2399, 0.9273, 0.0]]) * ANGSTROM_TO_BOHR,
@@ -62,14 +62,13 @@ def get_builtin_presets() -> dict[str, dict]:
         ),
     }
 
-    # 2. Centrosymmetric C2h trans-1,2-difluoroethene (inversion center -> exact zero dipole & zero chirality)
     z_tr, c_tr, _ = _CHIRAL_FALLBACK_ANGSTROM["F/C=C/F"]
     presets["trans_difluoroethene_c2h"] = {
         "id": "trans_difluoroethene_c2h",
-        "title": "trans-1,2-Difluoroethene F/C=C/F (Centrosymmetric C2h — Dipole == 0)",
+        "title": "trans-1,2-Difluoroethene F/C=C/F (Opposite pulls cancel -> Dipole = 0)",
         "domain": "general",
         "default_question": "What is the 3D molecular dipole moment vector?",
-        "symmetry_hint": "C2h (inversion center -X = P*X => net 1o vector == 0 & 0o chiral == 0)",
+        "symmetry_hint": "Center of symmetry: equal opposite pulls cancel out, so total dipole = 0",
         "frame": StructureFrame(
             Z=z_tr,
             pos_bohr=np.asarray(c_tr, dtype=np.float64) * ANGSTROM_TO_BOHR,
@@ -78,14 +77,13 @@ def get_builtin_presets() -> dict[str, dict]:
         ),
     }
 
-    # 3. Planar C2v cis-1,2-difluoroethene (Ouroboros backslash SMILES)
     z_cis, c_cis, _ = _CHIRAL_FALLBACK_ANGSTROM[r"F/C=C\F"]
     presets["cis_difluoroethene_c2v"] = {
         "id": "cis_difluoroethene_c2v",
-        "title": r"cis-1,2-Difluoroethene F/C=C\F (Planar C2v — Non-zero Dipole, Zero Chirality)",
+        "title": r"cis-1,2-Difluoroethene F/C=C\F (Same-side pulls add up -> Dipole != 0)",
         "domain": "general",
         "default_question": "What is the 3D molecular dipole moment vector?",
-        "symmetry_hint": "C2v (in-plane dipole != 0, out-of-plane 1o == 0, 0o chiral == 0)",
+        "symmetry_hint": "Flat molecule with both F atoms on one side: in-plane dipole != 0, handedness = 0",
         "frame": StructureFrame(
             Z=z_cis,
             pos_bohr=np.asarray(c_cis, dtype=np.float64) * ANGSTROM_TO_BOHR,
@@ -94,14 +92,13 @@ def get_builtin_presets() -> dict[str, dict]:
         ),
     }
 
-    # 4 & 5. Chiral (R)-FEC and (S)-FEC enantiomer pair
     z_rfec, c_rfec, _ = _CHIRAL_FALLBACK_ANGSTROM["O=C1OC[C@H](F)O1"]
     presets["r_fec_chiral"] = {
         "id": "r_fec_chiral",
-        "title": "(R)-Fluoroethylene Carbonate O=C1OC[C@H](F)O1 (Chiral C1 — SEI Additive)",
+        "title": "(R)-Fluoroethylene Carbonate O=C1OC[C@H](F)O1 (Chiral battery additive)",
         "domain": "electrolyte",
-        "default_question": "What is the (R)/(S) chiral handedness pseudoscalar and force on fluorine?",
-        "symmetry_hint": "C1 chiral (+V tetrahedral stereocenter; flips 0o sign under reflection)",
+        "default_question": "What is the (R)/(S) chiral handedness sign and force on fluorine?",
+        "symmetry_hint": "3D chiral carbon: flips sign (+ to -) in a mirror",
         "frame": StructureFrame(
             Z=z_rfec,
             pos_bohr=(np.asarray(c_rfec, dtype=np.float64) - np.mean(c_rfec, axis=0)) * ANGSTROM_TO_BOHR,
@@ -109,13 +106,14 @@ def get_builtin_presets() -> dict[str, dict]:
             metadata={"smiles": "O=C1OC[C@H](F)O1"},
         ),
     }
+
     z_sfec, c_sfec, _ = _CHIRAL_FALLBACK_ANGSTROM["O=C1OC[C@@H](F)O1"]
     presets["s_fec_chiral"] = {
         "id": "s_fec_chiral",
-        "title": "(S)-Fluoroethylene Carbonate O=C1OC[C@@H](F)O1 (Mirror Enantiomer)",
+        "title": "(S)-Fluoroethylene Carbonate O=C1OC[C@@H](F)O1 (Mirror twin of (R)-FEC)",
         "domain": "electrolyte",
-        "default_question": "What is the (R)/(S) chiral handedness pseudoscalar and force on fluorine?",
-        "symmetry_hint": "C1 chiral (-V mirror enantiomer of (R)-FEC; exact opposite 0o sign)",
+        "default_question": "What is the (R)/(S) chiral handedness sign and force on fluorine?",
+        "symmetry_hint": "Mirror twin of (R)-FEC: gives the exact opposite handedness sign",
         "frame": StructureFrame(
             Z=z_sfec,
             pos_bohr=(np.asarray(c_sfec, dtype=np.float64) - np.mean(c_sfec, axis=0)) * ANGSTROM_TO_BOHR,
@@ -124,14 +122,13 @@ def get_builtin_presets() -> dict[str, dict]:
         ),
     }
 
-    # 6. Classic chiral tetrahedron F[C@H](Cl)Br
     z_bc, c_bc, _ = _CHIRAL_FALLBACK_ANGSTROM["F[C@H](Cl)Br"]
     presets["r_bcfm_chiral"] = {
         "id": "r_bcfm_chiral",
-        "title": "(R)-Bromochlorofluoromethane F[C@H](Cl)Br (Archetypal 4-Substituent Chiral Center)",
+        "title": "(R)-CHFCIBr F[C@H](Cl)Br (Carbon with 4 different groups — chiral)",
         "domain": "general",
         "default_question": "Predict the parity-odd 3D chirality sign and force on bromine.",
-        "symmetry_hint": "C1 chiral tetrahedron (Br > Cl > F > H)",
+        "symmetry_hint": "Carbon bonded to H, F, Cl, Br: non-superimposable on its mirror image",
         "frame": StructureFrame(
             Z=z_bc,
             pos_bohr=(np.asarray(c_bc, dtype=np.float64) - np.mean(c_bc, axis=0)) * ANGSTROM_TO_BOHR,
@@ -140,15 +137,14 @@ def get_builtin_presets() -> dict[str, dict]:
         ),
     }
 
-    # 7-9. Example files (Electrolyte, Reactive MD, Drug Pocket)
     li_path = REPO_ROOT / "examples" / "li_ec_shell.xyz"
     if li_path.exists():
         presets["li_ec_electrolyte"] = {
             "id": "li_ec_electrolyte",
-            "title": "Li+–EC Solvation Shell (Battery Electrolyte Pack)",
+            "title": "Li+ in EC Solvent Shell (Battery electrolyte)",
             "domain": "electrolyte",
             "default_question": "What is the net restoring force vector on the lithium ion?",
-            "symmetry_hint": "Ion-solvent coordination shell (solvation dipole & ion escape vector)",
+            "symmetry_hint": "Lithium ion surrounded by solvent molecules",
             "frame": load_structure(li_path),
         }
 
@@ -158,10 +154,10 @@ def get_builtin_presets() -> dict[str, dict]:
         mid_fr = traj[min(len(traj) // 2, len(traj) - 1)]
         presets["zundel_proton_ts"] = {
             "id": "zundel_proton_ts",
-            "title": "Proton-Transfer Transition Frame (Reactive MD Pack)",
+            "title": "Shared H+ Jumping Between Two Waters (Proton transfer)",
             "domain": "md",
             "default_question": "What is the force vector on the shared bridging hydrogen atom?",
-            "symmetry_hint": "Reactive proton-transfer saddle region (Force vs Motion alignment)",
+            "symmetry_hint": "Middle of a proton jump: compare force arrow vs. motion arrow",
             "frame": mid_fr,
         }
 
@@ -169,20 +165,19 @@ def get_builtin_presets() -> dict[str, dict]:
     if drug_path.exists():
         presets["indole_drug_pocket"] = {
             "id": "indole_drug_pocket",
-            "title": "Indole Pocket Complex (Drug SBDD Exit-Vector Pack)",
+            "title": "Indole in Protein Pocket (Drug binding & growth direction)",
             "domain": "drug",
             "default_question": "What is the local force / exit vector on the indole nitrogen?",
-            "symmetry_hint": "3D pharmacophore & ligand exit-vector steering",
+            "symmetry_hint": "Drug fragment inside a protein pocket",
             "frame": load_structure(drug_path),
         }
 
-    # 10. 3D Triclinic Periodic Crystal (LiFePO4 motif)
     presets["lifepo4_pbc_crystal"] = {
         "id": "lifepo4_pbc_crystal",
-        "title": "LiFePO4 Unit Motif (3D Periodic Boundary Condition Crystal)",
+        "title": "LiFePO4 Crystal Cell (3D repeating battery cathode)",
         "domain": "electrolyte",
         "default_question": "What is the force vector on the coordinated Li+ ion in the crystal cell?",
-        "symmetry_hint": "3D Bravais lattice PBC=[T, T, T] (invariant under integer lattice shifts)",
+        "symmetry_hint": "3D repeating crystal box: shifting an atom by one full box leaves answers unchanged",
         "frame": StructureFrame(
             Z=[3, 26, 15, 8, 8, 8],
             pos_bohr=np.array([
@@ -211,86 +206,63 @@ def resolve_preset_or_structure(source: str) -> tuple[StructureFrame, dict]:
         "title": fr.label or "Custom Structure",
         "domain": "general",
         "default_question": "What is the 3D molecular dipole moment vector?",
-        "symmetry_hint": "Custom user-supplied geometry",
+        "symmetry_hint": "User-supplied 3D structure",
     }
 
 
-class _AuditModelBundle:
-    """Cached deterministic multi-rank models (`float32` & `float64`) for instant interactive UI auditing."""
+@lru_cache(maxsize=2)
+def _load_audit_models(precision: str = "float64") -> dict[str, torch.nn.Module]:
+    """Build and cache fixed-seed models for instant side-by-side physics checks."""
+    from src.fm_baselines import (
+        EquiLLMMultiTaskBaseline,
+        GraphMVP3DInfoMaxBaseline,
+        UniMolStyle3DBaseline,
+    )
 
-    def __init__(self):
-        self.featurizer = QuestionFeaturizer(mode="fast", dim=64)
-        self._cache: dict[str, dict[str, torch.nn.Module]] = {}
-        self.force_provider = AnalyticalReactiveForceProvider()
+    dtype = torch.float64 if precision == "float64" else torch.float32
+    with torch.random.fork_rng():
+        torch.manual_seed(2026)
+        ylm = YLMUniverseModel(
+            text_dim=64,
+            backbone="e3nn",
+            hidden_irreps="24x0e + 4x0o + 16x1o + 4x1e + 8x2e",
+            cross_irreps="16x0e + 16x1o + 4x1e + 8x2e",
+            n_layers=3,
+            n_cross_layers=2,
+            option="C",
+            c_tp_mode="channelwise",
+            d_text=64,
+        ).to(dtype=dtype).eval()
 
-    def get_models(self, precision: str = "float64") -> dict[str, torch.nn.Module]:
-        from src.fm_baselines import (
-            EquiLLMMultiTaskBaseline,
-            GraphMVP3DInfoMaxBaseline,
-            UniMolStyle3DBaseline,
-        )
+        torch.manual_seed(2026)
+        unimol = UniMolStyle3DBaseline(text_dim=64, d_model=48, n_layers=2, n_heads=4).to(dtype=dtype).eval()
 
-        dtype = torch.float64 if precision == "float64" else torch.float32
-        key = "f64" if dtype == torch.float64 else "f32"
-        if key in self._cache:
-            return self._cache[key]
+        torch.manual_seed(2026)
+        graphmvp = GraphMVP3DInfoMaxBaseline(text_dim=64, d_model=48, n_layers=2).to(dtype=dtype).eval()
 
-        with torch.random.fork_rng():
-            torch.manual_seed(2026)
-            ylm = YLMUniverseModel(
-                text_dim=64,
-                backbone="e3nn",
-                hidden_irreps="24x0e + 4x0o + 16x1o + 4x1e + 8x2e",
-                cross_irreps="16x0e + 16x1o + 4x1e + 8x2e",
-                n_layers=3,
-                n_cross_layers=2,
-                option="C",
-                c_tp_mode="channelwise",
-                d_text=64,
-            ).to(dtype=dtype).eval()
+        torch.manual_seed(2026)
+        equillm = EquiLLMMultiTaskBaseline(
+            text_dim=64,
+            hidden_irreps="24x0e + 4x0o + 16x1o + 4x1e + 8x2e",
+            n_layers=3,
+            d_model=48,
+            n_vec=16,
+        ).to(dtype=dtype).eval()
 
-            torch.manual_seed(2026)
-            unimol = UniMolStyle3DBaseline(text_dim=64, d_model=48, n_layers=2, n_heads=4).to(dtype=dtype).eval()
-
-            torch.manual_seed(2026)
-            graphmvp = GraphMVP3DInfoMaxBaseline(text_dim=64, d_model=48, n_layers=2).to(dtype=dtype).eval()
-
-            torch.manual_seed(2026)
-            equillm = EquiLLMMultiTaskBaseline(
-                text_dim=64,
-                hidden_irreps="24x0e + 4x0o + 16x1o + 4x1e + 8x2e",
-                n_layers=3,
-                d_model=48,
-                n_vec=16,
-            ).to(dtype=dtype).eval()
-
-        bundle = {"ylm": ylm, "unimol": unimol, "graphmvp": graphmvp, "equillm": equillm}
-        self._cache[key] = bundle
-        return bundle
-
-
-_AUDIT_BUNDLE: Optional[_AuditModelBundle] = None
-
-
-def _get_bundle() -> _AuditModelBundle:
-    global _AUDIT_BUNDLE
-    if _AUDIT_BUNDLE is None:
-        _AUDIT_BUNDLE = _AuditModelBundle()
-    return _AUDIT_BUNDLE
+    return {"ylm": ylm, "unimol": unimol, "graphmvp": graphmvp, "equillm": equillm}
 
 
 def _frame_to_tensors(
     frame: StructureFrame,
     question: str,
-    featurizer: QuestionFeaturizer,
     dtype: torch.dtype,
 ) -> dict[str, Optional[torch.Tensor]]:
     Z = torch.as_tensor(frame.Z, dtype=torch.long).unsqueeze(0)
     pos = torch.as_tensor(frame.pos_bohr, dtype=dtype).unsqueeze(0)
     atom_mask = torch.ones_like(Z, dtype=torch.bool)
-    t_raw = featurizer.encode(question).to(dtype=dtype).unsqueeze(0)
-    text_mask = torch.ones((1, t_raw.shape[1]), dtype=torch.bool)
-    lot_id = torch.tensor([1], dtype=torch.long)  # wb97m
+    text = _FEATURIZER.encode(question).to(dtype=dtype).unsqueeze(0)
+    text_mask = torch.ones((1, text.shape[1]), dtype=torch.bool)
+    lot_id = torch.tensor([1], dtype=torch.long)
     cell = None
     pbc = None
     if frame.cell_bohr is not None and (frame.pbc is None or np.any(frame.pbc)):
@@ -301,7 +273,7 @@ def _frame_to_tensors(
         "Z": Z,
         "pos": pos,
         "atom_mask": atom_mask,
-        "text": t_raw,
+        "text": text,
         "text_mask": text_mask,
         "lot_id": lot_id,
         "cell": cell,
@@ -310,7 +282,7 @@ def _frame_to_tensors(
 
 
 def _detect_point_symmetry(frame: StructureFrame) -> dict:
-    """Detect exact mirror plane (`sigma_h`) and/or inversion center (`C_i`) in 3D coordinates."""
+    """Check if all atoms lie on a flat plane or match opposite pairs across the center."""
     pos = frame.pos_bohr - frame.pos_bohr.mean(axis=0, keepdims=True)
     n = frame.n_atoms
     cov = (pos.T @ pos) / max(n, 1)
@@ -318,15 +290,11 @@ def _detect_point_symmetry(frame: StructureFrame) -> dict:
     is_planar = bool(eigvals[0] < 1e-8)
     plane_normal = eigvecs[:, 0].astype(np.float64) if is_planar else None
 
-    # Check inversion center: for every i, exists j with Z[j] == Z[i] and ||-pos[i] - pos[j]|| < 1e-4 bohr
-    has_inversion = True
-    if frame.cell_bohr is not None:
-        has_inversion = False
-    else:
+    has_inversion = frame.cell_bohr is None
+    if has_inversion:
         for i in range(n):
             dists = np.linalg.norm((-pos[i])[None, :] - pos, axis=-1)
-            matches = [j for j in range(n) if int(frame.Z[j]) == int(frame.Z[i]) and dists[j] < 1e-4]
-            if not matches:
+            if not any(int(frame.Z[j]) == int(frame.Z[i]) and dists[j] < 1e-4 for j in range(n)):
                 has_inversion = False
                 break
 
@@ -339,18 +307,29 @@ def _detect_point_symmetry(frame: StructureFrame) -> dict:
 
 
 def euler_and_reflection_matrix(rx_deg: float, ry_deg: float, rz_deg: float, reflect: bool = False) -> np.ndarray:
-    """Construct exact O(3) orthogonal matrix `Q` (`det=+1` proper rotation or `det=-1` roto-reflection)."""
+    """Build a 3x3 rotation matrix from X/Y/Z angles (in degrees), with optional mirror flip."""
     ax, ay, az = math.radians(rx_deg), math.radians(ry_deg), math.radians(rz_deg)
     cx, sx = math.cos(ax), math.sin(ax)
     cy, sy = math.cos(ay), math.sin(ay)
     cz, sz = math.cos(az), math.sin(az)
-    Rx = np.array([[1.0, 0.0, 0.0], [0.0, cx, -sx], [0.0, sx, cx]], dtype=np.float64)
-    Ry = np.array([[cy, 0.0, sy], [0.0, 1.0, 0.0], [-sy, 0.0, cy]], dtype=np.float64)
-    Rz = np.array([[cz, -sz, 0.0], [sz, cz, 0.0], [0.0, 0.0, 1.0]], dtype=np.float64)
-    Q = Rz @ Ry @ Rx
-    if reflect:
-        Q = -Q  # spatial inversion P * R (det = -1)
-    return Q
+    rx = np.array([[1.0, 0.0, 0.0], [0.0, cx, -sx], [0.0, sx, cx]], dtype=np.float64)
+    ry = np.array([[cy, 0.0, sy], [0.0, 1.0, 0.0], [-sy, 0.0, cy]], dtype=np.float64)
+    rz = np.array([[cz, -sz, 0.0], [sz, cz, 0.0], [0.0, 0.0, 1.0]], dtype=np.float64)
+    q = rz @ ry @ rx
+    return -q if reflect else q
+
+
+def _make_arrow(start_xyz: np.ndarray, vec: np.ndarray, name: str, color: str, length: float = 1.85) -> dict:
+    norm = float(np.linalg.norm(vec))
+    direction = (vec / norm) if norm > 1e-10 else np.zeros(3)
+    end_xyz = start_xyz + direction * length
+    return {
+        "name": name,
+        "vec": [round(float(c), 6) for c in vec.tolist()],
+        "start": [round(float(c), 5) for c in start_xyz.tolist()],
+        "end": [round(float(c), 5) for c in end_xyz.tolist()],
+        "color": color,
+    }
 
 
 def _serialize_geometry_scene(
@@ -401,37 +380,35 @@ def evaluate_pose_sandbox(
     permute_atoms: bool = False,
     precision: str = "float64",
 ) -> dict:
-    """Interactive O(3) + translation + permutation pose sandbox comparing YLM vs Uni-Mol & EquiLLM live."""
+    """Spin, mirror, move, or reorder a molecule and compare YLM against baselines."""
     if isinstance(frame_or_source, StructureFrame):
         frame = copy.deepcopy(frame_or_source)
     else:
         frame, _ = resolve_preset_or_structure(str(frame_or_source))
 
     dtype = torch.float64 if precision == "float64" else torch.float32
-    bundle = _get_bundle()
-    models = bundle.get_models(precision=precision)
+    models = _load_audit_models(precision)
 
-    Q_np = euler_and_reflection_matrix(rx_deg, ry_deg, rz_deg, reflect=reflect)
-    Q = torch.as_tensor(Q_np, dtype=dtype)
-    det_q = float(np.linalg.det(Q_np))
+    q_np = euler_and_reflection_matrix(rx_deg, ry_deg, rz_deg, reflect=reflect)
+    q_mat = torch.as_tensor(q_np, dtype=dtype)
+    det_q = float(np.linalg.det(q_np))
     shift_bohr = np.asarray(translate_ang, dtype=np.float64) * ANGSTROM_TO_BOHR
 
     n = frame.n_atoms
     perm = np.arange(n, dtype=np.int64)
     if permute_atoms and n > 1:
-        rng = np.random.default_rng(137)
-        perm = rng.permutation(n)
+        perm = np.random.default_rng(137).permutation(n)
 
     frame_t = StructureFrame(
         Z=frame.Z[perm],
-        pos_bohr=(frame.pos_bohr[perm] @ Q_np.T) + shift_bohr[None, :],
-        cell_bohr=None if frame.cell_bohr is None else (frame.cell_bohr @ Q_np.T),
+        pos_bohr=(frame.pos_bohr[perm] @ q_np.T) + shift_bohr[None, :],
+        cell_bohr=None if frame.cell_bohr is None else (frame.cell_bohr @ q_np.T),
         pbc=None if frame.pbc is None else frame.pbc.copy(),
         label=f"{frame.label}_transformed",
     )
 
-    inp0 = _frame_to_tensors(frame, question, bundle.featurizer, dtype)
-    inp1 = _frame_to_tensors(frame_t, question, bundle.featurizer, dtype)
+    inp0 = _frame_to_tensors(frame, question, dtype)
+    inp1 = _frame_to_tensors(frame_t, question, dtype)
 
     comparisons: dict[str, dict] = {}
     for name, mdl in models.items():
@@ -454,7 +431,7 @@ def evaluate_pose_sandbox(
 
         v0 = out0["vector"][0]
         v1 = out1["vector"][0]
-        v_expected = Q @ v0
+        v_expected = q_mat @ v0
         v_rel_err = float((v1 - v_expected).norm().item() / max(float(v0.norm().item()), 1e-2))
         v_cos = float(
             torch.dot(v1, v_expected).item()
@@ -463,7 +440,7 @@ def evaluate_pose_sandbox(
 
         t0 = out0["tensor"][0]
         t1 = out1["tensor"][0]
-        t_expected = rotate_matrix(out0["tensor"], Q)[0]
+        t_expected = rotate_matrix(out0["tensor"], q_mat)[0]
         t_rel_err = float((t1 - t_expected).norm().item() / max(float(t0.norm().item()), 1e-2))
 
         attn0_perm = out0["attn"][0].cpu().numpy()[perm]
@@ -496,46 +473,24 @@ def evaluate_pose_sandbox(
             "attn_orig": [float(x) for x in out0["attn"][0].cpu().tolist()],
         }
 
-    # Build 3D scene for transformed pose showing YLM actual vs expected vs Uni-Mol actual arrows
-    com_t = frame_t.pos_angstrom.mean(axis=0)
+    orig_center = frame.pos_angstrom.mean(axis=0)
+    trans_center = frame_t.pos_angstrom.mean(axis=0)
+    ylm_v0 = np.asarray(comparisons["ylm"]["vector_1o"]["orig"], dtype=np.float64)
     ylm_v_act = np.asarray(comparisons["ylm"]["vector_1o"]["transformed"], dtype=np.float64)
     ylm_v_exp = np.asarray(comparisons["ylm"]["vector_1o"]["expected"], dtype=np.float64)
     uni_v_act = np.asarray(comparisons["unimol"]["vector_1o"]["transformed"], dtype=np.float64)
 
-    def _mk_arrow(label_str: str, vec: np.ndarray, color: str, scale_len: float = 1.85) -> dict:
-        nrm = float(np.linalg.norm(vec))
-        unit_v = (vec / nrm) if nrm > 1e-10 else np.zeros(3)
-        end = com_t + unit_v * scale_len
-        return {
-            "name": label_str,
-            "vec": [round(float(c), 6) for c in vec.tolist()],
-            "start": [round(float(c), 5) for c in com_t.tolist()],
-            "end": [round(float(c), 5) for c in end.tolist()],
-            "color": color,
-        }
-
-    scene_orig_com = frame.pos_angstrom.mean(axis=0)
-    ylm_v0 = np.asarray(comparisons["ylm"]["vector_1o"]["orig"], dtype=np.float64)
-    nrm0 = float(np.linalg.norm(ylm_v0))
-    end0 = scene_orig_com + ((ylm_v0 / nrm0) * 1.85 if nrm0 > 1e-10 else np.zeros(3))
     scene_orig = _serialize_geometry_scene(
         frame,
-        arrows=[{
-            "name": "YLM f(X) [Original Frame]",
-            "vec": [round(float(c), 6) for c in ylm_v0.tolist()],
-            "start": [round(float(c), 5) for c in scene_orig_com.tolist()],
-            "end": [round(float(c), 5) for c in end0.tolist()],
-            "color": "#38bdf8",
-        }],
+        arrows=[_make_arrow(orig_center, ylm_v0, "YLM Arrow (Before)", "#38bdf8", 1.85)],
         weights=comparisons["ylm"]["attn_orig"],
     )
-
     scene_transformed = _serialize_geometry_scene(
         frame_t,
         arrows=[
-            _mk_arrow("Expected Q·f(X) [Exact Physics]", ylm_v_exp, "#22c55e", 1.95),
-            _mk_arrow("YLM f(X·Q^T) [Actual]", ylm_v_act, "#38bdf8", 1.75),
-            _mk_arrow("Uni-Mol f(X·Q^T) [Broken 0e]", uni_v_act, "#ef4444", 1.55),
+            _make_arrow(trans_center, ylm_v_exp, "Exact Physics Target", "#22c55e", 1.95),
+            _make_arrow(trans_center, ylm_v_act, "YLM Arrow (After)", "#38bdf8", 1.75),
+            _make_arrow(trans_center, uni_v_act, "Uni-Mol Arrow (Broken)", "#ef4444", 1.55),
         ],
         weights=comparisons["ylm"]["attn_transformed"],
     )
@@ -543,8 +498,8 @@ def evaluate_pose_sandbox(
     return {
         "precision": precision,
         "det_Q": round(det_q, 4),
-        "operation": "Improper Roto-Reflection O(3) (det = -1)" if reflect else "Proper Rotation SO(3) (det = +1)",
-        "matrix_Q": [[round(float(x), 6) for x in row] for row in Q_np.tolist()],
+        "operation": "3D Spin + Mirror Flip (det = -1)" if reflect else "3D Rotation Only (det = +1)",
+        "matrix_Q": [[round(float(x), 6) for x in row] for row in q_np.tolist()],
         "permutation_applied": perm.tolist(),
         "translation_angstrom": list(translate_ang),
         "scene_orig": scene_orig,
@@ -561,7 +516,7 @@ def run_physics_compliance_audit(
     n_rotations: int = 8,
     probe: Optional[YLMProbe] = None,
 ) -> dict:
-    """Execute the 8-Law Physical & Symmetry Compliance Certification Suite in live PyTorch."""
+    """Run all 8 physics checks in live PyTorch and return a plain-English report."""
     if isinstance(frame_or_source, StructureFrame):
         frame = copy.deepcopy(frame_or_source)
         preset_meta = {"id": "custom", "title": frame.label}
@@ -570,14 +525,13 @@ def run_physics_compliance_audit(
 
     dtype = torch.float64 if precision == "float64" else torch.float32
     tol = 1e-8 if dtype == torch.float64 else 5e-5
-    bundle = _get_bundle()
-    models = bundle.get_models(precision=precision)
+    models = _load_audit_models(precision)
     ylm = models["ylm"]
     unimol = models["unimol"]
     graphmvp = models["graphmvp"]
     equillm = models["equillm"]
 
-    inp0 = _frame_to_tensors(frame, question, bundle.featurizer, dtype)
+    inp0 = _frame_to_tensors(frame, question, dtype)
     laws: list[dict] = []
 
     with torch.no_grad():
@@ -602,9 +556,7 @@ def run_physics_compliance_audit(
             lot_id=inp0["lot_id"], cell=inp0["cell"], pbc=inp0["pbc"],
         )
 
-        # ------------------------------------------------------------------
-        # Law 1: Spatial Translation Invariance r_i -> r_i + a
-        # ------------------------------------------------------------------
+        # Rule 1: Move in space (Translation)
         shift = torch.tensor([[[17.3, -11.9, 24.6]]], dtype=dtype)
         out_tr = ylm(
             inp0["Z"], inp0["pos"] + shift, inp0["atom_mask"],
@@ -620,27 +572,28 @@ def run_physics_compliance_audit(
         )
         laws.append({
             "law_id": "L1_translation",
-            "name": "1. Spatial Translation Invariance T(a)",
-            "formula": "f(X + 1·a^T) == f(X)  for all ranks (0e, 0o, 1o, 2e)",
+            "name": "1. Move in Space (Translation)",
+            "formula": "f(atoms + shift) == f(atoms)",
             "passed": tr_err < tol,
             "ylm_error": tr_err,
             "tolerance": tol,
-            "detail": f"Shifted all {frame.n_atoms} atoms by (+17.3, -11.9, +24.6) bohr; max multi-rank drift = {tr_err:.2e}.",
+            "detail": (
+                f"Moved all {frame.n_atoms} atoms by (+17.3, -11.9, +24.6) bohr. "
+                f"Empty space is the same everywhere, so answers stayed identical (max diff = {tr_err:.2e})."
+            ),
         })
 
-        # ------------------------------------------------------------------
-        # Law 2: Proper SO(3) Rotational Equivariance (det(R) = +1)
-        # ------------------------------------------------------------------
+        # Rule 2: Spin in 3D (Rotation)
         so3_sc, so3_ch, so3_vec, so3_ten = [], [], [], []
         uni_so3_vec, gmvp_so3_vec = [], []
         with torch.random.fork_rng():
             torch.manual_seed(314)
             for _ in range(max(1, n_rotations)):
-                R = o3.rand_matrix(dtype=dtype)
-                if torch.linalg.det(R) < 0:
-                    R = -R
-                pos_r = inp0["pos"] @ R.T
-                cell_r = None if inp0["cell"] is None else (inp0["cell"] @ R.T)
+                rot = o3.rand_matrix(dtype=dtype)
+                if torch.linalg.det(rot) < 0:
+                    rot = -rot
+                pos_r = inp0["pos"] @ rot.T
+                cell_r = None if inp0["cell"] is None else (inp0["cell"] @ rot.T)
                 o_r = ylm(
                     inp0["Z"], pos_r, inp0["atom_mask"],
                     inp0["text"], inp0["text_mask"],
@@ -649,9 +602,9 @@ def run_physics_compliance_audit(
                 so3_sc.append(float((o_r["scalar"] - out0["scalar"]).abs().max().item()))
                 so3_ch.append(float((o_r["chiral"] - out0["chiral"]).abs().max().item()))
                 v_den = max(float(out0["vector"].norm().item()), 1e-2)
-                so3_vec.append(float((o_r["vector"] - (out0["vector"] @ R.T)).norm().item()) / v_den)
+                so3_vec.append(float((o_r["vector"] - (out0["vector"] @ rot.T)).norm().item()) / v_den)
                 t_den = max(float(out0["tensor"].norm().item()), 1e-2)
-                so3_ten.append(float((o_r["tensor"] - rotate_matrix(out0["tensor"], R)).norm().item()) / t_den)
+                so3_ten.append(float((o_r["tensor"] - rotate_matrix(out0["tensor"], rot)).norm().item()) / t_den)
 
                 uo_r = unimol(
                     inp0["Z"], pos_r, inp0["atom_mask"],
@@ -659,7 +612,7 @@ def run_physics_compliance_audit(
                     lot_id=inp0["lot_id"], cell=cell_r, pbc=inp0["pbc"],
                 )
                 uv_den = max(float(u_out0["vector"].norm().item()), 1e-12)
-                uni_so3_vec.append(float((uo_r["vector"] - (u_out0["vector"] @ R.T)).norm().item()) / uv_den)
+                uni_so3_vec.append(float((uo_r["vector"] - (u_out0["vector"] @ rot.T)).norm().item()) / uv_den)
 
                 go_r = graphmvp(
                     inp0["Z"], pos_r, inp0["atom_mask"],
@@ -667,51 +620,48 @@ def run_physics_compliance_audit(
                     lot_id=inp0["lot_id"], cell=cell_r, pbc=inp0["pbc"],
                 )
                 gv_den = max(float(g_out0["vector"].norm().item()), 1e-12)
-                gmvp_so3_vec.append(float((go_r["vector"] - (g_out0["vector"] @ R.T)).norm().item()) / gv_den)
+                gmvp_so3_vec.append(float((go_r["vector"] - (g_out0["vector"] @ rot.T)).norm().item()) / gv_den)
 
         max_so3 = max(max(so3_sc), max(so3_ch), max(so3_vec), max(so3_ten))
         laws.append({
             "law_id": "L2_so3_rotation",
-            "name": f"2. Proper SO(3) Rotational Equivariance (K={n_rotations}, det=+1)",
-            "formula": "0e: E'=E | 0o: χ'=χ | 1o: v'=R·v | 0e+2e: T'=R·T·R^T",
+            "name": f"2. Spin in 3D ({n_rotations} Random Rotations)",
+            "formula": "energy' = energy | arrow' = R * arrow | matrix' = R * matrix * R^T",
             "passed": max_so3 < tol,
             "ylm_error": max_so3,
             "baseline_errors": {
-                "Uni-Mol (1o vec)": float(np.mean(uni_so3_vec)),
-                "GraphMVP (1o vec)": float(np.mean(gmvp_so3_vec)),
+                "Uni-Mol arrow error": float(np.mean(uni_so3_vec)),
+                "GraphMVP arrow error": float(np.mean(gmvp_so3_vec)),
             },
             "tolerance": tol,
             "detail": (
-                f"YLM max err: 0e={max(so3_sc):.2e}, 0o={max(so3_ch):.2e}, 1o={max(so3_vec):.2e}, 2e={max(so3_ten):.2e} "
-                f"(vs Uni-Mol 1o err={np.mean(uni_so3_vec):.2e}, GraphMVP={np.mean(gmvp_so3_vec):.2e})."
+                f"Spun the molecule in 3D: YLM arrows turned by the exact same angle (max error = {max_so3:.2e}). "
+                f"Distance-only Uni-Mol failed to rotate its arrow (error = {np.mean(uni_so3_vec):.2e})."
             ),
         })
 
-        # ------------------------------------------------------------------
-        # Law 3: Improper O(3) Reflection / Inversion & Enantiomer Parity (det=-1)
-        # ------------------------------------------------------------------
+        # Rule 3: Mirror Flip (Left Hand vs. Right Hand)
         imp_sc, imp_ch, imp_vec, imp_ten = [], [], [], []
         with torch.random.fork_rng():
             torch.manual_seed(2718)
             for k in range(max(1, n_rotations)):
-                Q = -torch.eye(3, dtype=dtype) if k == 0 else -o3.rand_matrix(dtype=dtype)
-                if torch.linalg.det(Q) > 0:
-                    Q = -Q
-                pos_q = inp0["pos"] @ Q.T
-                cell_q = None if inp0["cell"] is None else (inp0["cell"] @ Q.T)
+                q_mat = -torch.eye(3, dtype=dtype) if k == 0 else -o3.rand_matrix(dtype=dtype)
+                if torch.linalg.det(q_mat) > 0:
+                    q_mat = -q_mat
+                pos_q = inp0["pos"] @ q_mat.T
+                cell_q = None if inp0["cell"] is None else (inp0["cell"] @ q_mat.T)
                 o_q = ylm(
                     inp0["Z"], pos_q, inp0["atom_mask"],
                     inp0["text"], inp0["text_mask"],
                     lot_id=inp0["lot_id"], cell=cell_q, pbc=inp0["pbc"],
                 )
                 imp_sc.append(float((o_q["scalar"] - out0["scalar"]).abs().max().item()))
-                imp_ch.append(float((o_q["chiral"] + out0["chiral"]).abs().max().item()))  # MUST flip sign!
+                imp_ch.append(float((o_q["chiral"] + out0["chiral"]).abs().max().item()))
                 v_den = max(float(out0["vector"].norm().item()), 1e-2)
-                imp_vec.append(float((o_q["vector"] - (out0["vector"] @ Q.T)).norm().item()) / v_den)
+                imp_vec.append(float((o_q["vector"] - (out0["vector"] @ q_mat.T)).norm().item()) / v_den)
                 t_den = max(float(out0["tensor"].norm().item()), 1e-2)
-                imp_ten.append(float((o_q["tensor"] - rotate_matrix(out0["tensor"], Q)).norm().item()) / t_den)
+                imp_ten.append(float((o_q["tensor"] - rotate_matrix(out0["tensor"], q_mat)).norm().item()) / t_den)
 
-        # Also check baseline enantiomer blindness under X -> -X on a chiral reference if current is achiral
         pos_inv = -inp0["pos"]
         cell_inv = None if inp0["cell"] is None else -inp0["cell"]
         u_inv = unimol(
@@ -728,31 +678,27 @@ def run_physics_compliance_audit(
         max_imp = max(max(imp_sc), max(imp_ch), max(imp_vec), max(imp_ten))
         laws.append({
             "law_id": "L3_improper_parity",
-            "name": "3. Improper O(3) Reflection & Chiral Parity Law (det=-1)",
-            "formula": "0e(+): E(-X)=+E(X) | 0o(-): χ(-X)=-χ(X) | 1o(-): v(-X)=-v(X) | 2e(+): T(-X)=+T(X)",
+            "name": "3. Mirror Flip (Left Hand vs. Right Hand)",
+            "formula": "energy(-X) = +energy(X) | hand(-X) = -hand(X) | arrow(-X) = -arrow(X)",
             "passed": max_imp < tol,
             "ylm_error": max_imp,
             "baseline_errors": {
-                "Uni-Mol (0o parity violation |χ(-X)+χ(X)|)": uni_parity_err,
-                "EquiLLM (0o parity violation |χ(-X)+χ(X)|)": equi_parity_err,
+                "Uni-Mol mirror error |h(-X) + h(X)|": uni_parity_err,
+                "EquiLLM mirror error |h(-X) + h(X)|": equi_parity_err,
             },
             "tolerance": tol,
             "detail": (
-                f"YLM parity residual={max_imp:.2e} (χ(X)={float(out0['chiral'].item()):+.4e} -> "
-                f"χ(-X)={-float(out0['chiral'].item()):+.4e}); "
-                f"Uni-Mol violates 0o anti-symmetry (|χ(-X)+χ(X)|={uni_parity_err:.2e})."
+                f"Flipped the molecule in a mirror: YLM handedness flipped sign cleanly "
+                f"({float(out0['chiral'].item()):+.3e} -> {-float(out0['chiral'].item()):+.3e}, error = {max_imp:.2e}). "
+                f"Uni-Mol gave the same number to both mirror twins (error = {uni_parity_err:.2e})."
             ),
         })
 
-        # ------------------------------------------------------------------
-        # Law 4: Bosonic / Atomic Index Permutation Symmetry (P in S_N)
-        # ------------------------------------------------------------------
+        # Rule 4: Swap Atom Row Order
         n_at = frame.n_atoms
         perm = torch.randperm(n_at) if n_at > 1 else torch.arange(n_at)
-        Z_p = inp0["Z"][:, perm]
-        pos_p = inp0["pos"][:, perm, :]
         out_p = ylm(
-            Z_p, pos_p, inp0["atom_mask"],
+            inp0["Z"][:, perm], inp0["pos"][:, perm, :], inp0["atom_mask"],
             inp0["text"], inp0["text_mask"],
             lot_id=inp0["lot_id"], cell=inp0["cell"], pbc=inp0["pbc"],
         )
@@ -766,107 +712,102 @@ def run_physics_compliance_audit(
         )
         laws.append({
             "law_id": "L4_permutation",
-            "name": "4. Atomic Index Permutation Equivariance (S_N)",
-            "formula": "Global f(P·Z, P·X) == f(Z, X);  Per-atom α(P·Z, P·X) == P·α(Z, X)",
+            "name": "4. Swap Atom Row Order",
+            "formula": "f(shuffled atoms) == f(atoms), and per-atom weights follow each atom",
             "passed": perm_err < tol,
             "ylm_error": perm_err,
             "tolerance": tol,
-            "detail": f"Permuted {n_at} atom indices ({perm.tolist()[:8]}); global + per-atom routing/denoise residual = {perm_err:.2e}.",
+            "detail": (
+                f"Shuffled the {n_at} atom rows ({perm.tolist()[:8]}): molecule answers stayed identical "
+                f"and atom weights followed each atom (max diff = {perm_err:.2e})."
+            ),
         })
 
-        # ------------------------------------------------------------------
-        # Law 5: Rank-2 Tensor Symmetry & Trace-Traceless (0e + 2e) Decomposition
-        # ------------------------------------------------------------------
-        T_mat = out0["tensor"][0]
-        asym_err = float((T_mat - T_mat.T).norm().item())
-        iso_part = (torch.diagonal(T_mat).sum() / 3.0) * torch.eye(3, dtype=dtype)
-        traceless_2e = T_mat - iso_part
-        trace_res = float(torch.diagonal(traceless_2e).sum().abs().item())
+        # Rule 5: Balanced 3x3 Response Matrix
+        t_mat = out0["tensor"][0]
+        asym_err = float((t_mat - t_mat.T).norm().item())
+        iso_part = (torch.diagonal(t_mat).sum() / 3.0) * torch.eye(3, dtype=dtype)
+        traceless_part = t_mat - iso_part
+        trace_res = float(torch.diagonal(traceless_part).sum().abs().item())
         ten_sym_err = max(asym_err, trace_res)
         laws.append({
             "law_id": "L5_tensor_symmetry",
-            "name": "5. Rank-2 Response Tensor Symmetry (T == T^T, 0e ⊕ 2e)",
-            "formula": "||T - T^T||_F == 0  and  Tr(T_2e) == 0  (6 symmetric DOFs, zero 1e curl)",
+            "name": "5. Balanced 3x3 Response Matrix",
+            "formula": "matrix[i, j] == matrix[j, i], split into average size + 3D stretch",
             "passed": ten_sym_err < tol,
             "ylm_error": ten_sym_err,
             "tolerance": tol,
-            "detail": f"||T - T^T||_F = {asym_err:.2e}, |Tr(T_2e)| = {trace_res:.2e}.",
+            "detail": (
+                f"Matrix equals its transpose (||T - T^T|| = {asym_err:.2e}), "
+                f"and the 3D stretch part has zero trace ({trace_res:.2e})."
+            ),
         })
 
-        # ------------------------------------------------------------------
-        # Law 6: Curie's Principle Point-Group Selection Rules (Zero-by-Symmetry!)
-        # ------------------------------------------------------------------
+        # Rule 6: Balanced Shape Cancels Out
         sym_info = _detect_point_symmetry(frame)
         curie_checks: list[tuple[str, float]] = []
-
         if sym_info["is_planar"]:
             n_vec = torch.tensor(sym_info["plane_normal"], dtype=dtype)
-            out_of_plane_1o = float(torch.dot(out0["vector"][0], n_vec).abs().item())
+            out_of_plane = float(torch.dot(out0["vector"][0], n_vec).abs().item())
             chiral_planar = float(out0["chiral"].abs().max().item())
             tn = out0["tensor"][0] @ n_vec
-            shear_2e = float((tn - torch.dot(n_vec, tn) * n_vec).norm().item())
+            shear = float((tn - torch.dot(n_vec, tn) * n_vec).norm().item())
             curie_checks.extend([
-                ("planar_|n·v_1o|", out_of_plane_1o),
-                ("planar_|χ_0o|", chiral_planar),
-                ("planar_shear_||(I-nn^T)Tn||", shear_2e),
+                ("out_of_plane_arrow", out_of_plane),
+                ("flat_handedness", chiral_planar),
+                ("out_of_plane_shear", shear),
             ])
         if sym_info["has_inversion_center"]:
-            inv_vec_norm = float(out0["vector"][0].norm().item())
-            inv_chiral = float(out0["chiral"].abs().max().item())
             curie_checks.extend([
-                ("centrosym_||v_1o||", inv_vec_norm),
-                ("centrosym_|χ_0o|", inv_chiral),
+                ("total_dipole_arrow", float(out0["vector"][0].norm().item())),
+                ("center_handedness", float(out0["chiral"].abs().max().item())),
             ])
 
-        # If current geometry is C1 asymmetric, also verify Curie's Principle on rotated C2v water + C2h trans-C2H2F2
         used_control = False
         if not curie_checks:
             used_control = True
             presets = get_builtin_presets()
-            R_ctrl = euler_and_reflection_matrix(29.0, -51.0, 64.0, reflect=False)
-            w_fr = presets["water_c2v"]["frame"].transformed(R_ctrl)
-            w_in = _frame_to_tensors(w_fr, "What is the 3D molecular dipole moment vector?", bundle.featurizer, dtype)
+            r_ctrl = euler_and_reflection_matrix(29.0, -51.0, 64.0, reflect=False)
+            w_fr = presets["water_c2v"]["frame"].transformed(r_ctrl)
+            w_in = _frame_to_tensors(w_fr, "What is the 3D molecular dipole moment vector?", dtype)
             w_out = ylm(w_in["Z"], w_in["pos"], w_in["atom_mask"], w_in["text"], w_in["text_mask"], lot_id=w_in["lot_id"])
-            n_rot = torch.as_tensor(R_ctrl @ np.array([0.0, 0.0, 1.0]), dtype=dtype)
-            curie_checks.append(("ctrl_water_|n·v_1o|", float(torch.dot(w_out["vector"][0], n_rot).abs().item())))
-            curie_checks.append(("ctrl_water_|χ_0o|", float(w_out["chiral"].abs().max().item())))
+            n_rot = torch.as_tensor(r_ctrl @ np.array([0.0, 0.0, 1.0]), dtype=dtype)
+            curie_checks.append(("rotated_water_out_of_plane", float(torch.dot(w_out["vector"][0], n_rot).abs().item())))
+            curie_checks.append(("rotated_water_handedness", float(w_out["chiral"].abs().max().item())))
 
-            tr_fr = presets["trans_difluoroethene_c2h"]["frame"].transformed(R_ctrl)
-            tr_in = _frame_to_tensors(tr_fr, "What is the 3D molecular dipole moment vector?", bundle.featurizer, dtype)
+            tr_fr = presets["trans_difluoroethene_c2h"]["frame"].transformed(r_ctrl)
+            tr_in = _frame_to_tensors(tr_fr, "What is the 3D molecular dipole moment vector?", dtype)
             tr_out = ylm(tr_in["Z"], tr_in["pos"], tr_in["atom_mask"], tr_in["text"], tr_in["text_mask"], lot_id=tr_in["lot_id"])
-            curie_checks.append(("ctrl_trans_C2h_||dipole||", float(tr_out["vector"][0].norm().item())))
+            curie_checks.append(("rotated_trans_FCH=CHF_dipole", float(tr_out["vector"][0].norm().item())))
 
         curie_err = max(v for _, v in curie_checks)
         curie_desc = ", ".join(f"{k}={v:.2e}" for k, v in curie_checks)
         laws.append({
             "law_id": "L6_curie_selection",
-            "name": "6. Curie's Principle Point-Group Selection Rules (Symmetry Zeros)",
-            "formula": "σ_h planar => n·v=0, χ=0, (I-nn^T)Tn=0;  C_i inversion => v=0, χ=0",
+            "name": "6. Balanced Shape Cancels Out",
+            "formula": "Flat shape => out-of-plane arrow = 0, hand = 0 | Opposite-pair center => total arrow = 0",
             "passed": curie_err < tol,
             "ylm_error": curie_err,
             "tolerance": tol,
             "detail": (
-                f"{'Input is C1 chiral/asymmetric (verified via rotated C2v/C2h controls): ' if used_control else 'Detected symmetry on input structure: '}"
+                f"{'Input is 3D chiral (checked on rotated H2O and trans-FCH=CHF controls): ' if used_control else 'Checked directly on this symmetric shape: '}"
                 f"{curie_desc}."
             ),
         })
 
-    # ------------------------------------------------------------------
-    # Law 7: Conservative Mechanics — Newton's 3rd Law, Zero Torque, & F = -dE/dr Curl-Freeness
-    # ------------------------------------------------------------------
+    # Rule 7: Newton's 3rd Law, Zero Spin & Energy Slope (F = -dE/dx)
     pos_ang = frame.pos_angstrom.copy()
     cell_ang = frame.cell_angstrom
     pbc_arr = frame.pbc
-    e0, f0 = bundle.force_provider(frame.Z, pos_ang, cell_ang, pbc_arr)
+    _, f0 = _FORCE_PROVIDER(frame.Z, pos_ang, cell_ang, pbc_arr)
 
     net_force = float(np.linalg.norm(f0.sum(axis=0)))
     if cell_ang is None:
         r_rel = pos_ang - pos_ang.mean(axis=0, keepdims=True)
         net_torque = float(np.linalg.norm(np.cross(r_rel, f0).sum(axis=0)))
     else:
-        net_torque = 0.0  # PBC triclinic cell torque couples to symmetric Cauchy stress tensor
+        net_torque = 0.0
 
-    # Central finite-difference verification of conservative force F_{0, alpha} = -dE / dr_{0, alpha}
     eps_fd = 1e-5
     f_fd = np.zeros(3, dtype=np.float64)
     for alpha in range(3):
@@ -874,56 +815,53 @@ def run_physics_compliance_audit(
         p_minus = pos_ang.copy()
         p_plus[0, alpha] += eps_fd
         p_minus[0, alpha] -= eps_fd
-        ep, _ = bundle.force_provider(frame.Z, p_plus, cell_ang, pbc_arr)
-        em, _ = bundle.force_provider(frame.Z, p_minus, cell_ang, pbc_arr)
+        ep, _ = _FORCE_PROVIDER(frame.Z, p_plus, cell_ang, pbc_arr)
+        em, _ = _FORCE_PROVIDER(frame.Z, p_minus, cell_ang, pbc_arr)
         f_fd[alpha] = -(ep - em) / (2.0 * eps_fd)
     fd_grad_err = float(np.max(np.abs(f0[0] - f_fd)))
 
-    # Curl-freeness / Hessian symmetry check: dF_{0,x}/dr_{1,y} == dF_{1,y}/dr_{0,x}
     curl_err = 0.0
     if frame.n_atoms >= 2:
         p_1y_p, p_1y_m = pos_ang.copy(), pos_ang.copy()
         p_1y_p[1, 1] += eps_fd
         p_1y_m[1, 1] -= eps_fd
-        _, f_1y_p = bundle.force_provider(frame.Z, p_1y_p, cell_ang, pbc_arr)
-        _, f_1y_m = bundle.force_provider(frame.Z, p_1y_m, cell_ang, pbc_arr)
-        dF0x_dr1y = (f_1y_p[0, 0] - f_1y_m[0, 0]) / (2.0 * eps_fd)
+        _, f_1y_p = _FORCE_PROVIDER(frame.Z, p_1y_p, cell_ang, pbc_arr)
+        _, f_1y_m = _FORCE_PROVIDER(frame.Z, p_1y_m, cell_ang, pbc_arr)
+        df0x_dr1y = (f_1y_p[0, 0] - f_1y_m[0, 0]) / (2.0 * eps_fd)
 
         p_0x_p, p_0x_m = pos_ang.copy(), pos_ang.copy()
         p_0x_p[0, 0] += eps_fd
         p_0x_m[0, 0] -= eps_fd
-        _, f_0x_p = bundle.force_provider(frame.Z, p_0x_p, cell_ang, pbc_arr)
-        _, f_0x_m = bundle.force_provider(frame.Z, p_0x_m, cell_ang, pbc_arr)
-        dF1y_dr0x = (f_0x_p[1, 1] - f_0x_m[1, 1]) / (2.0 * eps_fd)
-        curl_err = float(abs(dF0x_dr1y - dF1y_dr0x))
+        _, f_0x_p = _FORCE_PROVIDER(frame.Z, p_0x_p, cell_ang, pbc_arr)
+        _, f_0x_m = _FORCE_PROVIDER(frame.Z, p_0x_m, cell_ang, pbc_arr)
+        df1y_dr0x = (f_0x_p[1, 1] - f_0x_m[1, 1]) / (2.0 * eps_fd)
+        curl_err = float(abs(df0x_dr1y - df1y_dr0x))
 
     mech_tol = 5e-6
     mech_err = max(net_force, net_torque, fd_grad_err, curl_err)
     laws.append({
         "law_id": "L7_conservative_mechanics",
-        "name": "7. Conservative Mechanics: Newton's 3rd Law, Zero Torque & Curl-Free F = -∇E",
-        "formula": "∑F_i == 0,  ∑r_i×F_i == 0,  F_i == -∂E/∂r_i (FD),  ∂F_iα/∂r_jβ == ∂F_jβ/∂r_iα",
+        "name": "7. Newton's 3rd Law, Zero Spin & Energy Slope (F = -dE/dx)",
+        "formula": "sum(F) == 0,  sum(r x F) == 0,  and  F == -d(Energy)/dx",
         "passed": mech_err < mech_tol,
         "ylm_error": mech_err,
         "tolerance": mech_tol,
         "detail": (
-            f"||∑F_i||={net_force:.2e} eV/Å, ||∑r_i×F_i||={net_torque:.2e} eV, "
-            f"max|F_autograd - F_FD|={fd_grad_err:.2e} eV/Å, |curl F|={curl_err:.2e} eV/Å²."
+            f"Total internal force = {net_force:.2e} eV/A (cannot push itself), "
+            f"total torque = {net_torque:.2e} eV (cannot spin itself), "
+            f"energy-slope match |F + dE/dx| = {fd_grad_err:.2e} eV/A."
         ),
     })
 
-    # ------------------------------------------------------------------
-    # Law 8: 3D Bravais Lattice PBC Shift & Cell Co-Rotation Invariance
-    # ------------------------------------------------------------------
+    # Rule 8: Crystal Repeat Box
     with torch.no_grad():
         pbc_frame = frame if frame.cell_bohr is not None else get_builtin_presets()["lifepo4_pbc_crystal"]["frame"]
-        p_in0 = _frame_to_tensors(pbc_frame, question, bundle.featurizer, dtype)
+        p_in0 = _frame_to_tensors(pbc_frame, question, dtype)
         p_out0 = ylm(
             p_in0["Z"], p_in0["pos"], p_in0["atom_mask"],
             p_in0["text"], p_in0["text_mask"],
             lot_id=p_in0["lot_id"], cell=p_in0["cell"], pbc=p_in0["pbc"],
         )
-        # Shift atom 0 by integer Bravais lattice vector c_0 - c_1
         pos_lat = p_in0["pos"].clone()
         pos_lat[0, 0] = pos_lat[0, 0] + p_in0["cell"][0, 0] - p_in0["cell"][0, 1]
         p_out_shift = ylm(
@@ -939,18 +877,17 @@ def run_physics_compliance_audit(
         )
         laws.append({
             "law_id": "L8_pbc_lattice",
-            "name": "8. 3D Bravais Lattice Periodic Shift Invariance (PBC)",
-            "formula": "f(r_k + n_1·a_1 + n_2·a_2 + n_3·a_3, cell) == f(r, cell)",
+            "name": "8. Crystal Repeat Box",
+            "formula": "f(atom + box_vector, cell) == f(atom, cell)",
             "passed": pbc_err < tol,
             "ylm_error": pbc_err,
             "tolerance": tol,
             "detail": (
-                f"Tested on {'input crystal' if frame.cell_bohr is not None else 'LiFePO4 3D PBC crystal motif'}: "
-                f"shifted atom #0 by Bravais vector (a_1 - a_2); max multi-rank drift = {pbc_err:.2e}."
+                f"Tested on {'input crystal' if frame.cell_bohr is not None else 'LiFePO4 3D crystal'}: "
+                f"shifted atom #0 by one full crystal box vector (box_1 - box_2); max diff = {pbc_err:.2e}."
             ),
         })
 
-    # Optional shipped v0 YLMProbe check
     active_probe = probe or YLMProbe.default()
     probe_chk = active_probe.verify_equivariance(frame, question)
 

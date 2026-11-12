@@ -1,8 +1,7 @@
-"""NequIP & Allegro O(3)-equivariant MLIP backbone adapter for YLM, YLMCausalLM, and YLMUniverseModel.
+"""Adapter that plugs NequIP and Allegro `.pth` models into `YLM` and live MD runners.
 
-Bridges compiled TorchScript (`nequip-deploy` / `allegro`) `.pth` models and Python `nequip`
-GraphModules directly into YLM's `IrrepsToText` cross-attention and live reactive MD hooks while
-preserving exact O(3) rotation and reflection equivariance.
+Loads compiled TorchScript (`nequip-deploy` / `allegro`) `.pth` files or Python `nequip` models
+and passes their 3D atom features and forces (`F = -dE/dx`) into YLM without losing 3D symmetry.
 """
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Unified `ylm` CLI for out-of-the-box directional probing, domain analysis, post-training, and Web Studio."""
+"""Command-line tool (`ylm`) for 3D chemistry questions, physics checks, MD monitoring, and Studio UI."""
 from __future__ import annotations
 
 import argparse
@@ -113,7 +113,7 @@ def build_parser() -> argparse.ArgumentParser:
     # ylm audit-physics
     p_aud = sub.add_parser(
         "audit-physics",
-        help="Run the 8-Law Physical & O(3) Compliance Certification Suite (0e, 0o, 1o, 2e, Curie, F=-dE/dr, PBC)",
+        help="Check 8 basic physics rules (move, spin, mirror, atom order, 3x3 matrix, symmetry zeros, F=-dE/dx, crystal box)",
     )
     p_aud.add_argument(
         "structure",

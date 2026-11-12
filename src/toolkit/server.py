@@ -1,11 +1,11 @@
-"""Interactive Web Studio & Physics Compliance Workbench (`ylm serve`) built on stdlib http.server.
+"""Local browser app for testing YLM features and physics rules (`ylm serve`).
 
-Provides a unified 5-tab browser UI backed by live PyTorch / e3nn endpoints:
-  1. Physics & O(3) Compliance Lab : 8-law physical certification (`float64`/`float32`) + live 3D pose/reflection sandbox
-  2. 3D Probe & Domain Packs       : General, Electrolyte Solvation, Reactive MD, Drug SBDD, & 3D PBC crystals
-  3. Live Reactive MD & Hooks      : `MLIPTrajectoryRunner` + `LiveReactionMonitor` timeline & 3D frame scrubber
-  4. Ouroboros-OCSR Stereo Bridge  : Isomeric SMILES (`@/@@`, `/\\`) -> 3D CIP audit + signed chiral volume + enantiomer test
-  5. FM Benchmark & Live Eval      : Pre-verified + live CPU training/evaluation vs `Uni-Mol`, `GraphMVP`, and `EquiLLM`
+Runs on Python's built-in `http.server` with 5 tabs:
+  1. Physics Rules Lab : 8 live physics checks + 3D spin, mirror, move, and atom-swap sandbox
+  2. 3D Question Probe : Ask questions in plain English on molecules, electrolytes, MD frames, and drugs
+  3. Live Reactive MD  : Watch bond breaking, bond forming, and H+ jumps frame by frame
+  4. 3D Handedness     : Turn 2D stereo SMILES (`@/@@`, `/\\`) into 3D atoms and test mirror twins
+  5. Model Comparison  : Compare YLM against Uni-Mol, GraphMVP, and EquiLLM on CPU
 """
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ from src.toolkit.ouroboros_bridge import embed_stereo_smiles
 from src.toolkit.physics_audit import (
     REPO_ROOT,
     _frame_to_tensors,
-    _get_bundle,
+    _load_audit_models,
     evaluate_pose_sandbox,
     get_builtin_presets,
     resolve_preset_or_structure,
@@ -46,7 +46,7 @@ from src.universe_fm import YLMUniverseModel, compute_universe_loss, evaluate_un
 
 _REFERENCE_BENCHMARKS = {
     "chiral_multirank_24ep": {
-        "title": "Chiral (0o) + Multi-Rank (0e + 1o + 2e) Benchmark (24 Epochs, K=8 Random O(3) Rotations + Reflections)",
+        "title": "Handedness + 3D Arrow & Matrix Benchmark (24 Epochs, 8 Random Rotations + Mirror Flips)",
         "models": [
             {
                 "model": "GraphMVP / 3D-InfoMax",
@@ -62,7 +62,7 @@ _REFERENCE_BENCHMARKS = {
                 "routing_acc": 0.833,
             },
             {
-                "model": "Uni-Mol (3D Dist-Transformer)",
+                "model": "Uni-Mol (3D Distance Transformer)",
                 "chiral_acc": 0.521,
                 "heldout_chiral_acc": 0.521,
                 "zeroshot_scaffold_acc": 0.484,
@@ -75,7 +75,7 @@ _REFERENCE_BENCHMARKS = {
                 "routing_acc": 0.833,
             },
             {
-                "model": "EquiLLM (Inv-Bridge + 1o)",
+                "model": "EquiLLM (Scalar Bridge + Vector)",
                 "chiral_acc": 0.521,
                 "heldout_chiral_acc": 0.500,
                 "zeroshot_scaffold_acc": 0.500,
@@ -88,7 +88,7 @@ _REFERENCE_BENCHMARKS = {
                 "routing_acc": 0.917,
             },
             {
-                "model": "YLM-Universe FM (Ours)",
+                "model": "YLM-Universe (Ours)",
                 "chiral_acc": 1.000,
                 "heldout_chiral_acc": 1.000,
                 "zeroshot_scaffold_acc": 1.000,
@@ -106,7 +106,7 @@ _REFERENCE_BENCHMARKS = {
 
 
 def _run_live_mini_benchmark(epochs: int = 6, eval_rotations: int = 4) -> dict:
-    """Run a fast live multi-model Universe evaluation on CPU right inside the Studio server."""
+    """Train and test all 4 model families on CPU right inside the Studio server."""
     from src.fm_baselines import (
         EquiLLMMultiTaskBaseline,
         GraphMVP3DInfoMaxBaseline,
@@ -122,10 +122,10 @@ def _run_live_mini_benchmark(epochs: int = 6, eval_rotations: int = 4) -> dict:
     cross_ir = "8x0e + 8x1o + 4x1e + 4x2e"
     candidates = [
         ("GraphMVP / 3D-InfoMax", GraphMVP3DInfoMaxBaseline(text_dim=64, d_model=48, n_layers=2)),
-        ("Uni-Mol (3D Dist-Transformer)", UniMolStyle3DBaseline(text_dim=64, d_model=48, n_layers=2, n_heads=4)),
-        ("EquiLLM (Inv-Bridge + 1o)", EquiLLMMultiTaskBaseline(text_dim=64, hidden_irreps=hidden_ir, n_layers=2, d_model=48, n_vec=8)),
+        ("Uni-Mol (3D Distance Transformer)", UniMolStyle3DBaseline(text_dim=64, d_model=48, n_layers=2, n_heads=4)),
+        ("EquiLLM (Scalar Bridge + Vector)", EquiLLMMultiTaskBaseline(text_dim=64, hidden_irreps=hidden_ir, n_layers=2, d_model=48, n_vec=8)),
         (
-            "YLM-Universe FM (Ours)",
+            "YLM-Universe (Ours)",
             YLMUniverseModel(
                 text_dim=64, backbone="e3nn", hidden_irreps=hidden_ir, cross_irreps=cross_ir,
                 n_layers=2, n_cross_layers=2, option="C", c_tp_mode="channelwise", d_text=64,
@@ -188,7 +188,6 @@ def _handle_ouroboros_inspect(smiles: str, question: str, active_probe: YLMProbe
     fr = embed_stereo_smiles(smi, seed=0)
     centers = compute_chiral_centers(fr)
 
-    # Construct exact mirror image (-pos) rotated by an independent SO(3) matrix to test enantiomer response
     mirror_fr = StructureFrame(
         Z=fr.Z.copy(),
         pos_bohr=-fr.pos_bohr.copy(),
@@ -197,10 +196,9 @@ def _handle_ouroboros_inspect(smiles: str, question: str, active_probe: YLMProbe
     )
     mirror_centers = compute_chiral_centers(mirror_fr)
 
-    bundle = _get_bundle()
-    models = bundle.get_models(precision="float64")
-    in_orig = _frame_to_tensors(fr, question, bundle.featurizer, torch.float64)
-    in_mirr = _frame_to_tensors(mirror_fr, question, bundle.featurizer, torch.float64)
+    models = _load_audit_models("float64")
+    in_orig = _frame_to_tensors(fr, question, torch.float64)
+    in_mirr = _frame_to_tensors(mirror_fr, question, torch.float64)
 
     with torch.no_grad():
         y0 = models["ylm"](in_orig["Z"], in_orig["pos"], in_orig["atom_mask"], in_orig["text"], in_orig["text_mask"], lot_id=in_orig["lot_id"])
@@ -235,7 +233,7 @@ def _handle_ouroboros_inspect(smiles: str, question: str, active_probe: YLMProbe
             "unimol_chiral_mirror": float(u1["chiral"][0, 0].item()),
             "unimol_diff": abs(float(u0["chiral"][0, 0].item() - u1["chiral"][0, 0].item())),
         },
-        "html": render_html_report(probe_res, title=f"Ouroboros Stereo Audit: {smi}"),
+        "html": render_html_report(probe_res, title=f"Stereo Check: {smi}"),
     }
 
 
@@ -253,7 +251,7 @@ def _handle_run_md(body: dict, active_probe: YLMProbe) -> dict:
                 mon.step(idx, idx * 2.0, fr.Z, fr.pos_angstrom, fr.forces_ev_ang, fr.cell_angstrom, fr.pbc)
             plot_reaction_timeline(mon.history, mon.events, svg_path)
             svg_text = svg_path.read_text(encoding="utf-8")
-            html_text = render_trajectory_html_report(scan, title="Proton-Transfer Reactive Trajectory")
+            html_text = render_trajectory_html_report(scan, title="Proton-Transfer Trajectory")
             return {
                 "mode": mode,
                 "n_frames": len(scan.frame_results),
@@ -264,20 +262,18 @@ def _handle_run_md(body: dict, active_probe: YLMProbe) -> dict:
                 "html": html_text,
             }
 
-        # Live Velocity-Verlet / Langevin reactive MD via MLIPTrajectoryRunner
         steps = max(6, min(int(body.get("steps", 28)), 80))
         dt_fs = float(body.get("dt_fs", 0.6))
         temp_k = float(body.get("temperature_k", 350.0))
         stretch = float(body.get("bond_stretch_ang", 0.55))
 
-        # Construct a stretched reactive H5O2+ Zundel or user-supplied geometry
         src = str(body.get("structure") or "").strip()
         if src and src != "zundel_stretched":
             init_fr, _ = resolve_preset_or_structure(src)
         else:
             coords = np.array([
                 [-1.26, 0.02, 0.00],
-                [-0.38 + stretch, 0.01, 0.00],  # displaced shared proton!
+                [-0.38 + stretch, 0.01, 0.00],
                 [1.24, -0.02, 0.00],
                 [-1.82, 0.78, 0.18],
                 [-1.78, -0.76, -0.18],
@@ -313,11 +309,11 @@ def _handle_run_md(body: dict, active_probe: YLMProbe) -> dict:
 
 
 _STUDIO_INDEX_HTML = """<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>YLM Directional Chemistry Studio — Physics Compliance &amp; Evaluation Workbench</title>
+<title>YLM Directional Chemistry Studio — Physics &amp; 3D Molecule Lab</title>
 <style>
   :root {
     --bg: #0b1120; --panel: #131c31; --panel2: #1b2742; --border: #2b3b5e;
@@ -339,7 +335,7 @@ _STUDIO_INDEX_HTML = """<!DOCTYPE html>
   .pane.active { display: block; }
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
   .card h3 { margin: 0 0 6px; font-size: 15px; }
-  .sub { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  .sub { font-size: 12px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   @media (max-width: 980px) { .row2, .row3 { grid-template-columns: 1fr; } }
@@ -377,7 +373,7 @@ _STUDIO_INDEX_HTML = """<!DOCTYPE html>
 <div class="topbar">
   <div class="brand">
     <h1>YLM Directional Chemistry Studio</h1>
-    <p>全功能交互工作台 &amp; 物理对称性合规审计台（`0e` 标量 · `0o` 手性赝标量 · `1o` 极向量 · `0e+2e` 二阶张量 · 保守力场 · 3D PBC）</p>
+    <p>Ask questions in plain English, get 3D arrows back, and test whether the model obeys real-world 3D physics.</p>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
     <span class="pill pill-ok" id="engineBadge">Engine: Ready</span>
@@ -385,42 +381,42 @@ _STUDIO_INDEX_HTML = """<!DOCTYPE html>
 </div>
 
 <div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('physics', this)">⚖️ 1. 物理合规与 O(3) 等变审计台 (Physics Compliance)</button>
-  <button class="tab-btn" onclick="switchTab('probe', this)">🧭 2. 3D 方向问答与四大领域包 (3D Probe &amp; Domains)</button>
-  <button class="tab-btn" onclick="switchTab('md', this)">⚡ 3. 实时反应 MD 与断键/质子转移监测 (Reactive MD)</button>
-  <button class="tab-btn" onclick="switchTab('ouroboros', this)">🧬 4. Ouroboros 立体手性桥接 (Stereo &amp; Chirality)</button>
-  <button class="tab-btn" onclick="switchTab('benchmark', this)">📊 5. 基座模型跑分与在线评测 (FM Evaluation)</button>
+  <button class="tab-btn active" onclick="switchTab('physics', this)">1. Physics Rules Lab</button>
+  <button class="tab-btn" onclick="switchTab('probe', this)">2. Ask a 3D Question</button>
+  <button class="tab-btn" onclick="switchTab('md', this)">3. Watch Reactions (MD)</button>
+  <button class="tab-btn" onclick="switchTab('ouroboros', this)">4. Left vs. Right Handedness</button>
+  <button class="tab-btn" onclick="switchTab('benchmark', this)">5. Compare Models</button>
 </div>
 
-<!-- ================= TAB 1: PHYSICS & O(3) COMPLIANCE LAB ================= -->
+<!-- ================= TAB 1: PHYSICS RULES LAB ================= -->
 <div id="pane-physics" class="pane active">
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
       <div>
-        <h3>八大基础物理定律自动化合规认证（8-Law Physical Compliance Certification）</h3>
-        <div class="sub">逐项检验平移不变性、SO(3) 真旋转、O(3) 镜像反演与对映体宇称、原子置换群 S_N、二阶张量对称分解、Curie 点群禁戒选择定则、牛顿第三定律/零力矩/无旋保守势梯度（F = -∇E）以及晶格周期平移不变性。</div>
+        <h3>8 Basic Physics Rules — Live Check</h3>
+        <div class="sub">Every real molecule obeys simple 3D rules: moving it in empty space changes nothing, spinning it spins its force and dipole arrows by the same angle, flipping it in a mirror turns a left-handed molecule into a right-handed one, and internal forces add up to zero.</div>
       </div>
-      <div id="auditSummaryBadge" class="pill pill-ok">等待运行认证...</div>
+      <div id="auditSummaryBadge" class="pill pill-ok">Ready to check...</div>
     </div>
 
     <div class="row3" style="margin-top:8px;">
       <div>
-        <label>选择测试体系（覆盖 C2v 平面、C2h 反演中心、手性对映体、3D PBC 晶体）</label>
+        <label>Pick a test molecule or crystal</label>
         <select id="auditPresetSel" onchange="runPhysicsAudit()"></select>
       </div>
       <div>
-        <label>自然语言探针问题（测试跨模态算子对称性）</label>
+        <label>Question in plain English</label>
         <input type="text" id="auditQuestion" value="What is the 3D molecular dipole moment vector?" />
       </div>
       <div style="display:flex;gap:10px;align-items:flex-end;">
         <div style="flex:1;">
-          <label>数值精度</label>
+          <label>Number precision</label>
           <select id="auditPrecision" onchange="runPhysicsAudit()">
-            <option value="float64" selected>IEEE float64 (严格机器精度 ~1e-14)</option>
-            <option value="float32">IEEE float32 (训练推理精度 ~1e-6)</option>
+            <option value="float64" selected>64-bit float (strict check, error &lt; 1e-8)</option>
+            <option value="float32">32-bit float (fast mode, error &lt; 5e-5)</option>
           </select>
         </div>
-        <button class="btn" onclick="runPhysicsAudit()">立即执行 8 项物理合规审计</button>
+        <button class="btn" onclick="runPhysicsAudit()">Run All 8 Checks</button>
       </div>
     </div>
 
@@ -428,20 +424,20 @@ _STUDIO_INDEX_HTML = """<!DOCTYPE html>
   </div>
 
   <div class="card">
-    <h3>实时 3D 连续旋转 / 镜像反演 / 置换沙盒（YLM vs. Uni-Mol / GraphMVP / EquiLLM 实时同屏对照）</h3>
-    <div class="sub">拖动欧拉角或勾选「镜像反演 det(Q) = -1」：观察右侧绿色理论物理箭头 <code>Q·f(X)</code> 与蓝色 YLM 实测箭头 <code>f(X·Q^T)</code> 始终 100% 重合，而红色 Uni-Mol 箭头在旋转后彻底失灵，且在镜像反演下手性赝标量无法翻号。</div>
+    <h3>3D Spin &amp; Mirror Sandbox (YLM vs. Uni-Mol, GraphMVP &amp; EquiLLM)</h3>
+    <div class="sub">Drag the angle sliders or check <strong>Flip in a mirror</strong>: on the right canvas, the green target arrow and blue YLM arrow stay locked together, while the red Uni-Mol arrow points the wrong way because Uni-Mol only sees atom-to-atom distances.</div>
 
     <div class="row3" style="margin-bottom:12px;">
       <div>
-        <label>绕 X 轴旋转 θ_x: <strong id="lblRx">35°</strong></label>
+        <label>Spin around X axis: <strong id="lblRx">35°</strong></label>
         <input type="range" id="slRx" min="-180" max="180" value="35" oninput="onSandboxChange()" />
       </div>
       <div>
-        <label>绕 Y 轴旋转 θ_y: <strong id="lblRy">-48°</strong></label>
+        <label>Spin around Y axis: <strong id="lblRy">-48°</strong></label>
         <input type="range" id="slRy" min="-180" max="180" value="-48" oninput="onSandboxChange()" />
       </div>
       <div>
-        <label>绕 Z 轴旋转 θ_z: <strong id="lblRz">72°</strong></label>
+        <label>Spin around Z axis: <strong id="lblRz">72°</strong></label>
         <input type="range" id="slRz" min="-180" max="180" value="72" oninput="onSandboxChange()" />
       </div>
     </div>
@@ -449,26 +445,26 @@ _STUDIO_INDEX_HTML = """<!DOCTYPE html>
     <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
       <label style="display:inline-flex;align-items:center;gap:6px;color:var(--text);font-size:13px;cursor:pointer;">
         <input type="checkbox" id="chkReflect" onchange="runPoseSandbox()" />
-        开启镜像反演 / 空间宇称反演 <code>det(Q) = -1</code>（生成对映异构体）
+        Flip in a mirror (left hand ↔ right hand, <code>det = -1</code>)
       </label>
       <label style="display:inline-flex;align-items:center;gap:6px;color:var(--text);font-size:13px;cursor:pointer;">
         <input type="checkbox" id="chkPermute" onchange="runPoseSandbox()" />
-        打乱原子编号顺序 <code>P ∈ S_N</code>
+        Shuffle atom row order
       </label>
       <label style="display:inline-flex;align-items:center;gap:6px;color:var(--text);font-size:13px;cursor:pointer;">
         <input type="checkbox" id="chkTranslate" onchange="runPoseSandbox()" />
-        叠加空间平移 <code>(+3.5, -2.1, +4.0) Å</code>
+        Shift position by <code>(+3.5, -2.1, +4.0) Å</code>
       </label>
       <span class="pill mono" id="detReadout">det(Q) = +1.0000</span>
     </div>
 
     <div class="row2">
       <div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">原始构象 <code>X</code>（蓝箭头 = <code>YLM f(X)</code>，琥珀光晕 = 原子寻址权重）</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Before transform (blue = YLM arrow, yellow glow = which atom the model looks at)</div>
         <canvas id="cvOrig" class="scene3d"></canvas>
       </div>
       <div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">变换后构象 <code>X' = P·X·Q^T + a</code>（绿 = 精确物理要求 <code>Q·f(X)</code> | 蓝 = <code>YLM</code> | 红 = <code>Uni-Mol</code>）</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">After transform (green = exact physics | blue = YLM | red = Uni-Mol)</div>
         <canvas id="cvTrans" class="scene3d"></canvas>
       </div>
     </div>
@@ -477,13 +473,13 @@ _STUDIO_INDEX_HTML = """<!DOCTYPE html>
       <table>
         <thead>
           <tr>
-            <th>模型架构</th>
-            <th><code>0e</code> 标量漂移 <code>|E(X') - E(X)|</code> ↓</th>
-            <th><code>0o</code> 手性原值 <code>χ(X)</code> → 变换值 <code>χ(X')</code></th>
-            <th><code>0o</code> 宇称误差 <code>|χ(X') - det(Q)χ(X)|</code> ↓</th>
-            <th><code>1o</code> 向量相对误差 <code>||v' - Qv|| / ||v||</code> ↓</th>
-            <th><code>0e+2e</code> 张量误差 <code>||T' - QTQ^T|| / ||T||</code> ↓</th>
-            <th><code>S_N</code> 路由误差 ↓</th>
+            <th>Model</th>
+            <th>Energy drift ↓</th>
+            <th>Handedness (before → after)</th>
+            <th>Mirror rule error ↓</th>
+            <th>3D arrow error ↓</th>
+            <th>3x3 matrix error ↓</th>
+            <th>Atom-order error ↓</th>
           </tr>
         </thead>
         <tbody id="sandboxTableBody"></tbody>
@@ -492,14 +488,15 @@ _STUDIO_INDEX_HTML = """<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ================= TAB 2: 3D PROBE & DOMAIN PACKS ================= -->
+<!-- ================= TAB 2: ASK A 3D QUESTION ================= -->
 <div id="pane-probe" class="pane">
   <div class="card">
-    <h3>全功能 3D 方向探针与四大垂直领域分析包（General / Electrolyte / Reactive MD / Drug SBDD）</h3>
+    <h3>Ask a 3D Question on Any Molecule or Crystal</h3>
+    <div class="sub">Click a quick example chip or paste an XYZ / POSCAR / CIF file or SMILES string, then ask which way a force or dipole arrow points.</div>
     <div class="preset-chips" id="probePresetChips"></div>
     <div class="row2" style="margin-top:12px;">
       <div>
-        <label>SMILES 或多行 XYZ / POSCAR / CIF 结构输入</label>
+        <label>SMILES string or XYZ / POSCAR / CIF coordinates</label>
         <textarea id="structInput" rows="6">3
 water demo
 O  0.000  0.000  0.125
@@ -508,25 +505,25 @@ H -0.015 -0.745 -0.485</textarea>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         <div>
-          <label>领域分析包（Domain Pack）</label>
+          <label>Chemistry topic</label>
           <select id="domainSel">
-            <option value="general">General — 分子偶极与任意局部原子受力 (Dipole / Force)</option>
-            <option value="electrolyte">Electrolyte — 锂/钠溶剂化壳配位数、SSIP/CIP/AGG 与逃逸向量</option>
-            <option value="md">Reactive MD — 局部受力 vs. 帧间位移做功对齐度</option>
-            <option value="drug">Drug SBDD — 药效团极性与先导化合物 Exit Vector</option>
+            <option value="general">General — Molecular dipole &amp; force on a chosen atom</option>
+            <option value="electrolyte">Battery Electrolyte — Solvent shell around Li+ / Na+ &amp; escape arrow</option>
+            <option value="md">Reaction Motion — Force arrow vs. atom motion arrow</option>
+            <option value="drug">Drug Design — Safe 3D direction to grow a molecule in a protein pocket</option>
           </select>
         </div>
         <div>
-          <label>自然语言方向性提问</label>
+          <label>Question in plain English</label>
           <input type="text" id="qInput" value="What is the force vector on the hydrogen atom?" />
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;">
           <label style="display:inline-flex;align-items:center;gap:6px;color:var(--text);">
-            <input type="checkbox" id="o3Chk" checked /> 实时执行 O(3) 旋转+镜像反演双重校验
+            <input type="checkbox" id="o3Chk" checked /> Check 3D rotation + mirror flip live
           </label>
           <div style="display:flex;gap:8px;">
-            <button class="btn btn-sec" onclick="buildLiCluster()">一键生成 Li+–EC 溶剂化簇</button>
-            <button class="btn" onclick="runQuery()">运行 3D 方向探针</button>
+            <button class="btn btn-sec" onclick="buildLiCluster()">Build Li+ Solvent Shell</button>
+            <button class="btn" onclick="runQuery()">Ask YLM</button>
           </div>
         </div>
       </div>
@@ -535,28 +532,28 @@ H -0.015 -0.745 -0.485</textarea>
   <iframe id="reportFrame" class="report-box"></iframe>
 </div>
 
-<!-- ================= TAB 3: LIVE REACTIVE MD & HOOKS ================= -->
+<!-- ================= TAB 3: WATCH REACTIONS (MD) ================= -->
 <div id="pane-md" class="pane">
   <div class="card">
-    <h3>实时分子动力学反应监测器（MLIPTrajectoryRunner &amp; OpenMM / LAMMPS Reaction Hooks）</h3>
-    <div class="sub">自动捕捉断键（bond_broken）、成键（bond_formed）与 Grotthuss 质子转移（proton_transfer）帧号与飞秒时间戳，绘制局部机械功 <code>W_i = F_i · Δr_i</code> 时间轴并生成逐帧 3D 双箭头动画。</div>
+    <h3>Watch Chemical Reactions Step by Step (Bond Breaking, Bond Forming &amp; H+ Jumps)</h3>
+    <div class="sub">Follows moving atoms over time, flags the exact frame where a bond breaks, forms, or a proton (<code>H+</code>) hops between two water molecules, and plots work <code>W = Force · Step</code>.</div>
     <div class="row3">
       <div>
-        <label>运行模式</label>
+        <label>Simulation mode</label>
         <select id="mdModeSel">
-          <option value="scan_zundel">扫描内置质子转移反应轨迹 (examples/proton_transfer_traj.extxyz)</option>
-          <option value="live_md">实时积分运行可反应 MD (H5O2+ 非平衡质子弛豫采样)</option>
+          <option value="scan_zundel">Scan saved H+ jump trajectory (examples/proton_transfer_traj.extxyz)</option>
+          <option value="live_md">Run live reactive MD steps (stretched H5O2+ water-proton cluster)</option>
         </select>
       </div>
       <div>
-        <label>实时 MD 步数 / 温度 (K)</label>
+        <label>Live MD steps / Temperature (K)</label>
         <div style="display:flex;gap:8px;">
           <input type="number" id="mdSteps" value="28" min="8" max="80" />
           <input type="number" id="mdTemp" value="350" min="0" max="1500" />
         </div>
       </div>
       <div style="display:flex;align-items:flex-end;">
-        <button class="btn" style="width:100%;" onclick="runReactiveMD()">启动反应轨迹扫描 / 实时 MD</button>
+        <button class="btn" style="width:100%;" onclick="runReactiveMD()">Run Reaction Monitor</button>
       </div>
     </div>
     <div id="mdEventsSummary" style="margin-top:14px;"></div>
@@ -565,30 +562,30 @@ H -0.015 -0.745 -0.485</textarea>
   <iframe id="mdReportFrame" class="report-box"></iframe>
 </div>
 
-<!-- ================= TAB 4: OUROBOROS STEREO BRIDGE ================= -->
+<!-- ================= TAB 4: LEFT VS. RIGHT HANDEDNESS ================= -->
 <div id="pane-ouroboros" class="pane">
   <div class="card">
-    <h3>Ouroboros-OCSR 跨仓立体化学桥接审计（2D SE(2) SMILES → 3D CIP 立体审计 → 0o 对映体检验）</h3>
-    <div class="sub">验证 <code>@/@@</code> 四面体手性中心与反斜杠 <code>F/C=C\\F</code> 顺反异构体无损嵌入、2-hop 拓扑有向四面体体积计算，以及镜像对映体下 <code>YLMUniverseModel</code> 精确翻号 vs. <code>Uni-Mol</code> 手性失明。</div>
+    <h3>Left vs. Right Handedness (2D Stereo SMILES → 3D Atoms → Mirror Twin Test)</h3>
+    <div class="sub">Like your left and right hands, mirror-image molecules have identical atom-to-atom distances, so distance-only models (Uni-Mol) cannot tell them apart. YLM uses signed 3D volume to give opposite signs (<code>+</code> vs. <code>-</code>) to mirror twins and <code>0</code> to flat molecules.</div>
     <div class="preset-chips" style="margin-bottom:10px;">
-      <span class="chip" onclick="setStereoSmiles('O=C1OC[C@H](F)O1')">(R)-FEC 锂电成膜添加剂</span>
-      <span class="chip" onclick="setStereoSmiles('O=C1OC[C@@H](F)O1')">(S)-FEC 镜像对映体</span>
-      <span class="chip" onclick="setStereoSmiles('F[C@H](Cl)Br')">(R)-CHFCIBr 手性四面体</span>
-      <span class="chip" onclick="setStereoSmiles('F[C@@H](Cl)Br')">(S)-CHFCIBr 镜像对映体</span>
-      <span class="chip" onclick="setStereoSmiles('F/C=C\\\\F')">cis-1,2-二氟乙烯 (Z, 平面偶极≠0)</span>
-      <span class="chip" onclick="setStereoSmiles('F/C=C/F')">trans-1,2-二氟乙烯 (E, 反演偶极=0)</span>
+      <span class="chip" onclick="setStereoSmiles('O=C1OC[C@H](F)O1')">(R)-FEC battery additive</span>
+      <span class="chip" onclick="setStereoSmiles('O=C1OC[C@@H](F)O1')">(S)-FEC mirror twin</span>
+      <span class="chip" onclick="setStereoSmiles('F[C@H](Cl)Br')">(R)-CHFCIBr chiral carbon</span>
+      <span class="chip" onclick="setStereoSmiles('F[C@@H](Cl)Br')">(S)-CHFCIBr mirror twin</span>
+      <span class="chip" onclick="setStereoSmiles('F/C=C\\\\F')">cis-FCH=CHF (flat, dipole != 0)</span>
+      <span class="chip" onclick="setStereoSmiles('F/C=C/F')">trans-FCH=CHF (flat, dipole = 0)</span>
     </div>
     <div class="row3">
       <div>
-        <label>手性 / 顺反异构 SMILES</label>
+        <label>Stereo SMILES (<code>@/@@</code> or <code>/\\</code>)</label>
         <input type="text" id="stereoSmilesInput" value="O=C1OC[C@H](F)O1" />
       </div>
       <div>
-        <label>3D 探针问题</label>
+        <label>Question in plain English</label>
         <input type="text" id="stereoQuestionInput" value="What is the 3D molecular dipole moment vector?" />
       </div>
       <div style="display:flex;align-items:flex-end;">
-        <button class="btn" style="width:100%;" onclick="runOuroborosAudit()">执行 3D 立体嵌入与对映体审计</button>
+        <button class="btn" style="width:100%;" onclick="runOuroborosAudit()">Build 3D &amp; Test Mirror Twin</button>
       </div>
     </div>
     <div id="stereoAuditResult" style="margin-top:14px;"></div>
@@ -596,34 +593,34 @@ H -0.015 -0.745 -0.485</textarea>
   <iframe id="stereoReportFrame" class="report-box"></iframe>
 </div>
 
-<!-- ================= TAB 5: FM BENCHMARK & LIVE EVAL ================= -->
+<!-- ================= TAB 5: COMPARE MODELS ================= -->
 <div id="pane-benchmark" class="pane">
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
       <div>
-        <h3>四阶等变基座模型正面跑分看板（YLM-Universe FM vs. Uni-Mol / GraphMVP / EquiLLM）</h3>
-        <div class="sub">左侧预载完整 24-Epoch 手性+多阶全对称基准实测结果；右侧支持直接在当前 CPU 上实时启动四模型同数据集训练与 K 次随机 O(3) 旋转+镜像评测。</div>
+        <h3>Compare 3D Models Side by Side (YLM vs. Uni-Mol, GraphMVP &amp; EquiLLM)</h3>
+        <div class="sub">Table A shows saved 24-epoch scores on left/right-handed molecules, 3D arrows, and 3x3 matrices. Click <strong>Train &amp; Test Live on CPU</strong> to train all 4 models from scratch right now and verify the trend yourself.</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <label style="margin:0;">实时训练 Epochs:</label>
+        <label style="margin:0;">Training epochs:</label>
         <input type="number" id="benchEpochs" value="6" min="2" max="20" style="width:72px;" />
-        <button class="btn" id="btnLiveBench" onclick="runLiveBenchmark()">⚡ 在线实时跑分 (CPU ~15s)</button>
+        <button class="btn" id="btnLiveBench" onclick="runLiveBenchmark()">Train &amp; Test Live on CPU (~15s)</button>
       </div>
     </div>
 
-    <h4 style="margin:14px 0 8px;font-size:14px;color:var(--accent);">A. 预验证完整手性（`0o`）+ 多阶（`0e + 1o + 2e`）对标基准（8 组对映体骨架，含零样本未见新分子骨架）</h4>
+    <h4 style="margin:14px 0 8px;font-size:14px;color:var(--accent);">A. Saved 24-Epoch Benchmark (8 mirror-twin families, including unseen molecule shapes)</h4>
     <div style="overflow-x:auto;">
       <table>
         <thead>
           <tr>
-            <th>模型家族</th>
-            <th>对映体区分 Acc (Test) ↑</th>
-            <th>留出新句式 Acc ↑</th>
-            <th>零样本未见骨架 Acc ↑</th>
-            <th><code>0o</code> 宇称误差 ↓</th>
-            <th>非手性平面分子 <code>|f(X)|</code> ↓</th>
-            <th><code>1o</code> Vec Cos ↑</th>
-            <th><code>0e+2e</code> Tensor Cos ↑</th>
+            <th>Model</th>
+            <th>Left/Right Acc (Test) ↑</th>
+            <th>New Wording Acc ↑</th>
+            <th>Unseen Molecule Acc ↑</th>
+            <th>Mirror Flip Error ↓</th>
+            <th>Flat Molecule Output (should be 0) ↓</th>
+            <th>3D Arrow Cos ↑</th>
+            <th>3x3 Matrix Cos ↑</th>
           </tr>
         </thead>
         <tbody id="refBenchBody"></tbody>
@@ -631,19 +628,19 @@ H -0.015 -0.745 -0.485</textarea>
     </div>
 
     <div id="liveBenchContainer" style="margin-top:18px;display:none;">
-      <h4 style="margin:0 0 8px;font-size:14px;color:#34d399;">B. 本机刚刚实时训练并完成 O(3) 旋转+反演评测的最新结果</h4>
+      <h4 style="margin:0 0 8px;font-size:14px;color:#34d399;">B. Fresh Live CPU Run (trained &amp; tested under random 3D rotations and mirror flips)</h4>
       <div style="overflow-x:auto;">
         <table>
           <thead>
             <tr>
-              <th>模型家族</th>
-              <th>耗时 (s)</th>
-              <th><code>0e</code> Scalar MAE ↓</th>
-              <th><code>1o</code> Vec Cos ↑</th>
-              <th>单原子力 T3 Cos ↑</th>
-              <th><code>1o</code> O(3) 等变误差 ↓</th>
-              <th><code>0e+2e</code> Tensor Cos ↑</th>
-              <th>寻址 Routing Acc ↑</th>
+              <th>Model</th>
+              <th>Time (s)</th>
+              <th>Energy MAE ↓</th>
+              <th>3D Arrow Cos ↑</th>
+              <th>Atom Force Cos ↑</th>
+              <th>Rotation Error ↓</th>
+              <th>3x3 Matrix Cos ↑</th>
+              <th>Atom Pick Acc ↑</th>
             </tr>
           </thead>
           <tbody id="liveBenchBody"></tbody>
@@ -816,7 +813,7 @@ async function runPhysicsAudit() {
   const preset = document.getElementById('auditPresetSel').value || 'r_fec_chiral';
   const question = document.getElementById('auditQuestion').value;
   const precision = document.getElementById('auditPrecision').value;
-  document.getElementById('auditSummaryBadge').textContent = '正在执行 PyTorch 物理定律审计...';
+  document.getElementById('auditSummaryBadge').textContent = 'Running 8 physics checks in PyTorch...';
   const resp = await fetch('/api/physics_audit', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -826,13 +823,13 @@ async function runPhysicsAudit() {
   if (data.error) { alert(data.error); return; }
 
   const badge = document.getElementById('auditSummaryBadge');
-  badge.textContent = `${data.passed_count} / ${data.total_laws} 项基础物理定律全部通过 (${data.precision})`;
+  badge.textContent = `${data.passed_count} / ${data.total_laws} physics rules passed (${data.precision})`;
   badge.className = data.passed_all ? 'pill pill-ok' : 'pill';
 
   const box = document.getElementById('lawsContainer');
   box.innerHTML = data.laws.map(law => {
     const baseHtml = law.baseline_errors
-      ? '<div style="margin-top:6px;font-size:12px;color:#fca5a5;">对比基线违背量: ' +
+      ? '<div style="margin-top:6px;font-size:12px;color:#fca5a5;">Other models broke this rule: ' +
         Object.entries(law.baseline_errors).map(([k, v]) => `${k} = <code>${Number(v).toExponential(2)}</code>`).join(' · ') +
         '</div>'
       : '';
@@ -843,7 +840,7 @@ async function runPhysicsAudit() {
       </div>
       <div class="mono" style="color:var(--accent);margin-top:5px;">${law.formula}</div>
       <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.45;">${law.detail}</div>
-      <div class="mono" style="margin-top:6px;font-size:12px;">YLM 残差: <strong>${Number(law.ylm_error).toExponential(2)}</strong> (阈值 &lt; ${Number(law.tolerance).toExponential(1)})</div>
+      <div class="mono" style="margin-top:6px;font-size:12px;">YLM error: <strong>${Number(law.ylm_error).toExponential(2)}</strong> (limit &lt; ${Number(law.tolerance).toExponential(1)})</div>
       ${baseHtml}
     </div>`;
   }).join('');
@@ -884,10 +881,10 @@ async function runPoseSandbox() {
   drawScene(document.getElementById('cvTrans'), SANDBOX_SCENES.trans, camTrans);
 
   const names = [
-    ['ylm', 'YLM-Universe FM (Ours: 0e+0o+1o+2e)'],
-    ['equillm', 'EquiLLM (0e Bridge + 1o Bypass)'],
-    ['unimol', 'Uni-Mol (3D Distance Matrix 0e)'],
-    ['graphmvp', 'GraphMVP / 3D-InfoMax (2D Graph)'],
+    ['ylm', 'YLM-Universe (Ours: keeps 3D directions & handedness)'],
+    ['equillm', 'EquiLLM (scalar text bridge + 3D vector shortcut)'],
+    ['unimol', 'Uni-Mol (atom-to-atom distances only)'],
+    ['graphmvp', 'GraphMVP / 3D-InfoMax (2D bond graph only)'],
   ];
   const tol = data.precision === 'float64' ? 1e-8 : 1e-4;
   document.getElementById('sandboxTableBody').innerHTML = names.map(([key, title]) => {
@@ -939,13 +936,13 @@ async function runReactiveMD() {
     steps: Number(document.getElementById("mdSteps").value),
     temperature_k: Number(document.getElementById("mdTemp").value)
   };
-  document.getElementById("mdEventsSummary").innerHTML = '<span class="sub">正在运行分子动力学并监测成键/断键/质子转移事件...</span>';
+  document.getElementById("mdEventsSummary").innerHTML = '<span class="sub">Running simulation and watching for bond changes...</span>';
   const resp = await fetch("/api/run_md", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload)});
   const data = await resp.json();
   if (data.error) { alert(data.error); return; }
   const evHtml = (data.events && data.events.length)
     ? data.events.map(e => `<span class="pill" style="margin-right:6px;border-color:#f59e0b;color:#fde68a;">Frame #${e.frame_index} (${e.time_fs.toFixed(1)} fs): ${e.event_type} [${e.labels.join('-')}] W=${e.work_ev.toFixed(3)} eV</span>`).join('')
-    : '<span class="pill">共扫描 ' + data.n_frames + ' 帧（当前阈值下无拓扑跳变，可在下方拖动滑块观察逐帧受力与运动向量对比）</span>';
+    : '<span class="pill">Scanned ' + data.n_frames + ' frames (drag the frame slider below to compare force and motion arrows)</span>';
   document.getElementById("mdEventsSummary").innerHTML = evHtml;
   document.getElementById("mdSvgContainer").innerHTML = data.svg || '';
   if (data.html) document.getElementById("mdReportFrame").srcdoc = data.html;
@@ -966,19 +963,19 @@ async function runOuroborosAudit() {
   if (data.error) { alert(data.error); return; }
   const et = data.enantiomer_test;
   const centersText = (data.chiral_centers && data.chiral_centers.length)
-    ? data.chiral_centers.map(c => `Atom ${c.symbol}#${c.atom_index}: V_signed = ${c.signed_volume_ang3.toFixed(4)} Å³ (sign=${c.handedness_sign > 0 ? '+1' : '-1'})`).join('; ')
-    : '无四面体手性中心（平面或非手性分子，理论 0o 手性输出严格为 0）';
+    ? data.chiral_centers.map(c => `Atom ${c.symbol}#${c.atom_index}: signed 3D volume = ${c.signed_volume_ang3.toFixed(4)} Å³ (sign = ${c.handedness_sign > 0 ? '+1' : '-1'})`).join('; ')
+    : 'No 4-group chiral atom (flat or symmetric molecule — true handedness is 0)';
   document.getElementById("stereoAuditResult").innerHTML = `
     <div class="law-grid">
       <div class="law-card pass">
-        <strong>3D CIP 立体审计 &amp; 有向四面体体积</strong>
-        <div class="mono" style="margin-top:6px;">SMILES: ${data.smiles} | Embedder: ${data.embedder} | stereo_ok: ${data.stereo_ok}</div>
+        <strong>3D Stereo Build &amp; Signed Tetrahedron Volume</strong>
+        <div class="mono" style="margin-top:6px;">SMILES: ${data.smiles} | Builder: ${data.embedder} | stereo_ok: ${data.stereo_ok}</div>
         <div style="font-size:12px;color:var(--muted);margin-top:6px;">${centersText}</div>
       </div>
       <div class="law-card pass">
-        <strong>镜像对映体反演测试 <code>X → -X</code>（YLM vs. Uni-Mol）</strong>
-        <div class="mono" style="margin-top:6px;color:#34d399;">YLM 0o: χ(X) = ${et.ylm_chiral_orig.toExponential(3)}, χ(-X) = ${et.ylm_chiral_mirror.toExponential(3)} (|χ(X)+χ(-X)| = ${et.ylm_sum_residual.toExponential(2)})</div>
-        <div class="mono" style="margin-top:4px;color:#f87171;">Uni-Mol: χ(X) = ${et.unimol_chiral_orig.toExponential(3)}, χ(-X) = ${et.unimol_chiral_mirror.toExponential(3)} (对映体差异 = ${et.unimol_diff.toExponential(2)}，完全失明)</div>
+        <strong>Mirror Twin Test <code>X → -X</code> (YLM vs. Uni-Mol)</strong>
+        <div class="mono" style="margin-top:6px;color:#34d399;">YLM: hand(X) = ${et.ylm_chiral_orig.toExponential(3)}, hand(-X) = ${et.ylm_chiral_mirror.toExponential(3)} (sum error = ${et.ylm_sum_residual.toExponential(2)})</div>
+        <div class="mono" style="margin-top:4px;color:#f87171;">Uni-Mol: hand(X) = ${et.unimol_chiral_orig.toExponential(3)}, hand(-X) = ${et.unimol_chiral_mirror.toExponential(3)} (difference = ${et.unimol_diff.toExponential(2)} — blind to mirror flip)</div>
       </div>
     </div>`;
   if (data.html) document.getElementById("stereoReportFrame").srcdoc = data.html;
@@ -988,7 +985,7 @@ async function runLiveBenchmark() {
   const btn = document.getElementById('btnLiveBench');
   const epochs = Number(document.getElementById('benchEpochs').value || 6);
   btn.disabled = true;
-  btn.textContent = '正在实时训练 4 个基座模型...';
+  btn.textContent = 'Training all 4 models on CPU...';
   try {
     const resp = await fetch('/api/eval_benchmark', {
       method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ epochs, eval_rotations: 4 })
@@ -1011,7 +1008,7 @@ async function runLiveBenchmark() {
     }).join('');
   } finally {
     btn.disabled = false;
-    btn.textContent = '⚡ 在线实时跑分 (CPU ~15s)';
+    btn.textContent = 'Train & Test Live on CPU (~15s)';
   }
 }
 
@@ -1031,7 +1028,7 @@ def create_studio_server(
 
     class StudioHandler(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):
-            return  # keep console clean during interactive / test usage
+            return
 
         def _send_json(self, code: int, payload: dict):
             raw = json.dumps(payload).encode("utf-8")
