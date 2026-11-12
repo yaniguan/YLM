@@ -63,7 +63,7 @@ as separated ions, with no contact ion pairs, solvation shell or intermolecular 
 
 ## Data, provenance and licensing
 
-Only public sources are used. No proprietary or SES AI records are included. Raw data,
+Only public sources are used. No proprietary or company-internal records are included. Raw data,
 conformer caches, MP structures and model weights remain outside version control.
 Dataset license terms are distinct from article and repository-code licenses.
 

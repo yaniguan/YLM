@@ -1,4 +1,4 @@
-"""Post-v0 baselines and compositional results -> results_baselines.md (reads runs_hoffman2/*/results.json).
+"""Post-v0 baselines and compositional results -> results_baselines.md (reads runs_uge/*/results.json).
 
   python scripts/15_table_baselines.py
 """
@@ -7,7 +7,7 @@ import os
 
 import numpy as np
 
-R = "runs_hoffman2"
+R = "runs_uge"
 
 
 def load(names):
