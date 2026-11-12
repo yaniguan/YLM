@@ -172,3 +172,17 @@ def test_studio_five_tab_http_endpoints_and_audit_cli(tmp_path) -> None:
     finally:
         srv.shutdown()
         srv.server_close()
+
+
+def test_reference_benchmark_comes_from_committed_results_file():
+    import json
+
+    from src.toolkit.server import _REFERENCE_RESULTS_FILE, _load_reference_benchmarks
+
+    assert _REFERENCE_RESULTS_FILE.exists()
+    saved = json.loads(_REFERENCE_RESULTS_FILE.read_text(encoding="utf-8"))
+    ref = _load_reference_benchmarks()["chiral_multirank_24ep"]["models"]
+    assert [m["model"] for m in ref] == [m["model"] for m in saved["models"]]
+    for row, m in zip(ref, saved["models"]):
+        assert row["chiral_acc"] == m["test"]["chiral_sign_acc"]
+        assert row["tensor_cos"] == m["test"]["tensor_cos"]

@@ -44,65 +44,40 @@ from src.universe_data import (
 )
 from src.universe_fm import YLMUniverseModel, compute_universe_loss, evaluate_universe_o3
 
-_REFERENCE_BENCHMARKS = {
-    "chiral_multirank_24ep": {
-        "title": "Handedness + 3D Arrow & Matrix Benchmark (24 Epochs, 8 Random Rotations + Mirror Flips)",
-        "models": [
-            {
-                "model": "GraphMVP / 3D-InfoMax",
-                "chiral_acc": 0.542,
-                "heldout_chiral_acc": 0.479,
-                "zeroshot_scaffold_acc": 0.500,
-                "chiral_parity_err": 0.677,
-                "achiral_planar_abs": 1.040,
-                "scalar_mae": 0.1079,
-                "vector_cos": 0.0202,
-                "vector_eq_err": 1.35,
-                "tensor_cos": 0.7107,
-                "routing_acc": 0.833,
-            },
-            {
-                "model": "Uni-Mol (3D Distance Transformer)",
-                "chiral_acc": 0.521,
-                "heldout_chiral_acc": 0.521,
-                "zeroshot_scaffold_acc": 0.484,
-                "chiral_parity_err": 0.805,
-                "achiral_planar_abs": 0.819,
-                "scalar_mae": 0.0996,
-                "vector_cos": 0.0197,
-                "vector_eq_err": 1.35,
-                "tensor_cos": 0.6953,
-                "routing_acc": 0.833,
-            },
-            {
-                "model": "EquiLLM (Scalar Bridge + Vector)",
-                "chiral_acc": 0.521,
-                "heldout_chiral_acc": 0.500,
-                "zeroshot_scaffold_acc": 0.500,
-                "chiral_parity_err": 0.665,
-                "achiral_planar_abs": 0.421,
-                "scalar_mae": 0.1175,
-                "vector_cos": 0.7007,
-                "vector_eq_err": 1.02e-6,
-                "tensor_cos": 0.9874,
-                "routing_acc": 0.917,
-            },
-            {
-                "model": "YLM-Universe (Ours)",
-                "chiral_acc": 1.000,
-                "heldout_chiral_acc": 1.000,
-                "zeroshot_scaffold_acc": 1.000,
-                "chiral_parity_err": 3.20e-7,
-                "achiral_planar_abs": 1.88e-7,
-                "scalar_mae": 0.1014,
-                "vector_cos": 0.7694,
-                "vector_eq_err": 1.05e-6,
-                "tensor_cos": 0.9974,
-                "routing_acc": 0.833,
-            },
-        ],
+_REFERENCE_RESULTS_FILE = REPO_ROOT / "results" / "cpu_smoke_nov12" / "chiral_benchmark.json"
+
+
+def _load_reference_benchmarks() -> dict:
+    """Read the saved handedness benchmark from the committed results file.
+
+    Returns an empty model list if the file is missing, so the Studio never shows numbers
+    that are not backed by a file in the repo.
+    """
+    models = []
+    if _REFERENCE_RESULTS_FILE.exists():
+        data = json.loads(_REFERENCE_RESULTS_FILE.read_text(encoding="utf-8"))
+        for m in data.get("models", []):
+            test = m["test"]
+            models.append({
+                "model": m["model"],
+                "chiral_acc": test["chiral_sign_acc"],
+                "heldout_chiral_acc": m["test_heldout"]["chiral_sign_acc"],
+                "zeroshot_scaffold_acc": m["test_zero_shot_scaffold"]["chiral_sign_acc"],
+                "chiral_parity_err": test["chiral_parity_err"],
+                "achiral_planar_abs": m["achiral_planar_max_abs"],
+                "scalar_mae": test["scalar_mae"],
+                "vector_cos": test["vector_cos"],
+                "vector_eq_err": test["vector_eq_err"],
+                "tensor_cos": test["tensor_cos"],
+                "routing_acc": test["routing_acc"],
+            })
+    return {
+        "chiral_multirank_24ep": {
+            "title": "Handedness + 3D Arrow & Matrix Benchmark (24 Epochs, 8 Random Rotations + Mirror Flips)",
+            "source": "results/cpu_smoke_nov12/chiral_benchmark.json",
+            "models": models,
+        }
     }
-}
 
 
 def _run_live_mini_benchmark(epochs: int = 6, eval_rotations: int = 4) -> dict:
@@ -604,11 +579,11 @@ H -0.015 -0.745 -0.485</textarea>
       <div style="display:flex;gap:8px;align-items:center;">
         <label style="margin:0;">Training epochs:</label>
         <input type="number" id="benchEpochs" value="6" min="2" max="20" style="width:72px;" />
-        <button class="btn" id="btnLiveBench" onclick="runLiveBenchmark()">Train &amp; Test Live on CPU (~15s)</button>
+        <button class="btn" id="btnLiveBench" onclick="runLiveBenchmark()">Train &amp; Test Live on CPU</button>
       </div>
     </div>
 
-    <h4 style="margin:14px 0 8px;font-size:14px;color:var(--accent);">A. Saved 24-Epoch Benchmark (8 mirror-twin families, including unseen molecule shapes)</h4>
+    <h4 style="margin:14px 0 8px;font-size:14px;color:var(--accent);">A. Saved 24-Epoch CPU Run (8 mirror-twin families, including unseen molecule shapes; from <code>results/cpu_smoke_nov12/chiral_benchmark.json</code>)</h4>
     <div style="overflow-x:auto;">
       <table>
         <thead>
@@ -1008,7 +983,7 @@ async function runLiveBenchmark() {
     }).join('');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Train & Test Live on CPU (~15s)';
+    btn.textContent = 'Train & Test Live on CPU';
   }
 }
 
@@ -1080,7 +1055,7 @@ def create_studio_server(
                     }
                 self._send_json(HTTPStatus.OK, {
                     "presets": serialized,
-                    "reference_benchmarks": _REFERENCE_BENCHMARKS,
+                    "reference_benchmarks": _load_reference_benchmarks(),
                 })
                 return
 
