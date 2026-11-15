@@ -82,7 +82,9 @@ rotation error: 1.2e-06
 
 ## Results
 
-TensorQA-v0 test set, force questions (hartree/bohr).
+### TensorQA-v0 test set (Option A, 32 random rotations)
+
+Force questions (hartree/bohr), evaluated on the packaged v0 question file (`84,757` questions, `584` unique strings).
 
 | Result | Value | Source |
 |---|---|---|
@@ -90,10 +92,21 @@ TensorQA-v0 test set, force questions (hartree/bohr).
 | Force cosine, task ID instead of question text (4 seeds) | 0.113 ± 0.004 | [`results.md`](results.md) |
 | Force MAE, YLM + MatSciBERT vs task ID | 0.0064 vs 0.0424 (6.6× lower) | [`results.md`](results.md) |
 | Mean rotation (equivariance) error | **~2e-6** (float32 round-off) | [`checkpoints/v0/results.json`](checkpoints/v0/results.json) (`eq_err_mean`) |
-| Force MAE, Option C (seed 0, MiniLM) | 0.00487 (cos 0.976) | [`docs/results_options_abc.md`](docs/results_options_abc.md) |
 | Force cosine on held-out wordings, MatSciBERT | 0.917 ± 0.021 | [`results.md`](results.md) |
 
 Without the question text the model cannot tell which atom is asked about, so the force direction is near random. With the text it is right. The worst-case rotation error (`eq_err` in `results.md`) reaches ~1e-3 on near-zero predictions.
+
+### Oct 30–31 Option runs (MiniLM, seed 0, 4 rotations + reflections)
+
+Force questions (hartree/bohr), trained and scored in [`colab/ylm_train.ipynb`](colab/ylm_train.ipynb) under 4 rotations + reflections:
+
+| Option | Force MAE | Force cosine | Atom acc | Held-out force MAE / cosine | Source |
+|---|---|---|---|---|---|
+| Option A | 0.00668 | 0.9559 | 0.909 | 0.0107 / 0.903 | [`docs/results_options_abc.md`](docs/results_options_abc.md) |
+| Option B | 0.00680 | 0.9588 | 0.696 | 0.00952 / 0.923 | [`docs/results_options_abc.md`](docs/results_options_abc.md) |
+| Option C | **0.00487** | **0.9762** | **0.920** | 0.0125 / 0.892 | [`docs/results_options_abc.md`](docs/results_options_abc.md) |
+
+These Colab runs rebuilt the dataset from `qm9.zip` via `scripts/01`–`03`, and rebuilding does not produce the exact packaged v0 file (a fresh rebuild in [`docs/WORKLOG_oct29b.md`](docs/WORKLOG_oct29b.md) gave `84,787` questions and `571` unique strings vs `84,757` / `584` in v0), so compare Options A, B, and C within this table rather than directly against the v0 table above.
 
 ## How it works
 
