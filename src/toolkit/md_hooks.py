@@ -424,8 +424,8 @@ def plot_reaction_timeline(
             out_p = out_p.with_suffix(".svg")
 
     # Clean, dependency-free standalone SVG timeline plot
-    w, h = 760, 320
-    pad_l, pad_r, pad_t, pad_b = 64, 28, 36, 44
+    w, h = 760, 260
+    pad_l, pad_r, pad_t, pad_b = 58, 24, 38, 40
     pw, ph = w - pad_l - pad_r, h - pad_t - pad_b
     t_min, t_max = min(times), max(times)
     if abs(t_max - t_min) < 1e-9:
@@ -435,7 +435,7 @@ def plot_reaction_timeline(
         return pad_l + ((t - t_min) / (t_max - t_min)) * pw
 
     y_vals = works if any(abs(v) > 1e-9 for v in works) else deltas
-    y_label = "Directional Work F·dr (eV)" if any(abs(v) > 1e-9 for v in works) else "Proton Sharing delta (A)"
+    y_label = "Work F·dr (eV)" if any(abs(v) > 1e-9 for v in works) else "Proton delta (A)"
     y_min, y_max = min(min(y_vals), -0.05), max(max(y_vals), 0.05)
     if abs(y_max - y_min) < 1e-9:
         y_max = y_min + 1.0
@@ -445,32 +445,32 @@ def plot_reaction_timeline(
 
     pts = " ".join(f"{sx(t):.1f},{sy(v):.1f}" for t, v in zip(times, y_vals))
     event_svg = []
-    colors = {"bond_formed": "#16a34a", "bond_broken": "#dc2626", "proton_transfer": "#d97706"}
+    colors = {"bond_formed": "#15803d", "bond_broken": "#b91c1c", "proton_transfer": "#b45309"}
     for idx_e, ev in enumerate(events):
         ex = sx(ev.time_fs)
-        col = colors.get(ev.event_type, "#2563eb")
+        col = colors.get(ev.event_type, "#1d4ed8")
         ty = pad_t + 16 + (idx_e % 3) * 16
         event_svg.append(
-            f"<line x1='{ex:.1f}' y1='{pad_t}' x2='{ex:.1f}' y2='{pad_t + ph}' stroke='{col}' stroke-width='1.8' stroke-dasharray='4,3'/>"
-            f"<circle cx='{ex:.1f}' cy='{ty}' r='4' fill='{col}'/>"
-            f"<text x='{ex + 6:.1f}' y='{ty + 4}' font-family='sans-serif' font-size='11' fill='{col}'>"
-            f"f#{ev.frame_index} ({ev.time_fs:.1f} fs): {ev.event_type} {'-'.join(ev.labels)}</text>"
+            f"<line x1='{ex:.1f}' y1='{pad_t}' x2='{ex:.1f}' y2='{pad_t + ph}' stroke='{col}' stroke-width='1.4' stroke-dasharray='4,3'/>"
+            f"<circle cx='{ex:.1f}' cy='{ty}' r='3.5' fill='{col}'/>"
+            f"<text x='{ex + 6:.1f}' y='{ty + 4}' font-family='system-ui, sans-serif' font-size='11' font-weight='500' fill='{col}'>"
+            f"{ev.event_type} ({ev.time_fs:.1f} fs · {'-'.join(ev.labels)})</text>"
         )
 
     y_zero = sy(0.0)
-    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}">
-  <rect width="{w}" height="{h}" rx="10" fill="#0f172a"/>
-  <text x="{pad_l}" y="22" font-family="sans-serif" font-size="13" font-weight="bold" fill="#f8fafc">
-    YLM Live MD Reaction Timeline ({len(events)} reactive events across {len(history)} frames)
+    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="{h}" viewBox="0 0 {w} {h}" style="max-width:{w}px;display:block;">
+  <rect width="{w}" height="{h}" rx="12" fill="#ffffff" stroke="#e8e6e0"/>
+  <text x="{pad_l}" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="12.5" font-weight="600" fill="#141413">
+    Reaction Timeline · {len(events)} events across {len(history)} frames
   </text>
-  <rect x="{pad_l}" y="{pad_t}" width="{pw}" height="{ph}" fill="#1e293b" stroke="#334155"/>
-  <line x1="{pad_l}" y1="{y_zero:.1f}" x2="{pad_l + pw}" y2="{y_zero:.1f}" stroke="#475569" stroke-dasharray="3,3"/>
-  <polyline fill="none" stroke="#38bdf8" stroke-width="2.2" points="{pts}"/>
+  <rect x="{pad_l}" y="{pad_t}" width="{pw}" height="{ph}" rx="6" fill="#faf9f7" stroke="#eceae4"/>
+  <line x1="{pad_l}" y1="{y_zero:.1f}" x2="{pad_l + pw}" y2="{y_zero:.1f}" stroke="#d5d2c9" stroke-dasharray="3,3"/>
+  <polyline fill="none" stroke="#141413" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="{pts}"/>
   {''.join(event_svg)}
-  <text x="{pad_l + pw / 2:.1f}" y="{h - 12}" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#94a3b8">
-    Simulation Time ({t_min:.1f} fs — {t_max:.1f} fs)
+  <text x="{pad_l + pw / 2:.1f}" y="{h - 12}" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" fill="#8e8c85">
+    Time ({t_min:.1f} – {t_max:.1f} fs)
   </text>
-  <text x="18" y="{pad_t + ph / 2:.1f}" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#94a3b8" transform="rotate(-90 18 {pad_t + ph / 2:.1f})">
+  <text x="18" y="{pad_t + ph / 2:.1f}" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" fill="#8e8c85" transform="rotate(-90 18 {pad_t + ph / 2:.1f})">
     {y_label}
   </text>
 </svg>"""

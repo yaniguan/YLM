@@ -1,11 +1,11 @@
 """Local browser app for testing YLM features and physics rules (`ylm serve`).
 
-Runs on Python's built-in `http.server` with 5 tabs:
-  1. Physics Rules Lab : 8 live physics checks + 3D spin, mirror, move, and atom-swap sandbox
-  2. 3D Question Probe : Ask questions in plain English on molecules, electrolytes, MD frames, and drugs
-  3. Live Reactive MD  : Watch bond breaking, bond forming, and H+ jumps frame by frame
-  4. 3D Handedness     : Turn 2D stereo SMILES (`@/@@`, `/\\`) into 3D atoms and test mirror twins
-  5. Model Comparison  : Compare YLM against Uni-Mol, GraphMVP, and EquiLLM on CPU
+Runs on Python's built-in `http.server` with 5 views:
+  1. Symmetry   : 8 live physics checks + 3D spin, mirror, move, and atom-order sandbox
+  2. Playground : Ask plain-English 3D questions on molecules, electrolytes, MD frames, and drugs
+  3. Dynamics   : Watch bond breaking, bond forming, and H+ jumps frame by frame
+  4. Chirality  : Turn 2D stereo SMILES (`@/@@`, `/\\`) into 3D atoms and test mirror twins
+  5. Benchmarks : Compare YLM against Uni-Mol, GraphMVP, and EquiLLM
 """
 from __future__ import annotations
 
@@ -97,10 +97,10 @@ def _run_live_mini_benchmark(epochs: int = 6, eval_rotations: int = 4) -> dict:
     cross_ir = "8x0e + 8x1o + 4x1e + 4x2e"
     candidates = [
         ("GraphMVP / 3D-InfoMax", GraphMVP3DInfoMaxBaseline(text_dim=64, d_model=48, n_layers=2)),
-        ("Uni-Mol (3D Distance Transformer)", UniMolStyle3DBaseline(text_dim=64, d_model=48, n_layers=2, n_heads=4)),
-        ("EquiLLM (Scalar Bridge + Vector)", EquiLLMMultiTaskBaseline(text_dim=64, hidden_irreps=hidden_ir, n_layers=2, d_model=48, n_vec=8)),
+        ("Uni-Mol (3D Distance)", UniMolStyle3DBaseline(text_dim=64, d_model=48, n_layers=2, n_heads=4)),
+        ("EquiLLM (Scalar Bridge)", EquiLLMMultiTaskBaseline(text_dim=64, hidden_irreps=hidden_ir, n_layers=2, d_model=48, n_vec=8)),
         (
-            "YLM-Universe (Ours)",
+            "YLM-Universe",
             YLMUniverseModel(
                 text_dim=64, backbone="e3nn", hidden_irreps=hidden_ir, cross_irreps=cross_ir,
                 n_layers=2, n_cross_layers=2, option="C", c_tp_mode="channelwise", d_text=64,
@@ -208,7 +208,7 @@ def _handle_ouroboros_inspect(smiles: str, question: str, active_probe: YLMProbe
             "unimol_chiral_mirror": float(u1["chiral"][0, 0].item()),
             "unimol_diff": abs(float(u0["chiral"][0, 0].item() - u1["chiral"][0, 0].item())),
         },
-        "html": render_html_report(probe_res, title=f"Stereo Check: {smi}"),
+        "html": render_html_report(probe_res, title=f"Chirality · {smi}"),
     }
 
 
@@ -284,338 +284,543 @@ def _handle_run_md(body: dict, active_probe: YLMProbe) -> dict:
 
 
 _STUDIO_INDEX_HTML = """<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>YLM Directional Chemistry Studio — Physics &amp; 3D Molecule Lab</title>
+<title>YLM Directional Chemistry Studio</title>
 <style>
   :root {
-    --bg: #0b1120; --panel: #131c31; --panel2: #1b2742; --border: #2b3b5e;
-    --text: #f1f5f9; --muted: #94a3b8; --accent: #38bdf8; --pass: #10b981;
-    --fail: #ef4444; --warn: #f59e0b;
+    --bg: #faf9f7;
+    --nav-bg: rgba(250, 249, 247, 0.86);
+    --surface: #ffffff;
+    --subtle: #f3f2ee;
+    --subtle-hover: #ebe9e2;
+    --border: #e8e6e0;
+    --border-strong: #d4d1c8;
+    --ink: #141413;
+    --ink-2: #5e5d59;
+    --ink-3: #8e8c85;
+    --btn-bg: #141413;
+    --btn-fg: #ffffff;
+    --btn-hover: #2c2b28;
+    --ok-fg: #166534;
+    --ok-bg: #eef8f1;
+    --ok-bd: #cbead5;
+    --err-fg: #b42318;
+    --err-bg: #fef3f2;
+    --err-bd: #fecdca;
+    --shadow-sm: 0 1px 2px rgba(20, 20, 19, 0.03), 0 6px 20px rgba(20, 20, 19, 0.025);
   }
-  * { box-sizing: border-box; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-  body { margin: 0; background: var(--bg); color: var(--text); padding: 18px 22px 36px; }
-  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
-  .brand h1 { margin: 0; font-size: 21px; letter-spacing: -0.01em; }
-  .brand p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
-  .pill { padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: var(--panel); }
-  .pill-ok { color: #34d399; border-color: #059669; background: rgba(16,185,129,0.12); }
-  .tabs { display: flex; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 18px; }
-  .tab-btn { background: var(--panel); color: var(--muted); border: 1px solid var(--border); padding: 9px 15px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.15s; }
-  .tab-btn:hover { color: var(--text); border-color: #475569; }
-  .tab-btn.active { background: rgba(56,189,248,0.16); color: var(--accent); border-color: #0284c7; }
+  [data-theme="dark"] {
+    --bg: #111110;
+    --nav-bg: rgba(17, 17, 16, 0.86);
+    --surface: #191918;
+    --subtle: #222220;
+    --subtle-hover: #2b2b28;
+    --border: #2c2c29;
+    --border-strong: #3d3d39;
+    --ink: #ededec;
+    --ink-2: #a1a09a;
+    --ink-3: #6f6e69;
+    --btn-bg: #ededec;
+    --btn-fg: #111110;
+    --btn-hover: #ffffff;
+    --ok-fg: #4ade80;
+    --ok-bg: rgba(34, 197, 94, 0.10);
+    --ok-bd: rgba(34, 197, 94, 0.24);
+    --err-fg: #f87171;
+    --err-bg: rgba(239, 68, 68, 0.10);
+    --err-bd: rgba(239, 68, 68, 0.24);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .topbar-wrap {
+    position: sticky; top: 0; z-index: 30;
+    background: var(--nav-bg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar {
+    max-width: 1140px; margin: 0 auto; padding: 12px 28px;
+    display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 28px; height: 28px; border-radius: 8px; background: var(--ink); color: var(--surface);
+    display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px;
+    letter-spacing: -0.03em;
+  }
+  .brand-name { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; }
+  .brand-tag { font-size: 12.5px; color: var(--ink-3); padding-left: 8px; border-left: 1px solid var(--border); }
+  .seg-nav {
+    display: inline-flex; gap: 2px; background: var(--subtle);
+    padding: 3px; border-radius: 999px; border: 1px solid var(--border);
+  }
+  .tab-btn {
+    background: transparent; color: var(--ink-2); border: none;
+    padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s ease;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active {
+    background: var(--surface); color: var(--ink);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+  }
+  .nav-right { display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink-2); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+  .icon-btn:hover { color: var(--ink); border-color: var(--border-strong); }
+
+  .container { max-width: 1140px; margin: 0 auto; padding: 32px 28px 72px; }
   .pane { display: none; }
-  .pane.active { display: block; }
-  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-  .card h3 { margin: 0 0 6px; font-size: 15px; }
-  .sub { font-size: 12px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  @media (max-width: 980px) { .row2, .row3 { grid-template-columns: 1fr; } }
-  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-  input[type="text"], input[type="number"], select, textarea {
-    width: 100%; background: #090e1a; color: var(--text); border: 1px solid var(--border);
-    border-radius: 8px; padding: 8px 10px; font-size: 13px;
+  .pane.active { display: block; animation: fadeIn 0.18s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+
+  .page-head {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 24px;
   }
-  input[type="range"] { width: 100%; accent-color: var(--accent); }
-  .btn { background: #0284c7; color: white; border: none; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
-  .btn:hover { background: #0369a1; }
-  .btn-sec { background: var(--panel2); border: 1px solid var(--border); color: var(--text); }
-  .btn-sec:hover { border-color: var(--accent); }
-  .law-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 12px; margin-top: 12px; }
-  .law-card { background: #0d1526; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
-  .law-card.pass { border-left: 4px solid var(--pass); }
-  .law-card.fail { border-left: 4px solid var(--fail); }
-  .badge-pass { background: rgba(16,185,129,0.16); color: #34d399; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-  .badge-fail { background: rgba(239,68,68,0.18); color: #f87171; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+  .page-head h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.025em; }
+  .page-head p { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 22px; box-shadow: var(--shadow-sm);
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 500;
+    border: 1px solid var(--border); background: var(--surface); color: var(--ink-2);
+  }
+  .pill-ok { background: var(--ok-bg); color: var(--ok-fg); border-color: var(--ok-bd); }
+  .pill-err { background: var(--err-bg); color: var(--err-fg); border-color: var(--err-bd); }
+  .dot-ok { width: 6px; height: 6px; border-radius: 99px; background: currentColor; }
+
+  label { display: block; font-size: 12px; font-weight: 500; color: var(--ink-3); margin-bottom: 6px; }
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%; background: var(--surface); color: var(--ink);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px 12px; font-size: 13.5px; font-family: inherit;
+    outline: none; transition: border-color 0.15s;
+  }
+  input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+    border-color: var(--ink-2);
+  }
+  input[type="range"] { width: 100%; accent-color: var(--ink); cursor: pointer; }
+
+  .btn {
+    background: var(--btn-bg); color: var(--btn-fg); border: 1px solid transparent;
+    padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: background 0.15s ease; white-space: nowrap;
+  }
+  .btn:hover { background: var(--btn-hover); }
+  .btn:disabled { opacity: 0.55; cursor: default; }
+  .btn-ghost {
+    background: var(--surface); color: var(--ink); border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--subtle); border-color: var(--border-strong); }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font-size: 12.5px; padding: 5px 12px; border-radius: 999px;
+    background: var(--subtle); border: 1px solid transparent;
+    color: var(--ink-2); cursor: pointer; transition: all 0.14s ease;
+  }
+  .chip:hover { background: var(--subtle-hover); color: var(--ink); }
+  .chip.active { background: var(--ink); color: var(--surface); }
+
+  .sym-layout {
+    display: grid; grid-template-columns: minmax(380px, 1.3fr) minmax(320px, 1fr);
+    gap: 20px; align-items: start;
+  }
+  @media (max-width: 960px) { .sym-layout { grid-template-columns: 1fr; } }
+
+  .canvas-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .canvas-pair { grid-template-columns: 1fr; } }
+  .canvas-box {
+    background: var(--subtle); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; position: relative;
+  }
+  .canvas-caption {
+    position: absolute; top: 10px; left: 12px; font-size: 11.5px; font-weight: 500;
+    color: var(--ink-2); pointer-events: none;
+  }
+  .canvas-legend {
+    position: absolute; bottom: 9px; left: 12px; display: flex; gap: 10px;
+    font-size: 11px; color: var(--ink-2); pointer-events: none;
+  }
+  canvas.scene3d { width: 100%; height: 245px; display: block; cursor: grab; }
+  canvas.scene3d:active { cursor: grabbing; }
+
+  .slider-strip {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+  }
+  .toggle-strip {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 10px; margin-top: 12px;
+  }
+  .check-pill {
+    display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px;
+    border-radius: 999px; background: var(--subtle); font-size: 12.5px;
+    color: var(--ink-2); cursor: pointer; user-select: none;
+  }
+  .check-pill input { margin: 0; accent-color: var(--ink); }
+
+  .law-list { display: flex; flex-direction: column; }
+  .law-item { border-bottom: 1px solid var(--border); padding: 12px 2px; }
+  .law-item:first-child { padding-top: 2px; }
+  .law-item:last-child { border-bottom: none; padding-bottom: 2px; }
+  .law-item summary {
+    list-style: none; display: flex; justify-content: space-between;
+    align-items: center; gap: 10px; cursor: pointer; user-select: none;
+  }
+  .law-item summary::-webkit-details-marker { display: none; }
+  .law-title { display: flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 500; }
+  .law-check {
+    width: 18px; height: 18px; border-radius: 99px; display: inline-flex;
+    align-items: center; justify-content: center; font-size: 11px; font-weight: 700;
+  }
+  .law-check.ok { background: var(--ok-bg); color: var(--ok-fg); }
+  .law-check.bad { background: var(--err-bg); color: var(--err-fg); }
+  .law-body { padding: 10px 0 4px 27px; font-size: 12.5px; color: var(--ink-2); line-height: 1.55; }
+
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; }
-  th { color: var(--muted); font-size: 12px; font-weight: 600; background: #0d1526; }
-  canvas.scene3d { width: 100%; height: 320px; background: #070b14; border-radius: 10px; border: 1px solid var(--border); display: block; cursor: grab; }
-  iframe.report-box { width: 100%; height: 640px; border: 1px solid var(--border); border-radius: 12px; background: #090d16; }
-  .preset-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: #0d1526; border: 1px solid var(--border); color: #cbd5e1; cursor: pointer; }
-  .chip:hover { border-color: var(--accent); color: white; }
-  .metric-bar { height: 8px; border-radius: 999px; background: #090e1a; overflow: hidden; width: 110px; display: inline-block; vertical-align: middle; margin-right: 6px; }
-  .metric-fill { height: 100%; background: linear-gradient(90deg, #38bdf8, #10b981); }
+  th {
+    padding: 10px 12px; border-bottom: 1px solid var(--border);
+    color: var(--ink-3); font-size: 12px; font-weight: 500; text-align: left;
+  }
+  td { padding: 11px 12px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  .num { text-align: right; }
+  tr.row-highlight td { background: var(--subtle); font-weight: 500; }
+
+  .composer {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 16px 18px; box-shadow: var(--shadow-sm);
+    margin-bottom: 22px;
+  }
+  .composer-bar {
+    display: flex; align-items: center; gap: 10px; margin-top: 12px;
+    background: var(--subtle); border-radius: 12px; padding: 6px 6px 6px 14px;
+    border: 1px solid transparent; transition: border-color 0.15s;
+  }
+  .composer-bar:focus-within { border-color: var(--border-strong); background: var(--surface); }
+  .composer-bar input {
+    border: none; background: transparent; padding: 6px 0; font-size: 14.5px; flex: 1;
+  }
+  .composer-bar select {
+    width: auto; border: none; background: transparent; color: var(--ink-2);
+    font-size: 12.5px; padding: 6px 8px; cursor: pointer;
+  }
+
+  iframe.report-box {
+    width: 100%; min-height: 520px; border: none; background: transparent; display: block;
+  }
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
+  @media (max-width: 760px) { .kpi-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="brand">
-    <h1>YLM Directional Chemistry Studio</h1>
-    <p>Ask questions in plain English, get 3D arrows back, and test whether the model obeys real-world 3D physics.</p>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <span class="pill pill-ok" id="engineBadge">Engine: Ready</span>
-  </div>
-</div>
-
-<div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('physics', this)">1. Physics Rules Lab</button>
-  <button class="tab-btn" onclick="switchTab('probe', this)">2. Ask a 3D Question</button>
-  <button class="tab-btn" onclick="switchTab('md', this)">3. Watch Reactions (MD)</button>
-  <button class="tab-btn" onclick="switchTab('ouroboros', this)">4. Left vs. Right Handedness</button>
-  <button class="tab-btn" onclick="switchTab('benchmark', this)">5. Compare Models</button>
-</div>
-
-<!-- ================= TAB 1: PHYSICS RULES LAB ================= -->
-<div id="pane-physics" class="pane active">
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-      <div>
-        <h3>8 Basic Physics Rules — Live Check</h3>
-        <div class="sub">Every real molecule obeys simple 3D rules: moving it in empty space changes nothing, spinning it spins its force and dipole arrows by the same angle, flipping it in a mirror turns a left-handed molecule into a right-handed one, and internal forces add up to zero.</div>
-      </div>
-      <div id="auditSummaryBadge" class="pill pill-ok">Ready to check...</div>
+<div class="topbar-wrap">
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-mark">Y</span>
+      <span class="brand-name">YLM</span>
+      <span class="brand-tag">3D Equivariant Chemistry</span>
     </div>
 
-    <div class="row3" style="margin-top:8px;">
+    <nav class="seg-nav">
+      <button class="tab-btn active" onclick="switchTab('physics', this)">Symmetry</button>
+      <button class="tab-btn" onclick="switchTab('probe', this)">Playground</button>
+      <button class="tab-btn" onclick="switchTab('md', this)">Dynamics</button>
+      <button class="tab-btn" onclick="switchTab('ouroboros', this)">Chirality</button>
+      <button class="tab-btn" onclick="switchTab('benchmark', this)">Benchmarks</button>
+    </nav>
+
+    <div class="nav-right">
+      <span class="pill pill-ok" id="engineBadge"><span class="dot-ok"></span>Ready</span>
+      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Switch light / dark theme">☾</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ================= 1. SYMMETRY ================= -->
+  <div id="pane-physics" class="pane active">
+    <div class="page-head">
       <div>
-        <label>Pick a test molecule or crystal</label>
-        <select id="auditPresetSel" onchange="runPhysicsAudit()"></select>
+        <h1>Physical Symmetry</h1>
+        <p>Rotate, mirror, shift, or reorder atoms in 3D and verify exact conservation laws.</p>
       </div>
-      <div>
-        <label>Question in plain English</label>
-        <input type="text" id="auditQuestion" value="What is the 3D molecular dipole moment vector?" />
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="auditPresetSel" onchange="runPhysicsAudit()" style="width:auto;min-width:220px;"></select>
+        <select id="auditPrecision" onchange="runPhysicsAudit()" style="width:auto;">
+          <option value="float64" selected>64-bit strict</option>
+          <option value="float32">32-bit fast</option>
+        </select>
+        <button class="btn" onclick="runPhysicsAudit()">Verify</button>
       </div>
-      <div style="display:flex;gap:10px;align-items:flex-end;">
-        <div style="flex:1;">
-          <label>Number precision</label>
-          <select id="auditPrecision" onchange="runPhysicsAudit()">
-            <option value="float64" selected>64-bit float (strict check, error &lt; 1e-8)</option>
-            <option value="float32">32-bit float (fast mode, error &lt; 5e-5)</option>
-          </select>
+    </div>
+    <input type="hidden" id="auditQuestion" value="What is the 3D molecular dipole moment vector?" />
+
+    <div class="sym-layout">
+      <!-- Left: Interactive 3D Sandbox -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <span style="font-weight:600;font-size:14.5px;">3D Pose &amp; Mirror Sandbox</span>
+          <span class="pill mono" id="detReadout">det(Q) = +1</span>
         </div>
-        <button class="btn" onclick="runPhysicsAudit()">Run All 8 Checks</button>
+
+        <div class="canvas-pair">
+          <div class="canvas-box">
+            <div class="canvas-caption">Original</div>
+            <canvas id="cvOrig" class="scene3d"></canvas>
+            <div class="canvas-legend">
+              <span><b style="color:#1d4ed8;">●</b> YLM</span>
+            </div>
+          </div>
+          <div class="canvas-box">
+            <div class="canvas-caption">Transformed</div>
+            <canvas id="cvTrans" class="scene3d"></canvas>
+            <div class="canvas-legend">
+              <span><b style="color:#15803d;">●</b> Target</span>
+              <span><b style="color:#1d4ed8;">●</b> YLM</span>
+              <span><b style="color:#b91c1c;">●</b> Uni-Mol</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="slider-strip">
+          <div>
+            <label>X rotation · <span id="lblRx" class="mono" style="color:var(--ink);">35°</span></label>
+            <input type="range" id="slRx" min="-180" max="180" value="35" oninput="onSandboxChange()" />
+          </div>
+          <div>
+            <label>Y rotation · <span id="lblRy" class="mono" style="color:var(--ink);">-48°</span></label>
+            <input type="range" id="slRy" min="-180" max="180" value="-48" oninput="onSandboxChange()" />
+          </div>
+          <div>
+            <label>Z rotation · <span id="lblRz" class="mono" style="color:var(--ink);">72°</span></label>
+            <input type="range" id="slRz" min="-180" max="180" value="72" oninput="onSandboxChange()" />
+          </div>
+        </div>
+
+        <div class="toggle-strip">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <label class="check-pill">
+              <input type="checkbox" id="chkReflect" checked onchange="runPoseSandbox()" />
+              Mirror flip
+            </label>
+            <label class="check-pill">
+              <input type="checkbox" id="chkPermute" onchange="runPoseSandbox()" />
+              Shuffle atoms
+            </label>
+            <label class="check-pill">
+              <input type="checkbox" id="chkTranslate" onchange="runPoseSandbox()" />
+              Shift +t
+            </label>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th class="num">Energy drift</th>
+                <th class="num">Mirror error</th>
+                <th class="num">Arrow cosine</th>
+                <th class="num">Matrix error</th>
+              </tr>
+            </thead>
+            <tbody id="sandboxTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right: Clean 8-Law Scorecard -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <span style="font-weight:600;font-size:14.5px;">8 Conservation &amp; Symmetry Laws</span>
+          <span id="auditSummaryBadge" class="pill pill-ok">Checking...</span>
+        </div>
+        <div id="lawsContainer" class="law-list"></div>
       </div>
     </div>
-
-    <div id="lawsContainer" class="law-grid"></div>
   </div>
 
-  <div class="card">
-    <h3>3D Spin &amp; Mirror Sandbox (YLM vs. Uni-Mol, GraphMVP &amp; EquiLLM)</h3>
-    <div class="sub">Drag the angle sliders or check <strong>Flip in a mirror</strong>: on the right canvas, the green target arrow and blue YLM arrow stay locked together, while the red Uni-Mol arrow points the wrong way because Uni-Mol only sees atom-to-atom distances.</div>
-
-    <div class="row3" style="margin-bottom:12px;">
+  <!-- ================= 2. PLAYGROUND ================= -->
+  <div id="pane-probe" class="pane">
+    <div class="page-head">
       <div>
-        <label>Spin around X axis: <strong id="lblRx">35°</strong></label>
-        <input type="range" id="slRx" min="-180" max="180" value="35" oninput="onSandboxChange()" />
+        <h1>3D Playground</h1>
+        <p>Ask natural-language questions on molecules, ion shells, reaction frames, or protein pockets.</p>
       </div>
-      <div>
-        <label>Spin around Y axis: <strong id="lblRy">-48°</strong></label>
-        <input type="range" id="slRy" min="-180" max="180" value="-48" oninput="onSandboxChange()" />
-      </div>
-      <div>
-        <label>Spin around Z axis: <strong id="lblRz">72°</strong></label>
-        <input type="range" id="slRz" min="-180" max="180" value="72" oninput="onSandboxChange()" />
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-ghost" onclick="toggleCoordsDrawer()">Coordinates</button>
+        <button class="btn btn-ghost" onclick="buildLiCluster()">+ Li+ Shell</button>
       </div>
     </div>
 
-    <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
-      <label style="display:inline-flex;align-items:center;gap:6px;color:var(--text);font-size:13px;cursor:pointer;">
-        <input type="checkbox" id="chkReflect" onchange="runPoseSandbox()" />
-        Flip in a mirror (left hand ↔ right hand, <code>det = -1</code>)
-      </label>
-      <label style="display:inline-flex;align-items:center;gap:6px;color:var(--text);font-size:13px;cursor:pointer;">
-        <input type="checkbox" id="chkPermute" onchange="runPoseSandbox()" />
-        Shuffle atom row order
-      </label>
-      <label style="display:inline-flex;align-items:center;gap:6px;color:var(--text);font-size:13px;cursor:pointer;">
-        <input type="checkbox" id="chkTranslate" onchange="runPoseSandbox()" />
-        Shift position by <code>(+3.5, -2.1, +4.0) Å</code>
-      </label>
-      <span class="pill mono" id="detReadout">det(Q) = +1.0000</span>
-    </div>
+    <div class="composer">
+      <div class="chip-row" id="probePresetChips"></div>
 
-    <div class="row2">
-      <div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Before transform (blue = YLM arrow, yellow glow = which atom the model looks at)</div>
-        <canvas id="cvOrig" class="scene3d"></canvas>
+      <div class="composer-bar">
+        <input type="text" id="qInput" value="What is the force vector on the hydrogen atom?" onkeydown="if(event.key==='Enter')runQuery()" placeholder="Ask about a dipole, atom force, or safe growth direction..." />
+        <select id="domainSel">
+          <option value="general">General</option>
+          <option value="electrolyte">Electrolyte</option>
+          <option value="md">Dynamics</option>
+          <option value="drug">Drug Pocket</option>
+        </select>
+        <button class="btn" onclick="runQuery()">Ask →</button>
       </div>
-      <div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">After transform (green = exact physics | blue = YLM | red = Uni-Mol)</div>
-        <canvas id="cvTrans" class="scene3d"></canvas>
-      </div>
-    </div>
 
-    <div style="margin-top:14px;overflow-x:auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>Model</th>
-            <th>Energy drift ↓</th>
-            <th>Handedness (before → after)</th>
-            <th>Mirror rule error ↓</th>
-            <th>3D arrow error ↓</th>
-            <th>3x3 matrix error ↓</th>
-            <th>Atom-order error ↓</th>
-          </tr>
-        </thead>
-        <tbody id="sandboxTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- ================= TAB 2: ASK A 3D QUESTION ================= -->
-<div id="pane-probe" class="pane">
-  <div class="card">
-    <h3>Ask a 3D Question on Any Molecule or Crystal</h3>
-    <div class="sub">Click a quick example chip or paste an XYZ / POSCAR / CIF file or SMILES string, then ask which way a force or dipole arrow points.</div>
-    <div class="preset-chips" id="probePresetChips"></div>
-    <div class="row2" style="margin-top:12px;">
-      <div>
-        <label>SMILES string or XYZ / POSCAR / CIF coordinates</label>
-        <textarea id="structInput" rows="6">3
+      <div id="coordsDrawer" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <label style="margin:0;">SMILES or XYZ / POSCAR / CIF coordinates</label>
+          <label style="margin:0;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="checkbox" id="o3Chk" checked /> Live O(3) check
+          </label>
+        </div>
+        <textarea id="structInput" rows="5" class="mono">3
 water demo
 O  0.000  0.000  0.125
 H  0.020  0.790 -0.460
 H -0.015 -0.745 -0.485</textarea>
       </div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div>
-          <label>Chemistry topic</label>
-          <select id="domainSel">
-            <option value="general">General — Molecular dipole &amp; force on a chosen atom</option>
-            <option value="electrolyte">Battery Electrolyte — Solvent shell around Li+ / Na+ &amp; escape arrow</option>
-            <option value="md">Reaction Motion — Force arrow vs. atom motion arrow</option>
-            <option value="drug">Drug Design — Safe 3D direction to grow a molecule in a protein pocket</option>
-          </select>
-        </div>
-        <div>
-          <label>Question in plain English</label>
-          <input type="text" id="qInput" value="What is the force vector on the hydrogen atom?" />
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;">
-          <label style="display:inline-flex;align-items:center;gap:6px;color:var(--text);">
-            <input type="checkbox" id="o3Chk" checked /> Check 3D rotation + mirror flip live
-          </label>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-sec" onclick="buildLiCluster()">Build Li+ Solvent Shell</button>
-            <button class="btn" onclick="runQuery()">Ask YLM</button>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
-  <iframe id="reportFrame" class="report-box"></iframe>
-</div>
 
-<!-- ================= TAB 3: WATCH REACTIONS (MD) ================= -->
-<div id="pane-md" class="pane">
-  <div class="card">
-    <h3>Watch Chemical Reactions Step by Step (Bond Breaking, Bond Forming &amp; H+ Jumps)</h3>
-    <div class="sub">Follows moving atoms over time, flags the exact frame where a bond breaks, forms, or a proton (<code>H+</code>) hops between two water molecules, and plots work <code>W = Force · Step</code>.</div>
-    <div class="row3">
+    <iframe id="reportFrame" class="report-box"></iframe>
+  </div>
+
+  <!-- ================= 3. DYNAMICS ================= -->
+  <div id="pane-md" class="pane">
+    <div class="page-head">
       <div>
-        <label>Simulation mode</label>
-        <select id="mdModeSel">
-          <option value="scan_zundel">Scan saved H+ jump trajectory (examples/proton_transfer_traj.extxyz)</option>
-          <option value="live_md">Run live reactive MD steps (stretched H5O2+ water-proton cluster)</option>
+        <h1>Reaction Dynamics</h1>
+        <p>Track bond breaking, bond forming, and proton hops across molecular dynamics trajectories.</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="mdModeSel" style="width:auto;">
+          <option value="scan_zundel">Saved proton-hop trajectory</option>
+          <option value="live_md">Live reactive MD (H5O2+)</option>
         </select>
-      </div>
-      <div>
-        <label>Live MD steps / Temperature (K)</label>
-        <div style="display:flex;gap:8px;">
-          <input type="number" id="mdSteps" value="28" min="8" max="80" />
-          <input type="number" id="mdTemp" value="350" min="0" max="1500" />
-        </div>
-      </div>
-      <div style="display:flex;align-items:flex-end;">
-        <button class="btn" style="width:100%;" onclick="runReactiveMD()">Run Reaction Monitor</button>
+        <input type="number" id="mdSteps" value="28" min="8" max="80" style="width:74px;" title="MD steps" />
+        <input type="number" id="mdTemp" value="350" min="0" max="1500" style="width:82px;" title="Temperature (K)" />
+        <button class="btn" onclick="runReactiveMD()">Run</button>
       </div>
     </div>
-    <div id="mdEventsSummary" style="margin-top:14px;"></div>
-    <div id="mdSvgContainer" style="margin-top:12px;overflow-x:auto;"></div>
-  </div>
-  <iframe id="mdReportFrame" class="report-box"></iframe>
-</div>
 
-<!-- ================= TAB 4: LEFT VS. RIGHT HANDEDNESS ================= -->
-<div id="pane-ouroboros" class="pane">
-  <div class="card">
-    <h3>Left vs. Right Handedness (2D Stereo SMILES → 3D Atoms → Mirror Twin Test)</h3>
-    <div class="sub">Like your left and right hands, mirror-image molecules have identical atom-to-atom distances, so distance-only models (Uni-Mol) cannot tell them apart. YLM uses signed 3D volume to give opposite signs (<code>+</code> vs. <code>-</code>) to mirror twins and <code>0</code> to flat molecules.</div>
-    <div class="preset-chips" style="margin-bottom:10px;">
-      <span class="chip" onclick="setStereoSmiles('O=C1OC[C@H](F)O1')">(R)-FEC battery additive</span>
-      <span class="chip" onclick="setStereoSmiles('O=C1OC[C@@H](F)O1')">(S)-FEC mirror twin</span>
-      <span class="chip" onclick="setStereoSmiles('F[C@H](Cl)Br')">(R)-CHFCIBr chiral carbon</span>
-      <span class="chip" onclick="setStereoSmiles('F[C@@H](Cl)Br')">(S)-CHFCIBr mirror twin</span>
-      <span class="chip" onclick="setStereoSmiles('F/C=C\\\\F')">cis-FCH=CHF (flat, dipole != 0)</span>
-      <span class="chip" onclick="setStereoSmiles('F/C=C/F')">trans-FCH=CHF (flat, dipole = 0)</span>
+    <div class="card" style="margin-bottom:20px;">
+      <div id="mdEventsSummary" class="chip-row" style="margin-bottom:14px;"></div>
+      <div id="mdSvgContainer" style="overflow-x:auto;"></div>
     </div>
-    <div class="row3">
-      <div>
-        <label>Stereo SMILES (<code>@/@@</code> or <code>/\\</code>)</label>
-        <input type="text" id="stereoSmilesInput" value="O=C1OC[C@H](F)O1" />
-      </div>
-      <div>
-        <label>Question in plain English</label>
-        <input type="text" id="stereoQuestionInput" value="What is the 3D molecular dipole moment vector?" />
-      </div>
-      <div style="display:flex;align-items:flex-end;">
-        <button class="btn" style="width:100%;" onclick="runOuroborosAudit()">Build 3D &amp; Test Mirror Twin</button>
-      </div>
-    </div>
-    <div id="stereoAuditResult" style="margin-top:14px;"></div>
-  </div>
-  <iframe id="stereoReportFrame" class="report-box"></iframe>
-</div>
 
-<!-- ================= TAB 5: COMPARE MODELS ================= -->
-<div id="pane-benchmark" class="pane">
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <iframe id="mdReportFrame" class="report-box"></iframe>
+  </div>
+
+  <!-- ================= 4. CHIRALITY ================= -->
+  <div id="pane-ouroboros" class="pane">
+    <div class="page-head">
       <div>
-        <h3>Compare 3D Models Side by Side (YLM vs. Uni-Mol, GraphMVP &amp; EquiLLM)</h3>
-        <div class="sub">Table A shows saved 24-epoch scores on left/right-handed molecules, 3D arrows, and 3x3 matrices. Click <strong>Train &amp; Test Live on CPU</strong> to train all 4 models from scratch right now and verify the trend yourself.</div>
+        <h1>3D Chirality</h1>
+        <p>Embed 2D stereo SMILES into 3D coordinates and test left- vs. right-handed mirror twins.</p>
+      </div>
+    </div>
+
+    <div class="composer">
+      <div class="chip-row" style="margin-bottom:12px;">
+        <span class="chip" onclick="setStereoSmiles('O=C1OC[C@H](F)O1')">(R)-FEC</span>
+        <span class="chip" onclick="setStereoSmiles('O=C1OC[C@@H](F)O1')">(S)-FEC</span>
+        <span class="chip" onclick="setStereoSmiles('F[C@H](Cl)Br')">(R)-CHFCIBr</span>
+        <span class="chip" onclick="setStereoSmiles('F[C@@H](Cl)Br')">(S)-CHFCIBr</span>
+        <span class="chip" onclick="setStereoSmiles('F/C=C\\\\F')">cis-CHF=CHF</span>
+        <span class="chip" onclick="setStereoSmiles('F/C=C/F')">trans-CHF=CHF</span>
+      </div>
+      <div class="composer-bar">
+        <input type="text" id="stereoSmilesInput" class="mono" value="O=C1OC[C@H](F)O1" onkeydown="if(event.key==='Enter')runOuroborosAudit()" />
+        <input type="hidden" id="stereoQuestionInput" value="What is the 3D molecular dipole moment vector?" />
+        <button class="btn" onclick="runOuroborosAudit()">Inspect →</button>
+      </div>
+      <div id="stereoAuditResult"></div>
+    </div>
+
+    <iframe id="stereoReportFrame" class="report-box"></iframe>
+  </div>
+
+  <!-- ================= 5. BENCHMARKS ================= -->
+  <div id="pane-benchmark" class="pane">
+    <div class="page-head">
+      <div>
+        <h1>Model Benchmarks</h1>
+        <p>Comparison across chirality, covariant 3D vectors, and symmetric rank-2 tensors under O(3).</p>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <label style="margin:0;">Training epochs:</label>
-        <input type="number" id="benchEpochs" value="6" min="2" max="20" style="width:72px;" />
-        <button class="btn" id="btnLiveBench" onclick="runLiveBenchmark()">Train &amp; Test Live on CPU</button>
+        <input type="number" id="benchEpochs" value="6" min="2" max="20" style="width:68px;" title="Training epochs" />
+        <button class="btn" id="btnLiveBench" onclick="runLiveBenchmark()">Run Live CPU Eval</button>
       </div>
     </div>
 
-    <h4 style="margin:14px 0 8px;font-size:14px;color:var(--accent);">A. Saved 24-Epoch CPU Run (8 mirror-twin families, including unseen molecule shapes; from <code>results/cpu_smoke_nov12/chiral_benchmark.json</code>)</h4>
-    <div style="overflow-x:auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>Model</th>
-            <th>Left/Right Acc (Test) ↑</th>
-            <th>New Wording Acc ↑</th>
-            <th>Unseen Molecule Acc ↑</th>
-            <th>Mirror Flip Error ↓</th>
-            <th>Flat Molecule Output (should be 0) ↓</th>
-            <th>3D Arrow Cos ↑</th>
-            <th>3x3 Matrix Cos ↑</th>
-          </tr>
-        </thead>
-        <tbody id="refBenchBody"></tbody>
-      </table>
-    </div>
-
-    <div id="liveBenchContainer" style="margin-top:18px;display:none;">
-      <h4 style="margin:0 0 8px;font-size:14px;color:#34d399;">B. Fresh Live CPU Run (trained &amp; tested under random 3D rotations and mirror flips)</h4>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <span style="font-weight:600;font-size:14.5px;">Saved 24-Epoch CPU Run (8 Mirror-Twin Families)</span>
+        <span class="pill mono">results/cpu_smoke_nov12/chiral_benchmark.json</span>
+      </div>
       <div style="overflow-x:auto;">
         <table>
           <thead>
             <tr>
               <th>Model</th>
-              <th>Time (s)</th>
-              <th>Energy MAE ↓</th>
-              <th>3D Arrow Cos ↑</th>
-              <th>Atom Force Cos ↑</th>
-              <th>Rotation Error ↓</th>
-              <th>3x3 Matrix Cos ↑</th>
-              <th>Atom Pick Acc ↑</th>
+              <th class="num">Chiral Acc</th>
+              <th class="num">New Wording</th>
+              <th class="num">Unseen Scaffold</th>
+              <th class="num">Mirror Err</th>
+              <th class="num">Planar Zero</th>
+              <th class="num">Vector Cos</th>
+              <th class="num">Tensor Cos</th>
+            </tr>
+          </thead>
+          <tbody id="refBenchBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="liveBenchContainer" class="card" style="margin-top:20px;display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <span style="font-weight:600;font-size:14.5px;">Fresh CPU Training Run</span>
+        <span class="pill pill-ok">Completed live</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th class="num">Time</th>
+              <th class="num">Scalar MAE</th>
+              <th class="num">Vector Cos</th>
+              <th class="num">Force Cos</th>
+              <th class="num">Rot Err</th>
+              <th class="num">Tensor Cos</th>
+              <th class="num">Routing Acc</th>
             </tr>
           </thead>
           <tbody id="liveBenchBody"></tbody>
@@ -623,6 +828,7 @@ H -0.015 -0.745 -0.485</textarea>
       </div>
     </div>
   </div>
+
 </div>
 
 <script>
@@ -630,13 +836,60 @@ let PRESETS = {};
 let SANDBOX_SCENES = { orig: null, trans: null };
 let camOrig = { rx: -0.35, ry: 0.55 }, camTrans = { rx: -0.35, ry: 0.55 };
 let sandboxTimer = null;
-const ELEM_COL = {1:"#f8fafc", 3:"#a855f7", 6:"#64748b", 7:"#3b82f6", 8:"#ef4444", 9:"#22c55e", 15:"#f97316", 16:"#eab308", 17:"#14b8a6", 26:"#d97706", 35:"#ec4899"};
+
+const ELEM_COL = {
+  1: "#ffffff", 3: "#8b5cf6", 6: "#3a3a38", 7: "#2563eb",
+  8: "#dc2626", 9: "#16a34a", 15: "#ea580c", 16: "#ca8a04",
+  17: "#0d9488", 26: "#b45309", 35: "#be185d"
+};
+
+window.addEventListener("message", e => {
+  if (e.data && e.data.type === "ylm-frame-height") {
+    ["reportFrame", "mdReportFrame", "stereoReportFrame"].forEach(id => {
+      const fr = document.getElementById(id);
+      if (fr && fr.contentWindow === e.source) {
+        fr.style.height = Math.max(460, e.data.height + 12) + "px";
+      }
+    });
+  }
+});
+
+function syncIframeThemes() {
+  const theme = document.documentElement.getAttribute("data-theme") || "light";
+  ["reportFrame", "mdReportFrame", "stereoReportFrame"].forEach(id => {
+    const fr = document.getElementById(id);
+    if (fr && fr.contentWindow) {
+      fr.contentWindow.postMessage({ type: "ylm-theme", theme }, "*");
+    }
+  });
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute("data-theme") || "light";
+  const next = cur === "light" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", next);
+  document.getElementById("themeBtn").textContent = next === "light" ? "☾" : "☀";
+  drawScene(document.getElementById("cvOrig"), SANDBOX_SCENES.orig, camOrig);
+  drawScene(document.getElementById("cvTrans"), SANDBOX_SCENES.trans, camTrans);
+  syncIframeThemes();
+}
+
+function toggleCoordsDrawer() {
+  const el = document.getElementById("coordsDrawer");
+  el.style.display = el.style.display === "none" ? "block" : "none";
+}
 
 function switchTab(name, btn) {
   document.querySelectorAll('.pane').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
   document.getElementById('pane-' + name).classList.add('active');
   if (btn) btn.classList.add('active');
+  if (name === 'physics') {
+    setTimeout(() => {
+      drawScene(document.getElementById('cvOrig'), SANDBOX_SCENES.orig, camOrig);
+      drawScene(document.getElementById('cvTrans'), SANDBOX_SCENES.trans, camTrans);
+    }, 20);
+  }
   if (name === 'probe' && !document.getElementById('reportFrame').srcdoc) runQuery();
   if (name === 'md' && !document.getElementById('mdSvgContainer').innerHTML) runReactiveMD();
   if (name === 'ouroboros' && !document.getElementById('stereoAuditResult').innerHTML) runOuroborosAudit();
@@ -659,22 +912,27 @@ function attachDrag(canvasId, camObj, sceneKey) {
 function drawScene(cv, scene, cam) {
   if (!scene || !scene.atoms) return;
   const rect = cv.getBoundingClientRect();
-  cv.width = Math.max(300, rect.width || 420);
-  cv.height = Math.max(260, rect.height || 320);
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.max(240, rect.width || 300);
+  const h = Math.max(220, rect.height || 245);
+  cv.width = w * dpr;
+  cv.height = h * dpr;
   const ctx = cv.getContext('2d');
-  ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, w, h);
   if (!scene.atoms.length) return;
 
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
   let cx = 0, cy = 0, cz = 0;
   scene.atoms.forEach(a => { cx += a.x; cy += a.y; cz += a.z; });
   cx /= scene.atoms.length; cy /= scene.atoms.length; cz /= scene.atoms.length;
 
-  let maxR = 2.4;
+  let maxR = 2.3;
   scene.atoms.forEach(a => {
     const d = Math.hypot(a.x - cx, a.y - cy, a.z - cz);
-    if (d + 1.6 > maxR) maxR = d + 1.6;
+    if (d + 1.5 > maxR) maxR = d + 1.5;
   });
-  const scale = 0.40 * Math.min(cv.width, cv.height) / maxR;
+  const scale = 0.39 * Math.min(w, h) / maxR;
 
   function proj(px, py, pz) {
     const x = px - cx, y = py - cy, z = pz - cz;
@@ -682,11 +940,12 @@ function drawScene(cv, scene, cam) {
     const x1 = x * cy1 + z * sy1, z1 = -x * sy1 + z * cy1;
     const cx1 = Math.cos(cam.rx), sx1 = Math.sin(cam.rx);
     const y2 = y * cx1 - z1 * sx1, z2 = y * sx1 + z1 * cx1;
-    return [cv.width / 2 + x1 * scale, cv.height / 2 - y2 * scale, z2];
+    return [w / 2 + x1 * scale, h / 2 - y2 * scale, z2];
   }
 
-  ctx.lineWidth = 2.8;
-  ctx.strokeStyle = "#475569";
+  ctx.lineWidth = 2.4;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = isDark ? "#52524e" : "#c8c5bc";
   (scene.bonds || []).forEach(([i, j]) => {
     const p1 = proj(scene.atoms[i].x, scene.atoms[i].y, scene.atoms[i].z);
     const p2 = proj(scene.atoms[j].x, scene.atoms[j].y, scene.atoms[j].z);
@@ -695,45 +954,67 @@ function drawScene(cv, scene, cam) {
 
   const weights = scene.weights || [];
   const maxW = Math.max(...weights, 1e-6);
+  const meanW = weights.length ? weights.reduce((a, b) => a + b, 0) / weights.length : maxW;
+  const hasPeakedAttn = maxW > 1.35 * meanW;
   const ordered = scene.atoms.map((a, idx) => ({a, idx, p: proj(a.x, a.y, a.z)})).sort((u, v) => u.p[2] - v.p[2]);
   ordered.forEach(({a, idx, p}) => {
-    const w = (weights[idx] || 0) / maxW;
-    const rad = a.Z === 1 ? 8 : 12;
-    if (w > 0.2) {
-      ctx.beginPath(); ctx.arc(p[0], p[1], rad + 7 * w, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(251, 191, 36, ${0.15 + 0.45 * w})`; ctx.fill();
+    const wt = (weights[idx] || 0) / maxW;
+    const rad = a.Z === 1 ? 6.8 : 10.8;
+    if (hasPeakedAttn && wt > 0.55) {
+      ctx.beginPath(); ctx.arc(p[0], p[1], rad + 6 * wt, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(217, 119, 6, ${0.14 + 0.22 * wt})`; ctx.fill();
     }
+    const baseCol = ELEM_COL[a.Z] || "#78716c";
     ctx.beginPath(); ctx.arc(p[0], p[1], rad, 0, Math.PI * 2);
-    ctx.fillStyle = ELEM_COL[a.Z] || "#94a3b8"; ctx.fill();
-    ctx.strokeStyle = "#0b1120"; ctx.lineWidth = 1.4; ctx.stroke();
-    ctx.fillStyle = a.Z === 1 ? "#0b1120" : "#ffffff";
-    ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(a.symbol + idx, p[0], p[1]);
+    ctx.fillStyle = baseCol; ctx.fill();
+    const spec = ctx.createRadialGradient(p[0] - rad * 0.32, p[1] - rad * 0.32, rad * 0.05, p[0] - rad * 0.15, p[1] - rad * 0.15, rad * 0.75);
+    spec.addColorStop(0, "rgba(255,255,255,0.42)");
+    spec.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = spec; ctx.fill();
+    ctx.strokeStyle = isDark ? "rgba(255,255,255,0.18)" : "rgba(20,20,19,0.16)";
+    ctx.lineWidth = 1; ctx.stroke();
   });
 
   (scene.arrows || []).forEach((ar, k) => {
     const s = proj(ar.start[0], ar.start[1], ar.start[2]);
     const e = proj(ar.end[0], ar.end[1], ar.end[2]);
     ctx.strokeStyle = ar.color; ctx.fillStyle = ar.color;
-    ctx.lineWidth = k === 0 ? 4.2 : 2.8;
-    if (k === 0) ctx.setLineDash([6, 3]); else ctx.setLineDash([]);
+    ctx.lineWidth = k === 0 && scene.arrows.length > 1 ? 3.2 : 2.4;
+    if (k === 0 && scene.arrows.length > 1) ctx.setLineDash([5, 3]); else ctx.setLineDash([]);
     ctx.beginPath(); ctx.moveTo(s[0], s[1]); ctx.lineTo(e[0], e[1]); ctx.stroke();
     ctx.setLineDash([]);
     const ang = Math.atan2(e[1] - s[1], e[0] - s[0]);
     ctx.beginPath();
     ctx.moveTo(e[0], e[1]);
-    ctx.lineTo(e[0] - 10 * Math.cos(ang - 0.4), e[1] - 10 * Math.sin(ang - 0.4));
-    ctx.lineTo(e[0] - 10 * Math.cos(ang + 0.4), e[1] - 10 * Math.sin(ang + 0.4));
+    ctx.lineTo(e[0] - 8.5 * Math.cos(ang - 0.38), e[1] - 8.5 * Math.sin(ang - 0.38));
+    ctx.lineTo(e[0] - 8.5 * Math.cos(ang + 0.38), e[1] - 8.5 * Math.sin(ang + 0.38));
     ctx.closePath(); ctx.fill();
-
-    ctx.font = "12px sans-serif"; ctx.textAlign = "left";
-    ctx.fillText("● " + ar.name, 12, 18 + k * 18);
   });
+}
+
+function cleanPresetLabel(id, fallback) {
+  const map = {
+    r_fec_chiral: "(R)-FEC · Chiral additive",
+    s_fec_chiral: "(S)-FEC · Mirror twin",
+    water_c2v: "Water (H2O · C2v)",
+    trans_difluoroethene_c2h: "trans-CHF=CHF (Dipole = 0)",
+    cis_difluoroethene_c2v: "cis-CHF=CHF (Polar)",
+    r_bcfm_chiral: "(R)-CHFCIBr · Chiral carbon",
+    lifepo4_pbc_crystal: "LiFePO4 · 3D crystal",
+    li_ec_shell: "Li+ · EC solvent shell",
+    indole_pocket: "Indole · Protein pocket",
+  };
+  return map[id] || fallback || id;
 }
 
 async function initStudio() {
   attachDrag('cvOrig', camOrig, 'orig');
   attachDrag('cvTrans', camTrans, 'trans');
+  window.addEventListener('resize', () => {
+    drawScene(document.getElementById('cvOrig'), SANDBOX_SCENES.orig, camOrig);
+    drawScene(document.getElementById('cvTrans'), SANDBOX_SCENES.trans, camTrans);
+  });
+
   const r = await fetch('/api/presets');
   const data = await r.json();
   PRESETS = data.presets || {};
@@ -745,15 +1026,17 @@ async function initStudio() {
   Object.values(PRESETS).forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.id;
-    opt.textContent = p.title;
+    opt.textContent = cleanPresetLabel(p.id, p.title);
     if (p.id === 'r_fec_chiral') opt.selected = true;
     sel.appendChild(opt);
 
     const chip = document.createElement('span');
     chip.className = 'chip';
-    chip.textContent = p.id;
+    chip.textContent = cleanPresetLabel(p.id, p.id).split(' · ')[0];
     chip.title = p.title;
     chip.onclick = () => {
+      document.querySelectorAll('#probePresetChips .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
       document.getElementById('structInput').value = p.xyz;
       document.getElementById('domainSel').value = p.domain;
       document.getElementById('qInput').value = p.default_question;
@@ -770,16 +1053,15 @@ function renderRefBenchmark(models) {
   const tb = document.getElementById('refBenchBody');
   tb.innerHTML = models.map(m => {
     const isOurs = m.model.includes('YLM');
-    const st = isOurs ? 'style="background:rgba(16,185,129,0.10);font-weight:600;"' : '';
-    return `<tr ${st}>
+    return `<tr class="${isOurs ? 'row-highlight' : ''}">
       <td>${m.model}</td>
-      <td><div class="metric-bar"><div class="metric-fill" style="width:${m.chiral_acc*100}%"></div></div>${(m.chiral_acc*100).toFixed(1)}%</td>
-      <td>${(m.heldout_chiral_acc*100).toFixed(1)}%</td>
-      <td>${(m.zeroshot_scaffold_acc*100).toFixed(1)}%</td>
-      <td class="mono">${m.chiral_parity_err.toExponential(2)}</td>
-      <td class="mono">${m.achiral_planar_abs.toExponential(2)}</td>
-      <td class="mono">${m.vector_cos >= 0 ? '+' : ''}${m.vector_cos.toFixed(4)}</td>
-      <td class="mono">${m.tensor_cos >= 0 ? '+' : ''}${m.tensor_cos.toFixed(4)}</td>
+      <td class="num mono">${(m.chiral_acc * 100).toFixed(1)}%</td>
+      <td class="num mono">${(m.heldout_chiral_acc * 100).toFixed(1)}%</td>
+      <td class="num mono">${(m.zeroshot_scaffold_acc * 100).toFixed(1)}%</td>
+      <td class="num mono">${m.chiral_parity_err.toExponential(2)}</td>
+      <td class="num mono">${m.achiral_planar_abs.toExponential(2)}</td>
+      <td class="num mono">${m.vector_cos >= 0 ? '+' : ''}${m.vector_cos.toFixed(3)}</td>
+      <td class="num mono">${m.tensor_cos >= 0 ? '+' : ''}${m.tensor_cos.toFixed(3)}</td>
     </tr>`;
   }).join('');
 }
@@ -788,7 +1070,7 @@ async function runPhysicsAudit() {
   const preset = document.getElementById('auditPresetSel').value || 'r_fec_chiral';
   const question = document.getElementById('auditQuestion').value;
   const precision = document.getElementById('auditPrecision').value;
-  document.getElementById('auditSummaryBadge').textContent = 'Running 8 physics checks in PyTorch...';
+  document.getElementById('auditSummaryBadge').textContent = 'Checking...';
   const resp = await fetch('/api/physics_audit', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -798,26 +1080,31 @@ async function runPhysicsAudit() {
   if (data.error) { alert(data.error); return; }
 
   const badge = document.getElementById('auditSummaryBadge');
-  badge.textContent = `${data.passed_count} / ${data.total_laws} physics rules passed (${data.precision})`;
-  badge.className = data.passed_all ? 'pill pill-ok' : 'pill';
+  badge.textContent = `${data.passed_count} / ${data.total_laws} Passed`;
+  badge.className = data.passed_all ? 'pill pill-ok' : 'pill pill-err';
 
   const box = document.getElementById('lawsContainer');
-  box.innerHTML = data.laws.map(law => {
+  box.innerHTML = data.laws.map((law, idx) => {
+    const cleanName = law.name.replace(/^\\d+\\.\\s*/, '');
     const baseHtml = law.baseline_errors
-      ? '<div style="margin-top:6px;font-size:12px;color:#fca5a5;">Other models broke this rule: ' +
-        Object.entries(law.baseline_errors).map(([k, v]) => `${k} = <code>${Number(v).toExponential(2)}</code>`).join(' · ') +
+      ? '<div style="margin-top:6px;color:var(--err-fg);">Baselines failed: ' +
+        Object.entries(law.baseline_errors).map(([k, v]) => `${k} <span class="mono">${Number(v).toExponential(2)}</span>`).join(' · ') +
         '</div>'
       : '';
-    return `<div class="law-card ${law.passed ? 'pass' : 'fail'}">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-        <strong style="font-size:13px;">${law.name}</strong>
-        <span class="${law.passed ? 'badge-pass' : 'badge-fail'}">${law.passed ? 'PASS' : 'FAIL'}</span>
+    return `<details class="law-item" ${idx === 0 ? 'open' : ''}>
+      <summary>
+        <span class="law-title">
+          <span class="law-check ${law.passed ? 'ok' : 'bad'}">${law.passed ? '✓' : '!'}</span>
+          <span>${cleanName}</span>
+        </span>
+        <span class="mono" style="font-size:12px;color:var(--ink-3);white-space:nowrap;flex-shrink:0;">${Number(law.ylm_error).toExponential(1)}</span>
+      </summary>
+      <div class="law-body">
+        <div class="mono" style="color:var(--ink);font-size:12px;margin-bottom:4px;">${law.formula}</div>
+        <div>${law.detail}</div>
+        ${baseHtml}
       </div>
-      <div class="mono" style="color:var(--accent);margin-top:5px;">${law.formula}</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.45;">${law.detail}</div>
-      <div class="mono" style="margin-top:6px;font-size:12px;">YLM error: <strong>${Number(law.ylm_error).toExponential(2)}</strong> (limit &lt; ${Number(law.tolerance).toExponential(1)})</div>
-      ${baseHtml}
-    </div>`;
+    </details>`;
   }).join('');
 
   await runPoseSandbox();
@@ -828,7 +1115,7 @@ function onSandboxChange() {
   document.getElementById('lblRy').textContent = document.getElementById('slRy').value + '°';
   document.getElementById('lblRz').textContent = document.getElementById('slRz').value + '°';
   clearTimeout(sandboxTimer);
-  sandboxTimer = setTimeout(runPoseSandbox, 90);
+  sandboxTimer = setTimeout(runPoseSandbox, 80);
 }
 
 async function runPoseSandbox() {
@@ -849,31 +1136,29 @@ async function runPoseSandbox() {
   const data = await resp.json();
   if (data.error) return;
 
-  document.getElementById('detReadout').textContent = `${data.operation} | det(Q) = ${data.det_Q > 0 ? '+1.0000' : '-1.0000'}`;
+  document.getElementById('detReadout').textContent = `det(Q) = ${data.det_Q > 0 ? '+1' : '-1'}`;
   SANDBOX_SCENES.orig = data.scene_orig;
   SANDBOX_SCENES.trans = data.scene_transformed;
   drawScene(document.getElementById('cvOrig'), SANDBOX_SCENES.orig, camOrig);
   drawScene(document.getElementById('cvTrans'), SANDBOX_SCENES.trans, camTrans);
 
   const names = [
-    ['ylm', 'YLM-Universe (Ours: keeps 3D directions & handedness)'],
-    ['equillm', 'EquiLLM (scalar text bridge + 3D vector shortcut)'],
-    ['unimol', 'Uni-Mol (atom-to-atom distances only)'],
-    ['graphmvp', 'GraphMVP / 3D-InfoMax (2D bond graph only)'],
+    ['ylm', 'YLM-Universe'],
+    ['equillm', 'EquiLLM'],
+    ['unimol', 'Uni-Mol'],
+    ['graphmvp', 'GraphMVP'],
   ];
   const tol = data.precision === 'float64' ? 1e-8 : 1e-4;
   document.getElementById('sandboxTableBody').innerHTML = names.map(([key, title]) => {
     const m = data.models[key];
-    const vBad = m.vector_1o.rel_err > tol;
     const cBad = m.chiral_0o.abs_err > tol;
-    return `<tr style="${key === 'ylm' ? 'background:rgba(16,185,129,0.10);font-weight:600;' : ''}">
+    const vBad = m.vector_1o.rel_err > tol;
+    return `<tr class="${key === 'ylm' ? 'row-highlight' : ''}">
       <td>${title}</td>
-      <td class="mono">${m.scalar_0e.abs_err.toExponential(2)}</td>
-      <td class="mono">${m.chiral_0o.orig.toExponential(3)} → ${m.chiral_0o.transformed.toExponential(3)}</td>
-      <td class="mono" style="color:${cBad ? '#f87171' : '#34d399'};">${m.chiral_0o.abs_err.toExponential(2)}</td>
-      <td class="mono" style="color:${vBad ? '#f87171' : '#34d399'};">${m.vector_1o.rel_err.toExponential(2)} (cos=${m.vector_1o.cosine_with_expected.toFixed(4)})</td>
-      <td class="mono">${m.tensor_0e2e.rel_err.toExponential(2)}</td>
-      <td class="mono">${m.attn_routing_err.toExponential(2)}</td>
+      <td class="num mono">${m.scalar_0e.abs_err.toExponential(1)}</td>
+      <td class="num mono" style="color:${cBad ? 'var(--err-fg)' : 'var(--ok-fg)'};">${m.chiral_0o.abs_err.toExponential(1)}</td>
+      <td class="num mono" style="color:${vBad ? 'var(--err-fg)' : 'var(--ok-fg)'};">${m.vector_1o.cosine_with_expected >= 0 ? '+' : ''}${m.vector_1o.cosine_with_expected.toFixed(3)}</td>
+      <td class="num mono">${m.tensor_0e2e.rel_err.toExponential(1)}</td>
     </tr>`;
   }).join('');
 }
@@ -888,7 +1173,9 @@ async function runQuery(extraPayload) {
   const resp = await fetch("/api/ask", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload)});
   const data = await resp.json();
   if (data.html) {
-    document.getElementById("reportFrame").srcdoc = data.html;
+    const fr = document.getElementById("reportFrame");
+    fr.onload = syncIframeThemes;
+    fr.srcdoc = data.html;
   } else {
     alert(data.error || "Request failed");
   }
@@ -911,16 +1198,20 @@ async function runReactiveMD() {
     steps: Number(document.getElementById("mdSteps").value),
     temperature_k: Number(document.getElementById("mdTemp").value)
   };
-  document.getElementById("mdEventsSummary").innerHTML = '<span class="sub">Running simulation and watching for bond changes...</span>';
+  document.getElementById("mdEventsSummary").innerHTML = '<span class="pill">Running...</span>';
   const resp = await fetch("/api/run_md", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload)});
   const data = await resp.json();
   if (data.error) { alert(data.error); return; }
   const evHtml = (data.events && data.events.length)
-    ? data.events.map(e => `<span class="pill" style="margin-right:6px;border-color:#f59e0b;color:#fde68a;">Frame #${e.frame_index} (${e.time_fs.toFixed(1)} fs): ${e.event_type} [${e.labels.join('-')}] W=${e.work_ev.toFixed(3)} eV</span>`).join('')
-    : '<span class="pill">Scanned ' + data.n_frames + ' frames (drag the frame slider below to compare force and motion arrows)</span>';
+    ? data.events.map(e => `<span class="pill pill-ok">Frame ${e.frame_index} · ${e.event_type} (${e.labels.join('-')}) · W = ${e.work_ev.toFixed(3)} eV</span>`).join('')
+    : `<span class="pill">${data.n_frames} frames scanned · scrub timeline below</span>`;
   document.getElementById("mdEventsSummary").innerHTML = evHtml;
   document.getElementById("mdSvgContainer").innerHTML = data.svg || '';
-  if (data.html) document.getElementById("mdReportFrame").srcdoc = data.html;
+  if (data.html) {
+    const fr = document.getElementById("mdReportFrame");
+    fr.onload = syncIframeThemes;
+    fr.srcdoc = data.html;
+  }
 }
 
 function setStereoSmiles(smi) {
@@ -938,29 +1229,33 @@ async function runOuroborosAudit() {
   if (data.error) { alert(data.error); return; }
   const et = data.enantiomer_test;
   const centersText = (data.chiral_centers && data.chiral_centers.length)
-    ? data.chiral_centers.map(c => `Atom ${c.symbol}#${c.atom_index}: signed 3D volume = ${c.signed_volume_ang3.toFixed(4)} Å³ (sign = ${c.handedness_sign > 0 ? '+1' : '-1'})`).join('; ')
-    : 'No 4-group chiral atom (flat or symmetric molecule — true handedness is 0)';
+    ? data.chiral_centers.map(c => `${c.symbol}${c.atom_index} signed volume = ${c.signed_volume_ang3.toFixed(4)} Å³`).join(' · ')
+    : 'Planar / achiral structure (signed volume = 0)';
   document.getElementById("stereoAuditResult").innerHTML = `
-    <div class="law-grid">
-      <div class="law-card pass">
-        <strong>3D Stereo Build &amp; Signed Tetrahedron Volume</strong>
-        <div class="mono" style="margin-top:6px;">SMILES: ${data.smiles} | Builder: ${data.embedder} | stereo_ok: ${data.stereo_ok}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:6px;">${centersText}</div>
+    <div class="kpi-grid">
+      <div style="padding:14px 16px;border-radius:12px;background:var(--subtle);">
+        <div style="font-size:12px;color:var(--ink-3);margin-bottom:4px;">3D Conformer</div>
+        <div style="font-weight:600;font-size:14px;">${centersText}</div>
+        <div class="mono" style="font-size:12px;color:var(--ink-2);margin-top:4px;">Builder: ${data.embedder} · stereo_ok: ${data.stereo_ok}</div>
       </div>
-      <div class="law-card pass">
-        <strong>Mirror Twin Test <code>X → -X</code> (YLM vs. Uni-Mol)</strong>
-        <div class="mono" style="margin-top:6px;color:#34d399;">YLM: hand(X) = ${et.ylm_chiral_orig.toExponential(3)}, hand(-X) = ${et.ylm_chiral_mirror.toExponential(3)} (sum error = ${et.ylm_sum_residual.toExponential(2)})</div>
-        <div class="mono" style="margin-top:4px;color:#f87171;">Uni-Mol: hand(X) = ${et.unimol_chiral_orig.toExponential(3)}, hand(-X) = ${et.unimol_chiral_mirror.toExponential(3)} (difference = ${et.unimol_diff.toExponential(2)} — blind to mirror flip)</div>
+      <div style="padding:14px 16px;border-radius:12px;background:var(--subtle);">
+        <div style="font-size:12px;color:var(--ink-3);margin-bottom:4px;">Mirror Twin Test (X → -X)</div>
+        <div class="mono" style="font-size:12.5px;color:var(--ok-fg);">YLM: ${et.ylm_chiral_orig.toExponential(2)} → ${et.ylm_chiral_mirror.toExponential(2)} (opposite sign ✓)</div>
+        <div class="mono" style="font-size:12.5px;color:var(--err-fg);margin-top:2px;">Uni-Mol: ${et.unimol_chiral_orig.toExponential(2)} → ${et.unimol_chiral_mirror.toExponential(2)} (blind, diff = ${et.unimol_diff.toExponential(1)})</div>
       </div>
     </div>`;
-  if (data.html) document.getElementById("stereoReportFrame").srcdoc = data.html;
+  if (data.html) {
+    const fr = document.getElementById("stereoReportFrame");
+    fr.onload = syncIframeThemes;
+    fr.srcdoc = data.html;
+  }
 }
 
 async function runLiveBenchmark() {
   const btn = document.getElementById('btnLiveBench');
   const epochs = Number(document.getElementById('benchEpochs').value || 6);
   btn.disabled = true;
-  btn.textContent = 'Training all 4 models on CPU...';
+  btn.textContent = 'Training...';
   try {
     const resp = await fetch('/api/eval_benchmark', {
       method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ epochs, eval_rotations: 4 })
@@ -970,20 +1265,20 @@ async function runLiveBenchmark() {
     document.getElementById('liveBenchContainer').style.display = 'block';
     document.getElementById('liveBenchBody').innerHTML = data.models.map(m => {
       const isOurs = m.model.includes('YLM');
-      return `<tr style="${isOurs ? 'background:rgba(16,185,129,0.10);font-weight:600;' : ''}">
+      return `<tr class="${isOurs ? 'row-highlight' : ''}">
         <td>${m.model}</td>
-        <td class="mono">${m.elapsed_sec.toFixed(1)}s</td>
-        <td class="mono">${m.scalar_mae.toFixed(4)}</td>
-        <td class="mono">${m.vector_cos >= 0 ? '+' : ''}${m.vector_cos.toFixed(4)}</td>
-        <td class="mono">${m.force_cos >= 0 ? '+' : ''}${m.force_cos.toFixed(4)}</td>
-        <td class="mono" style="color:${m.vector_eq_err > 1e-3 ? '#f87171' : '#34d399'};">${m.vector_eq_err.toExponential(2)}</td>
-        <td class="mono">${m.tensor_cos >= 0 ? '+' : ''}${m.tensor_cos.toFixed(4)}</td>
-        <td class="mono">${m.routing_acc.toFixed(3)}</td>
+        <td class="num mono">${m.elapsed_sec.toFixed(1)}s</td>
+        <td class="num mono">${m.scalar_mae.toFixed(4)}</td>
+        <td class="num mono">${m.vector_cos >= 0 ? '+' : ''}${m.vector_cos.toFixed(3)}</td>
+        <td class="num mono">${m.force_cos >= 0 ? '+' : ''}${m.force_cos.toFixed(3)}</td>
+        <td class="num mono" style="color:${m.vector_eq_err > 1e-3 ? 'var(--err-fg)' : 'var(--ok-fg)'};">${m.vector_eq_err.toExponential(1)}</td>
+        <td class="num mono">${m.tensor_cos >= 0 ? '+' : ''}${m.tensor_cos.toFixed(3)}</td>
+        <td class="num mono">${m.routing_acc.toFixed(3)}</td>
       </tr>`;
     }).join('');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Train & Test Live on CPU';
+    btn.textContent = 'Run Live CPU Eval';
   }
 }
 
@@ -1009,15 +1304,17 @@ def create_studio_server(
             raw = json.dumps(payload).encode("utf-8")
             self.send_response(code)
             self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store, max-age=0")
             self.send_header("Content-Length", str(len(raw)))
             self.end_headers()
             self.wfile.write(raw)
 
         def do_GET(self):
-            if self.path in ("/", "/index.html"):
+            if self.path.split("?")[0] in ("/", "/index.html"):
                 raw = _STUDIO_INDEX_HTML.encode("utf-8")
                 self.send_response(HTTPStatus.OK)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Cache-Control", "no-store, max-age=0")
                 self.send_header("Content-Length", str(len(raw)))
                 self.end_headers()
                 self.wfile.write(raw)

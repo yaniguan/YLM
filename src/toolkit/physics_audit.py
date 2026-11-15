@@ -482,15 +482,15 @@ def evaluate_pose_sandbox(
 
     scene_orig = _serialize_geometry_scene(
         frame,
-        arrows=[_make_arrow(orig_center, ylm_v0, "YLM Arrow (Before)", "#38bdf8", 1.85)],
+        arrows=[_make_arrow(orig_center, ylm_v0, "YLM", "#1d4ed8", 1.85)],
         weights=comparisons["ylm"]["attn_orig"],
     )
     scene_transformed = _serialize_geometry_scene(
         frame_t,
         arrows=[
-            _make_arrow(trans_center, ylm_v_exp, "Exact Physics Target", "#22c55e", 1.95),
-            _make_arrow(trans_center, ylm_v_act, "YLM Arrow (After)", "#38bdf8", 1.75),
-            _make_arrow(trans_center, uni_v_act, "Uni-Mol Arrow (Broken)", "#ef4444", 1.55),
+            _make_arrow(trans_center, ylm_v_exp, "Target", "#15803d", 1.95),
+            _make_arrow(trans_center, ylm_v_act, "YLM", "#1d4ed8", 1.75),
+            _make_arrow(trans_center, uni_v_act, "Uni-Mol", "#b91c1c", 1.55),
         ],
         weights=comparisons["ylm"]["attn_transformed"],
     )
@@ -572,7 +572,7 @@ def run_physics_compliance_audit(
         )
         laws.append({
             "law_id": "L1_translation",
-            "name": "1. Move in Space (Translation)",
+            "name": "Translation",
             "formula": "f(atoms + shift) == f(atoms)",
             "passed": tr_err < tol,
             "ylm_error": tr_err,
@@ -625,7 +625,7 @@ def run_physics_compliance_audit(
         max_so3 = max(max(so3_sc), max(so3_ch), max(so3_vec), max(so3_ten))
         laws.append({
             "law_id": "L2_so3_rotation",
-            "name": f"2. Spin in 3D ({n_rotations} Random Rotations)",
+            "name": "3D Rotation",
             "formula": "energy' = energy | arrow' = R * arrow | matrix' = R * matrix * R^T",
             "passed": max_so3 < tol,
             "ylm_error": max_so3,
@@ -678,7 +678,7 @@ def run_physics_compliance_audit(
         max_imp = max(max(imp_sc), max(imp_ch), max(imp_vec), max(imp_ten))
         laws.append({
             "law_id": "L3_improper_parity",
-            "name": "3. Mirror Flip (Left Hand vs. Right Hand)",
+            "name": "Mirror Parity",
             "formula": "energy(-X) = +energy(X) | hand(-X) = -hand(X) | arrow(-X) = -arrow(X)",
             "passed": max_imp < tol,
             "ylm_error": max_imp,
@@ -712,7 +712,7 @@ def run_physics_compliance_audit(
         )
         laws.append({
             "law_id": "L4_permutation",
-            "name": "4. Swap Atom Row Order",
+            "name": "Atom Order",
             "formula": "f(shuffled atoms) == f(atoms), and per-atom weights follow each atom",
             "passed": perm_err < tol,
             "ylm_error": perm_err,
@@ -732,7 +732,7 @@ def run_physics_compliance_audit(
         ten_sym_err = max(asym_err, trace_res)
         laws.append({
             "law_id": "L5_tensor_symmetry",
-            "name": "5. Balanced 3x3 Response Matrix",
+            "name": "Symmetric 3×3 Matrix",
             "formula": "matrix[i, j] == matrix[j, i], split into average size + 3D stretch",
             "passed": ten_sym_err < tol,
             "ylm_error": ten_sym_err,
@@ -784,7 +784,7 @@ def run_physics_compliance_audit(
         curie_desc = ", ".join(f"{k}={v:.2e}" for k, v in curie_checks)
         laws.append({
             "law_id": "L6_curie_selection",
-            "name": "6. Balanced Shape Cancels Out",
+            "name": "Shape Cancellation",
             "formula": "Flat shape => out-of-plane arrow = 0, hand = 0 | Opposite-pair center => total arrow = 0",
             "passed": curie_err < tol,
             "ylm_error": curie_err,
@@ -841,7 +841,7 @@ def run_physics_compliance_audit(
     mech_err = max(net_force, net_torque, fd_grad_err, curl_err)
     laws.append({
         "law_id": "L7_conservative_mechanics",
-        "name": "7. Newton's 3rd Law, Zero Spin & Energy Slope (F = -dE/dx)",
+        "name": "Conservative Force (−dE/dx)",
         "formula": "sum(F) == 0,  sum(r x F) == 0,  and  F == -d(Energy)/dx",
         "passed": mech_err < mech_tol,
         "ylm_error": mech_err,
@@ -877,7 +877,7 @@ def run_physics_compliance_audit(
         )
         laws.append({
             "law_id": "L8_pbc_lattice",
-            "name": "8. Crystal Repeat Box",
+            "name": "Crystal Repeat Box",
             "formula": "f(atom + box_vector, cell) == f(atom, cell)",
             "passed": pbc_err < tol,
             "ylm_error": pbc_err,
