@@ -45,41 +45,42 @@
 | `src/toolkit/ouroboros_bridge.py` (`ylm from-ouroboros`) | Connects `yaniguan/ouroboros-ocsr` 2D drawings, stereo SMILES, `predictions.csv`, and `.extxyz` bundles to 3D `YLM` with `R/S` and `cis/trans` checks. |
 | `src/universe_fm.py` (`YLMUniverseModel`) | Multi-task model predicting numbers, handedness, 3D arrows, and 3x3 matrices (`scripts/30_train_universe_fm.py`). |
 | `src/universe_data.py` | Data loader and question generator with crystal neighbor search, signed chiral volume, and 35+ question templates (`scripts/31_prepare_universe_data.py`). |
-| `src/fm_baselines.py` | Side-by-side baselines: `UniMolStyle3DBaseline`, `GraphMVP3DInfoMaxBaseline`, and `EquiLLMMultiTaskBaseline` (`scripts/32_benchmark_vs_unimol.py`, `scripts/35_build_and_eval_chiral_benchmark.py`). |
+| `src/fm_baselines.py` | Side-by-side baselines: `UniMolStyle3DBaseline`, `UniMolSignedVolumeBaseline`, `GraphMVP3DInfoMaxBaseline`, and `EquiLLMMultiTaskBaseline` (`scripts/32_benchmark_vs_unimol.py`, `scripts/35_build_and_eval_chiral_benchmark.py`). |
 | `src/toolkit/physics_audit.py` & `server.py` | Checks 8 physics rules (`ylm audit-physics`) and serves the 5-tab browser Studio (`ylm serve`). |
 
 ---
 
 ## 4. CPU Smoke Tests
 
-Run these two commands on CPU before using GPU time. They train tiny models on a small built-in dataset:
+Run these two commands on CPU before using GPU time. They train tiny size-matched models across 3 seeds on a small built-in dataset:
 
 ```bash
-python scripts/32_benchmark_vs_unimol.py --tiny --epochs 20
-python scripts/35_build_and_eval_chiral_benchmark.py --tiny --epochs 24
+python scripts/32_benchmark_vs_unimol.py --tiny --epochs 20 --seeds 42 43 44 --match_params
+python scripts/35_build_and_eval_chiral_benchmark.py --tiny --epochs 24 --seeds 42 43 44 --match_params
 ```
 
-Results from one CPU run on Nov 12, 2026 are saved in [`results/cpu_smoke_nov12/`](results/cpu_smoke_nov12/README.md). The tables below are copied from those files. These are tiny smoke tests, not final results.
+Results from a 3-seed size-matched CPU run (`seeds 42, 43, 44`) are saved in [`results/cpu_smoke_nov12/`](results/cpu_smoke_nov12/README.md). The tables below are copied from those files (`mean ± std`). These are tiny smoke tests, not final results.
 
-### 4.1 Multi-task 3D comparison (`unimol_benchmark.json`, test split)
+### 4.1 Multi-task 3D comparison (`unimol_benchmark.json`, test split, `mean ± std`)
 
-| Model | Energy MAE ↓ | Atom Pick Acc ↑ | 3D Arrow Cos ↑ | Rotation Error ↓ | 3x3 Matrix Cos ↑ | New Wording Arrow Cos ↑ |
-| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
-| GraphMVP / 3D-InfoMax | 0.1678 | 0.750 | +0.0351 | 1.31e+00 | +0.6500 | +0.0551 |
-| Uni-Mol (3D Dist-Transformer) | 0.1895 | 0.764 | +0.0661 | 1.31e+00 | +0.6586 | +0.0227 |
-| EquiLLM (Inv-Bridge + 1o) | 0.1940 | 0.653 | +0.5356 | 7.77e-07 | +0.9256 | +0.3095 |
-| YLM-Universe FM (Ours) | 0.1754 | 0.875 | +0.6292 | 8.05e-07 | +0.9915 | +0.4963 |
-
-### 4.2 Left vs. right handedness (`chiral_benchmark.json`)
-
-| Model | Left/Right Acc (Test) ↑ | New Wording Acc ↑ | Unseen Molecule Acc ↑ | Mirror Flip Error ↓ | Flat Molecule Output ↓ | 3D Arrow Cos ↑ | 3x3 Matrix Cos ↑ |
+| Model | Params | Energy MAE ↓ | Atom Pick Acc ↑ | 3D Arrow Cos ↑ | Rotation Error ↓ | 3x3 Matrix Cos ↑ | New Wording Arrow Cos ↑ |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| GraphMVP / 3D-InfoMax | 52.1% | 47.9% | 50.0% | 6.92e-01 | 1.10e+00 | +0.0743 | +0.7201 |
-| Uni-Mol (3D Dist-Transformer) | 52.1% | 52.1% | 48.4% | 7.62e-01 | 7.99e-01 | +0.0488 | +0.7218 |
-| EquiLLM (Inv-Bridge + 1o) | 54.2% | 52.1% | 48.4% | 6.66e-01 | 7.35e-01 | +0.6574 | +0.9715 |
-| YLM-Universe FM (Ours) | 100.0% | 100.0% | 100.0% | 4.27e-07 | 3.92e-08 | +0.7275 | +0.9982 |
+| GraphMVP / 3D-InfoMax | 649,695 | 0.1823 ± 0.0096 | 0.782 ± 0.056 | +0.0527 ± 0.0101 | 1.32e+00 ± 2.41e-02 | +0.6455 ± 0.0028 | +0.0417 ± 0.0086 |
+| Uni-Mol (3D Dist-Transformer) | 648,142 | 0.2125 ± 0.0046 | 0.787 ± 0.024 | +0.0660 ± 0.0216 | 1.35e+00 ± 1.96e-02 | +0.6852 ± 0.0081 | +0.0501 ± 0.0101 |
+| EquiLLM (Inv-Bridge + 1o) | 638,213 | 0.1653 ± 0.0038 | 0.755 ± 0.013 | +0.4459 ± 0.0399 | 8.00e-07 ± 5.64e-08 | +0.9457 ± 0.0119 | +0.3552 ± 0.0534 |
+| YLM-Universe FM (Ours) | 664,838 | 0.1506 ± 0.0096 | 0.866 ± 0.040 | +0.5662 ± 0.0377 | 8.77e-07 ± 7.43e-08 | +0.9939 ± 0.0019 | +0.4769 ± 0.0251 |
 
-What this run shows: the distance-only (`Uni-Mol`) and 2D graph (`GraphMVP`) models stay near 50% on mirror twins and fail the rotation check. `YLM-Universe` tells mirror twins apart in this tiny set and keeps 3D arrows correct under rotation, but it does not have the lowest energy MAE here.
+### 4.2 Left vs. right handedness (`chiral_benchmark.json`, `mean ± std`)
+
+| Model | Params | Left/Right Acc (Test) ↑ | New Wording Acc ↑ | Unseen Molecule Acc ↑ | Mirror Flip Error ↓ | Flat Molecule Output ↓ | Energy MAE ↓ | 3D Arrow Cos ↑ | 3x3 Matrix Cos ↑ |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| GraphMVP / 3D-InfoMax | 649,695 | cannot represent | cannot represent | cannot represent | cannot represent | 1.06e+00 ± 1.24e-01 | 0.0906 ± 0.0085 | +0.0537 ± 0.0195 | +0.7082 ± 0.0098 |
+| Uni-Mol (3D Dist-Transformer) | 648,142 | cannot represent | cannot represent | cannot represent | cannot represent | 3.08e-01 ± 1.41e-01 | 0.2373 ± 0.0270 | +0.0474 ± 0.0305 | +0.7625 ± 0.0013 |
+| EquiLLM (Inv-Bridge + 1o) | 638,213 | cannot represent | cannot represent | cannot represent | cannot represent | 4.40e-01 ± 2.82e-01 | 0.0868 ± 0.0202 | +0.7069 ± 0.0149 | +0.9789 ± 0.0036 |
+| Uni-Mol + Signed-Volume (0o) | 660,670 | 64.9 ± 26.1% | 64.6 ± 26.4% | 70.1 ± 21.3% | 1.05e-06 ± 5.93e-07 | 6.92e-07 ± 5.46e-07 | 0.1487 ± 0.0293 | +0.0486 ± 0.0423 | +0.7590 ± 0.0030 |
+| YLM-Universe FM (Ours) | 664,838 | 100.0 ± 0.0% | 100.0 ± 0.0% | 52.1 ± 26.2% | 4.65e-07 ± 8.27e-08 | 1.93e-07 ± 6.34e-08 | 0.0981 ± 0.0095 | +0.7202 ± 0.0435 | +0.9968 ± 0.0008 |
+
+What this run shows: `0e`-only models (`GraphMVP`, `Uni-Mol`, `EquiLLM`) cannot represent handedness at all. Adding a local signed-volume feature (`Uni-Mol + Signed-Volume`) lets the distance model tell left from right, while `YLM-Universe` combines exact `0o` parity with `1o` arrow and `0e+2e` matrix equivariance, though it does not win on scalar energy MAE (`0.0981` vs `0.0868` for `EquiLLM` and `0.0906` for `GraphMVP` in Table 4.2).
 
 ---
 

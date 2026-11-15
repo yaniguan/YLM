@@ -293,13 +293,19 @@ ylm export-hf --labels data/qm9_xtb.pkl --v0 data/tensorqa_v0.json --out dist/hf
 ## Multi-task 3D model (`YLMUniverseModel`) and Uni-Mol comparison
 
 `src/universe_fm.py` (`YLMUniverseModel`) predicts four types of outputs from one shared model:
-plain numbers (energy, gap), left/right handedness (`out["chiral"]`, which flips sign in a mirror and equals `0` on flat molecules), 3D arrows (dipole and atom forces), and symmetric 3x3 matrices (polarizability, quadrupole, stress). `src/fm_baselines.py` compares it against `UniMolStyle3DBaseline`, `GraphMVP3DInfoMaxBaseline`, and `EquiLLMMultiTaskBaseline`:
+plain numbers (energy, gap), left/right handedness (`out["chiral"]`, which flips sign in a mirror and equals `0` on flat molecules), 3D arrows (dipole and atom forces), and symmetric 3x3 matrices (polarizability, quadrupole, stress). `src/fm_baselines.py` compares it against `UniMolStyle3DBaseline`, `UniMolSignedVolumeBaseline` (distance Transformer plus a 4-atom signed-volume `0o` feature), `GraphMVP3DInfoMaxBaseline`, and `EquiLLMMultiTaskBaseline`.
+
+In the 3-seed size-matched CPU smoke runs ([`results/cpu_smoke_nov12/`](results/cpu_smoke_nov12/README.md), ~638k–665k parameters per model, seeds `42, 43, 44`):
+
+- **Scalar energy (`0e` MAE)**: `YLMUniverseModel` does **not** beat dedicated invariant baselines on energy. On the chiral multi-task benchmark it gets `0.0981 ± 0.0095` MAE, losing to size-matched `EquiLLM` (`0.0868 ± 0.0202`) and `GraphMVP` (`0.0906 ± 0.0085`); on the unmatched single-seed run of script 32 it also lost (`0.1754` vs `0.1678` for `GraphMVP`), while overlapping at `0.1506 ± 0.0096` vs `0.1653 ± 0.0038` (`EquiLLM`) when size-matched.
+- **3D vectors (`1o`) and symmetric 3x3 tensors (`0e+2e`)**: `0e`-only models (`GraphMVP`, `Uni-Mol`) cannot rotate 3D vectors (`O(3)` equivariance error `~1.3`). Against size-matched `EquiLLM`, `YLMUniverseModel` improves vector cosine (`+0.5662 ± 0.0377` vs `+0.4459 ± 0.0399`), force cosine (`+0.4634 ± 0.0490` vs `+0.2288 ± 0.0541`), and 3x3 tensor cosine (`+0.9939 ± 0.0019` vs `+0.9457 ± 0.0119`).
+- **Left/right handedness (`0o`)**: `0e`-only models (`GraphMVP`, `Uni-Mol`, `EquiLLM`) assign identical features to mirror images and are marked `cannot represent` rather than scored. Adding a signed-volume feature (`UniMolSignedVolumeBaseline`) lets the distance model tell left from right (`64.9 ± 26.1%` on seen scaffolds, `70.1 ± 21.3%` on two unseen scaffolds), while `YLMUniverseModel` reaches `100.0 ± 0.0%` on seen scaffolds and `52.1 ± 26.2%` on the two unseen scaffolds in this tiny run.
 
 ```bash
 python scripts/31_prepare_universe_data.py --smoke --out data/universe_smoke
 python scripts/30_train_universe_fm.py --name universe_smoke --data_dir data/universe_smoke --tiny --epochs 20 --device cpu
-python scripts/32_benchmark_vs_unimol.py --data_dir data/universe_smoke --tiny --epochs 20 --device cpu
-python scripts/35_build_and_eval_chiral_benchmark.py --tiny --epochs 24 --out_dir runs/chiral_universe_benchmark
+python scripts/32_benchmark_vs_unimol.py --data_dir data/universe_smoke --tiny --epochs 20 --seeds 42 43 44 --match_params --device cpu
+python scripts/35_build_and_eval_chiral_benchmark.py --tiny --epochs 24 --seeds 42 43 44 --match_params --out_dir runs/chiral_universe_benchmark
 ```
 
 ## Citation

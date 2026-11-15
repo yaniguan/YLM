@@ -4,11 +4,15 @@
    3D Transformer built from atom-to-atom distances `d_ij = ||r_i - r_j||`. Because distances do not
    change under rotation or mirror reflection, its scalar features cannot rotate arrows or tell `(R)` from `(S)`.
 
-2. `GraphMVP3DInfoMaxBaseline` (Liu et al., ICLR 2022; Stark et al., ICML 2022):
+2. `UniMolSignedVolumeBaseline`:
+   `UniMolStyle3DBaseline` plus a local 4-atom signed-volume (`0o`) triple product `(w1_i x w2_i) . w3_i`
+   so an invariant distance model can distinguish `(R)` from `(S)` enantiomers.
+
+3. `GraphMVP3DInfoMaxBaseline` (Liu et al., ICLR 2022; Stark et al., ICML 2022):
    2D bond-graph network trained to match a 3D teacher during pretraining, using only 2D bonds at test time.
 
-3. `EquiLLMMultiTaskBaseline`:
-   Passes only plain numbers through the text bridge and scales atom 3D vectors at the end.
+4. `EquiLLMMultiTaskBaseline`:
+   Passes only plain numbers (`0e`) through the text bridge and scales atom 3D vectors at the end.
 """
 from __future__ import annotations
 
@@ -227,6 +231,8 @@ class _InvariantLanguageHead(nn.Module):
 class UniMolStyle3DBaseline(nn.Module):
     """Uni-Mol style SE(3)-invariant distance-matrix 3D Transformer + coordinate denoising + language readout."""
 
+    can_represent_chirality: bool = False
+
     def __init__(
         self,
         text_dim: int = 128,
@@ -315,6 +321,102 @@ class UniMolStyle3DBaseline(nn.Module):
         return out
 
 
+class UniMolSignedVolumeBaseline(UniMolStyle3DBaseline):
+    """Uni-Mol distance Transformer plus a local signed-volume (`0o`) feature for `(R)`/`(S)` chirality.
+
+    Around each atom `i`, three learned `0e` edge gates form neighbor vector sums `w1_i, w2_i, w3_i` from
+    `r_j - r_i`. Their scalar triple product `(w1_i x w2_i) . w3_i = det[w1_i, w2_i, w3_i]` is unchanged
+    under proper rotations (`det Q = +1`), flips sign under mirror reflections (`det Q = -1`), and equals
+    exact `0` on flat molecules.
+    """
+
+    can_represent_chirality: bool = True
+
+    def __init__(
+        self,
+        text_dim: int = 128,
+        *,
+        d_model: int = 128,
+        n_layers: int = 3,
+        n_heads: int = 4,
+        n_kernels: int = 32,
+        n_elements: int = 100,
+        n_scalars: int = 1,
+        cutoff: float = 12.0,
+        n_signed_vol: int = 16,
+        chiral_cutoff: float = 7.0,
+    ):
+        super().__init__(
+            text_dim=text_dim,
+            d_model=d_model,
+            n_layers=n_layers,
+            n_heads=n_heads,
+            n_kernels=n_kernels,
+            n_elements=n_elements,
+            n_scalars=n_scalars,
+            cutoff=cutoff,
+        )
+        self.n_signed_vol = n_signed_vol
+        self.chiral_cutoff = chiral_cutoff
+        self.sv_src = nn.Linear(d_model, n_signed_vol)
+        self.sv_dst = nn.Linear(d_model, n_signed_vol)
+        self.sv_pair = nn.Linear(n_heads, n_signed_vol)
+        self.sv_edge_gates = nn.Linear(n_signed_vol, 3 * n_signed_vol)
+        self.sv_atom_mod = nn.Linear(d_model, n_signed_vol)
+        self.sv_text_pick = nn.Linear(d_model, n_signed_vol)
+        self.sv_text_sum = nn.Linear(d_model, n_signed_vol)
+        self.sv_scale = nn.Parameter(torch.full((n_signed_vol,), 2.0))
+        # No bias so odd parity `f(-X) = -f(X)` and exact zero on planar geometries hold strictly
+        self.sv_out = nn.Linear(n_signed_vol, 1, bias=False)
+
+    def forward(
+        self,
+        Z: torch.Tensor,
+        pos: torch.Tensor,
+        atom_mask: torch.Tensor,
+        text: torch.Tensor,
+        text_mask: torch.Tensor,
+        lot_id: Optional[torch.Tensor] = None,
+        cell: Optional[torch.Tensor] = None,
+        pbc: Optional[torch.Tensor] = None,
+    ) -> dict[str, torch.Tensor]:
+        B, N = Z.shape
+        if lot_id is None:
+            lot_id = torch.zeros(B, dtype=torch.long, device=Z.device)
+        x, pair_repr, rel, dist = self.encode_3d(Z, pos, atom_mask, lot_id=lot_id, cell=cell, pbc=pbc)
+        out = self.readout(x, atom_mask, text, text_mask, lot_id)
+
+        pair_mask = atom_mask[:, :, None] & atom_mask[:, None, :] & ~torch.eye(N, dtype=torch.bool, device=pos.device)[None]
+        pair_nh = pair_repr.permute(0, 2, 3, 1)
+        w_ij = self.coord_pair_head(pair_nh).squeeze(-1) * pair_mask.to(pos.dtype)
+        unit_rel = rel / dist.clamp(min=1e-4)[..., None]
+        counts = pair_mask.sum(dim=-1, keepdim=True).clamp(min=1).to(pos.dtype)
+        out["denoise"] = ((w_ij[..., None] * unit_rel).sum(dim=2) / counts) * atom_mask[..., None].to(pos.dtype)
+
+        # Signed-volume `0o` pseudoscalar per atom: (w1_i x w2_i) . w3_i
+        env = 0.5 * (torch.cos(math.pi * (dist / self.chiral_cutoff).clamp(max=1.0)) + 1.0)
+        env = env * ((dist < self.chiral_cutoff) & pair_mask).to(pos.dtype)
+        edge_h = torch.tanh(self.sv_src(x)[:, :, None, :] + self.sv_dst(x)[:, None, :, :] + self.sv_pair(pair_nh))
+        gates = self.sv_edge_gates(edge_h) * env[..., None]
+        vecs = torch.einsum("bijc,bijm->bicm", gates, unit_rel).reshape(B, N, 3, self.n_signed_vol, 3)
+        w1, w2, w3 = vecs.unbind(dim=2)
+        vol = (torch.linalg.cross(w1, w2, dim=-1) * w3).sum(dim=-1)
+        pseudo_atom = torch.tanh(self.sv_scale * vol) * self.sv_atom_mod(x) * atom_mask[..., None].to(pos.dtype)
+
+        h = (self.readout.text_proj(text) + self.readout.lot_embed(lot_id)[:, None, :]) * text_mask[..., None].to(pos.dtype)
+        has_tok = text_mask.any(dim=-1, keepdim=True)
+        safe_tmask = text_mask.clone()
+        safe_tmask[~has_tok.squeeze(-1), 0] = True
+        tw = self.readout.token_weight(h).squeeze(-1).masked_fill(~safe_tmask, float("-inf")).softmax(dim=-1)
+        h_pool = torch.einsum("bt,btd->bd", tw, h)
+
+        picked_pseudo = torch.einsum("bn,bnc->bc", out["attn"], pseudo_atom)
+        sum_pseudo = pseudo_atom.sum(dim=1)
+        chiral_feat = torch.sigmoid(self.sv_text_pick(h_pool)) * picked_pseudo + self.sv_text_sum(h_pool) * sum_pseudo
+        out["chiral"] = self.sv_out(chiral_feat)
+        return out
+
+
 def info_nce_3d_2d_loss(z_2d: torch.Tensor, z_3d: torch.Tensor, temperature: float = 0.1) -> torch.Tensor:
     """Symmetric InfoNCE mutual-information contrastive loss aligning 2D graph and 3D geometric embeddings."""
     if z_2d.shape[0] <= 1:
@@ -348,6 +450,8 @@ class _TopologicalGINLayer(nn.Module):
 
 class GraphMVP3DInfoMaxBaseline(nn.Module):
     """GraphMVP / 3D-InfoMax baseline: 2D topological GNN distilled from a 3D teacher via InfoNCE."""
+
+    can_represent_chirality: bool = False
 
     def __init__(
         self,
@@ -458,6 +562,8 @@ class GraphMVP3DInfoMaxBaseline(nn.Module):
 class EquiLLMMultiTaskBaseline(nn.Module):
     """Multi-task EquiLLM control: invariant Transformer bridge + post-hoc 1o vector bypass (no IrrepsToText CG)."""
 
+    can_represent_chirality: bool = False
+
     def __init__(
         self,
         text_dim: int = 128,
@@ -470,11 +576,15 @@ class EquiLLMMultiTaskBaseline(nn.Module):
         n_heads: int = 4,
         n_elements: int = 100,
         n_scalars: int = 1,
+        _shared_e3nn: Optional[dict[str, nn.Module]] = None,
     ):
         super().__init__()
         self.n_vec = n_vec
         self.d_model = d_model
-        self.encoder = Encoder(hidden_irreps=hidden_irreps, n_layers=n_layers, n_elements=n_elements)
+        if _shared_e3nn is None:
+            self.encoder = Encoder(hidden_irreps=hidden_irreps, n_layers=n_layers, n_elements=n_elements)
+        else:
+            self.encoder = _shared_e3nn["encoder"]
         n_inv = self.encoder.irreps_out.num_irreps
 
         self.text_proj = nn.Sequential(nn.LayerNorm(text_dim), nn.Linear(text_dim, d_model), nn.SiLU())
@@ -494,10 +604,16 @@ class EquiLLMMultiTaskBaseline(nn.Module):
         self.gate_pick = nn.Linear(d_model, n_vec)
         self.gate_sum = nn.Linear(d_model, n_vec)
 
-        self.vec_bypass = o3.Linear(self.encoder.irreps_out, f"{n_vec}x1o")
-        self.vec_readout = o3.Linear(f"{n_vec}x1o", "1x1o")
-        self.ten_left = o3.Linear(f"{n_vec}x1o", f"{n_vec}x1o")
-        self.ten_right = o3.Linear(f"{n_vec}x1o", f"{n_vec}x1o")
+        if _shared_e3nn is None:
+            self.vec_bypass = o3.Linear(self.encoder.irreps_out, f"{n_vec}x1o")
+            self.vec_readout = o3.Linear(f"{n_vec}x1o", "1x1o")
+            self.ten_left = o3.Linear(f"{n_vec}x1o", f"{n_vec}x1o")
+            self.ten_right = o3.Linear(f"{n_vec}x1o", f"{n_vec}x1o")
+        else:
+            self.vec_bypass = _shared_e3nn["vec_bypass"]
+            self.vec_readout = _shared_e3nn["vec_readout"]
+            self.ten_left = _shared_e3nn["ten_left"]
+            self.ten_right = _shared_e3nn["ten_right"]
         self.ten_iso = nn.Linear(d_model, 1)
         self.scalar_head = nn.Sequential(
             nn.LayerNorm(d_model),
@@ -511,7 +627,10 @@ class EquiLLMMultiTaskBaseline(nn.Module):
             nn.SiLU(),
             nn.Linear(d_model, 1),
         )
-        self.denoise_head = o3.Linear(self.encoder.irreps_out, "1x1o")
+        if _shared_e3nn is None:
+            self.denoise_head = o3.Linear(self.encoder.irreps_out, "1x1o")
+        else:
+            self.denoise_head = _shared_e3nn["denoise_head"]
 
     def predict_denoise(
         self,
@@ -579,3 +698,80 @@ class EquiLLMMultiTaskBaseline(nn.Module):
             "denoise": self.denoise_head(x) * atom_mask[..., None].to(pos.dtype),
             "attn": attn,
         }
+
+
+def match_baseline_d_model(
+    factory,
+    target_params: int,
+    *,
+    min_d: int = 32,
+    max_d: int = 512,
+    step: int = 8,
+) -> int:
+    """Pick `d_model` (a multiple of `step`) so `factory(d_model)` is as close as possible to `target_params`."""
+    best_d = min_d
+    best_diff = float("inf")
+    for d in range(min_d, max_d + 1, step):
+        n_p = sum(p.numel() for p in factory(d).parameters())
+        diff = abs(n_p - target_params)
+        if diff < best_diff:
+            best_diff = diff
+            best_d = d
+        elif n_p > target_params and diff > best_diff:
+            break
+    return best_d
+
+
+def match_equillm_d_model(
+    target_params: int,
+    *,
+    text_dim: int = 128,
+    hidden_irreps: str = "64x0e + 8x0o + 32x1o + 8x1e + 16x2e",
+    n_layers: int = 3,
+    n_vec: int = 32,
+    n_bridge_layers: int = 2,
+    n_heads: int = 4,
+    n_elements: int = 100,
+    n_scalars: int = 1,
+    min_d: int = 32,
+    max_d: int = 512,
+    step: int = 8,
+) -> int:
+    """Pick `d_model` for `EquiLLMMultiTaskBaseline` near `target_params` while building `e3nn` layers only once."""
+    probe = EquiLLMMultiTaskBaseline(
+        text_dim=text_dim,
+        hidden_irreps=hidden_irreps,
+        n_layers=n_layers,
+        d_model=min_d,
+        n_vec=n_vec,
+        n_bridge_layers=n_bridge_layers,
+        n_heads=n_heads,
+        n_elements=n_elements,
+        n_scalars=n_scalars,
+    )
+    shared = {
+        "encoder": probe.encoder,
+        "vec_bypass": probe.vec_bypass,
+        "vec_readout": probe.vec_readout,
+        "ten_left": probe.ten_left,
+        "ten_right": probe.ten_right,
+        "denoise_head": probe.denoise_head,
+    }
+    return match_baseline_d_model(
+        lambda d: EquiLLMMultiTaskBaseline(
+            text_dim=text_dim,
+            hidden_irreps=hidden_irreps,
+            n_layers=n_layers,
+            d_model=d,
+            n_vec=n_vec,
+            n_bridge_layers=n_bridge_layers,
+            n_heads=n_heads,
+            n_elements=n_elements,
+            n_scalars=n_scalars,
+            _shared_e3nn=shared,
+        ),
+        target_params,
+        min_d=min_d,
+        max_d=max_d,
+        step=step,
+    )

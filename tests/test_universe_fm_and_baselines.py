@@ -331,6 +331,8 @@ def test_scripts_train_and_benchmark_cpu_smoke(tmp_path):
         "--data_dir", str(data_dir),
         "--out_dir", str(bench_out),
         "--tiny",
+        "--match_params",
+        "--seeds", "3", "4",
         "--text_dim", "32",
         "--epochs", "1",
         "--batch_size", "16",
@@ -338,4 +340,12 @@ def test_scripts_train_and_benchmark_cpu_smoke(tmp_path):
         "--device", "cpu",
     ])
     assert len(payload["models"]) == 4
-    assert (bench_out / "benchmark_table.md").exists()
+    assert payload["args"]["resolved_seeds"] == [3, 4]
+    ylm_params = payload["models"][-1]["n_params"]
+    for row in payload["models"]:
+        assert len(row["per_seed"]) == 2
+        assert "scalar_mae" in row["test_std"]
+        assert abs(row["n_params"] - ylm_params) / ylm_params < 0.15
+    md_table = (bench_out / "benchmark_table.md").read_text(encoding="utf-8")
+    assert "±" in md_table
+    assert "size-matched" in md_table
