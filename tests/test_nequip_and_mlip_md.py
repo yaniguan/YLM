@@ -131,13 +131,29 @@ def _random_improper_o3(seed: int = 19) -> torch.Tensor:
     return q
 
 
+def _d_from_matrix_f64(irreps, R: torch.Tensor) -> torch.Tensor:
+    """Compute `irreps.D_from_matrix(R)` in true float64 across e3nn versions.
+
+    In e3nn 0.6.0, `o3.wigner_D` builds `so3_generators(l)` via `torch.sqrt` on integer
+    tensors, which uses `torch.get_default_dtype()` (`float32` by default) and adds ~2e-7
+    rounding error even when `R` is float64. Setting the default dtype to float64 during
+    this call keeps `D_from_matrix(R)` exact to ~1e-16.
+    """
+    previous = torch.get_default_dtype()
+    torch.set_default_dtype(torch.float64)
+    try:
+        return irreps.D_from_matrix(R.to(torch.float64))
+    finally:
+        torch.set_default_dtype(previous)
+
+
 def test_nequip_encoder_molecule_and_pbc_exact_o3_equivariance():
     torch.manual_seed(7)
     nq = _DummyNequIPGraphModule().double()
     enc = NequIPEncoder(backbone="nequip:mock", nequip_model=nq, include_nequip_forces=True).double().eval()
     assert str(enc.irreps_out) == "4x0e+2x1o+1x1o"
 
-    # Periodic crystal test (Li-C-O-H supercell in Bohr)
+    # Isolated molecule + periodic crystal test (Li-C-O-H in Bohr)
     Z = torch.tensor([[3, 6, 8, 1]], dtype=torch.long)
     pos = torch.tensor(
         [[[0.1, 0.2, 0.3], [2.4, 0.5, -0.2], [1.9, 2.2, 0.4], [0.8, 1.5, 1.9]]],
@@ -148,13 +164,22 @@ def test_nequip_encoder_molecule_and_pbc_exact_o3_equivariance():
     pbc = torch.tensor([[True, True, True]])
 
     R = _random_improper_o3(seed=31)
-    D_mat = enc.irreps_out.D_from_matrix(R)
+    D_mat = _d_from_matrix_f64(enc.irreps_out, R)
+    expected_bd = torch.block_diag(torch.eye(4, dtype=torch.float64), R, R, R)
+    assert float((D_mat - expected_bd).abs().max().item()) < 1e-14
 
+    # 1) Isolated molecule path (cell=None)
+    y_mol = enc(Z, pos, mask)
+    y_mol_rot = enc(Z, pos @ R.T, mask)
+    mol_err = (y_mol_rot - y_mol @ D_mat.T).norm() / y_mol.norm().clamp(min=1e-12)
+    assert float(mol_err.detach().item()) < 1e-10
+
+    # 2) Periodic crystal path (cell + pbc)
     y0 = enc(Z, pos, mask, cell=cell, pbc=pbc)
     y_rot = enc(Z, pos @ R.T, mask, cell=cell @ R.T, pbc=pbc)
     y_expected = y0 @ D_mat.T
     rel_err = (y_rot - y_expected).norm() / y0.norm().clamp(min=1e-12)
-    assert float(rel_err) < 1e-10
+    assert float(rel_err.detach().item()) < 1e-10
 
 
 def test_torchscript_deployed_nequip_file_and_ylm_integrations(tmp_path: Path):
