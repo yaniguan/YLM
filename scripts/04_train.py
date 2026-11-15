@@ -30,6 +30,7 @@ from e3nn import o3
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.profiling import Profiler
+from src.provenance import build_provenance
 from src.model import YLM  # noqa: E402
 from src.attn_supervision import attention_supervision_loss  # noqa: E402
 
@@ -387,6 +388,19 @@ def main():
                 n_rot=args.eval_rotations, batch_size=args.eval_batch_size,
                 reflection=True, reflection_only=True)
         say(split, json.dumps(results[split]))
+    results["provenance"] = build_provenance(
+        questions_path="data/tensorqa_v0.json",
+        text_cache_path=text_path,
+        split_counts={
+            "train": len(train["mol"]),
+            "val": len(splits["val"]["mol"]),
+            "test": len(splits["test"]["mol"]),
+            "test_heldout": len(splits["test_heldout"]["mol"]),
+        },
+        eval_rotations=args.eval_rotations,
+        eval_reflections=args.eval_reflections,
+        eval_seed=0,
+    )
     torch.save(dict(state_dict=model.state_dict(), scale=scale.tolist(), args=vars(args),
                     text=args.text, text_dim=data["text_dim"]), f"{out_dir}/checkpoint.pt.tmp")
     os.replace(f"{out_dir}/checkpoint.pt.tmp", f"{out_dir}/checkpoint.pt")
