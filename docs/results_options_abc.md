@@ -4,6 +4,7 @@ Source: `MyDrive/YLM_runs/options_bc_test/runs/full_{A,B,C}/results.json` and `l
 `feat/options-bc-oct30`. All runs: 20,000 QM9 molecules (GFN2-xTB labels), MiniLM text, 60 epochs,
 batch 128, lr 1e-3, seed 0, resumable training (`--resume`), eval with 4 rotations + reflections.
 Profiling for each run is in `runs/<name>/profiling/` (plus `profiling_session_*` from earlier sessions).
+New runs from `scripts/04_train.py` and `scripts/16_train_quad.py` also save a `provenance` block in `results.json` with the question/embedding SHA-256 hashes, split counts, eval rotation/reflection settings, git commit, and PyTorch/e3nn versions.
 
 ## TEST split (force task) vs targets
 

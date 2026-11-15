@@ -27,6 +27,7 @@ import src  # noqa: E402
 from e3nn import o3
 
 from src.model import YLM  # noqa: E402
+from src.provenance import build_provenance  # noqa: E402
 from src.tensor_readout import (  # noqa: E402
     build_arrays,
     load_quadrupole_labels,
@@ -182,7 +183,19 @@ def main():
         if args.max_steps and step >= args.max_steps:
             break
     model.load_state_dict(torch.load(f"{out_dir}/model.pt", map_location=device))
-    results = {"args": vars(args), "scale": float(scale), "n_dropped": n_dropped}
+    results = {
+        "args": vars(args),
+        "scale": float(scale),
+        "n_dropped": n_dropped,
+        "provenance": build_provenance(
+            questions_path=args.questions,
+            text_cache_path=None,
+            split_counts={name: len(rows) for name, rows in splits.items()},
+            eval_rotations=args.eval_rotations,
+            eval_reflections=False,
+            eval_seed=0,
+        ),
+    }
     for name in ("val", "test"):
         results[name] = evaluate(model, arrays, splits[name], scale, device, n_rot=args.eval_rotations)
         say(name, json.dumps(results[name]))
