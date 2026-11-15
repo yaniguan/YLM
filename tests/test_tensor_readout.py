@@ -8,6 +8,12 @@ from pathlib import Path
 
 import pytest
 import torch
+
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+import src  # noqa: F401,E402  # allowlist e3nn 0.4.4 constants before importing e3nn
+
 from e3nn import o3
 from e3nn.io import CartesianTensor
 
@@ -166,26 +172,114 @@ def test_default_head_is_still_a_vector():
         _small(tensor_readout=True, cross_irreps="2x1o")
 
 
-def test_v0_checkpoint_still_loads():
-    torch.set_default_dtype(torch.float32)
-    path = Path(__file__).resolve().parents[1] / "checkpoints/v0/ylm_minilm_s0.pt"
-    saved = torch.load(path, map_location="cpu", weights_only=False)
-    model = YLM(text_dim=384, text_mode="text", option="A")
+_V0_REFERENCE_PATH = Path(__file__).resolve().parent / "fixtures" / "v0_reference.json"
+_V0_CHECKPOINTS = ("ylm_minilm_s0.pt", "ylm_matscibert_s0.pt", "baseline_taskid_s0.pt")
+_V0_TEXT_DIMS = {"minilm": 384, "matscibert": 768, "taskid": 16}
+
+
+def _v0_reference_inputs(text_dim: int):
+    """Fixed non-coplanar 4-atom molecule (+ 1 padded slot) and deterministic text tensor."""
+    Z = torch.tensor([[8, 6, 7, 1, 0]], dtype=torch.long)
+    pos = torch.tensor(
+        [[[0.0, 0.0, 0.2], [2.4, 0.1, -0.3], [-0.6, 1.8, 0.5], [1.1, -1.5, 1.4], [0.0, 0.0, 0.0]]],
+        dtype=torch.float64,
+    )
+    mask = torch.tensor([[True, True, True, True, False]])
+    idx = torch.arange(3 * text_dim, dtype=torch.float64).reshape(1, 3, text_dim)
+    text = torch.sin(idx * 0.37) + 0.5 * torch.cos(idx * 0.19)
+    text_mask = torch.tensor([[True, True, False]])
+    return Z, pos, mask, text, text_mask
+
+
+def _eval_v0_checkpoint(ckpt_name: str, **ylm_overrides) -> dict:
+    ckpt_dir = Path(__file__).resolve().parents[1] / "checkpoints" / "v0"
+    saved = torch.load(ckpt_dir / ckpt_name, map_location="cpu", weights_only=False)
+    text_kind = saved["text"]
+    text_dim = _V0_TEXT_DIMS[text_kind]
+    kwargs = dict(text_dim=text_dim, text_mode=("taskid" if text_kind == "taskid" else "text"))
+    kwargs.update(ylm_overrides)
+    model = YLM(**kwargs)
     assert set(model.state_dict()) == set(saved["state_dict"])
     model.load_state_dict(saved["state_dict"])
-    model.eval()
-    Z = torch.tensor([[8, 1, 1]])
-    pos = torch.tensor([[[0.0, 0.0, 0.0], [1.4, 0.0, 0.0], [-0.5, 1.3, 0.0]]])
-    mask = torch.ones(1, 3, dtype=torch.bool)
-    text = torch.zeros(1, 2, 384)
-    text_mask = torch.ones(1, 2, dtype=torch.bool)
+    model = model.double().eval()
+    Z, pos, mask, text, text_mask = _v0_reference_inputs(text_dim)
     with torch.no_grad():
-        y, attn = model(Z, pos, mask, text, text_mask, torch.tensor([1]))
-    assert y.shape == (1, 3) and attn.shape == (1, 3)
-    assert torch.isfinite(y).all()
-    other = YLM(text_dim=384, tensor_readout=True)
-    with pytest.raises(RuntimeError):
-        other.load_state_dict(saved["state_dict"])
+        y_dip, attn_dip = model(Z, pos, mask, text, text_mask, torch.tensor([0]))
+        y_frc, attn_frc = model(Z, pos, mask, text, text_mask, torch.tensor([1]))
+    return {
+        "text": text_kind,
+        "text_dim": text_dim,
+        "dipole_vec": y_dip[0].tolist(),
+        "dipole_attn": attn_dip[0].tolist(),
+        "force_vec": y_frc[0].tolist(),
+        "force_attn": attn_frc[0].tolist(),
+    }
+
+
+def write_v0_reference(path: Path = _V0_REFERENCE_PATH) -> None:
+    """Regenerate `tests/fixtures/v0_reference.json` from `checkpoints/v0/*.pt`.
+
+    Run from the repo root:
+      python tests/test_tensor_readout.py --regen-v0-reference
+    """
+    previous = torch.get_default_dtype()
+    torch.set_default_dtype(torch.float32)
+    try:
+        payload = {
+            "note": "Reference outputs for checkpoints/v0/*.pt; regenerate with `python tests/test_tensor_readout.py --regen-v0-reference`.",
+            "checkpoints": {name: _eval_v0_checkpoint(name) for name in _V0_CHECKPOINTS},
+        }
+    finally:
+        torch.set_default_dtype(previous)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+
+def test_v0_checkpoint_still_loads():
+    # Regenerate reference file if intentional: `python tests/test_tensor_readout.py --regen-v0-reference`
+    torch.set_default_dtype(torch.float32)
+    reference = json.loads(_V0_REFERENCE_PATH.read_text(encoding="utf-8"))["checkpoints"]
+    assert set(reference) == set(_V0_CHECKPOINTS)
+
+    for name in _V0_CHECKPOINTS:
+        got = _eval_v0_checkpoint(name)
+        ref = reference[name]
+        for key in ("dipole_vec", "dipole_attn", "force_vec", "force_attn"):
+            torch.testing.assert_close(
+                torch.tensor(got[key], dtype=torch.float64),
+                torch.tensor(ref[key], dtype=torch.float64),
+                atol=1e-6,
+                rtol=1e-6,
+            )
+
+    # Changing `YLM(...)` defaults must fail either `load_state_dict` or the numerical check
+    ckpt_dir = Path(__file__).resolve().parents[1] / "checkpoints" / "v0"
+    saved = torch.load(ckpt_dir / "ylm_minilm_s0.pt", map_location="cpu", weights_only=False)
+    for bad_kwargs in (
+        dict(tensor_readout=True),
+        dict(option="B"),
+        dict(option="C"),
+        dict(n_cross_layers=2),
+        dict(n_layers=2),
+    ):
+        other = YLM(text_dim=384, **bad_kwargs)
+        with pytest.raises(RuntimeError):
+            other.load_state_dict(saved["state_dict"])
+
+    # Shape-preserving default changes still fail the numerical reference check (`atol=1e-6`)
+    wrong_mode = _eval_v0_checkpoint("ylm_minilm_s0.pt", text_mode="taskid")
+    mode_diff = (
+        torch.tensor(wrong_mode["dipole_vec"], dtype=torch.float64)
+        - torch.tensor(reference["ylm_minilm_s0.pt"]["dipole_vec"], dtype=torch.float64)
+    ).abs().max().item()
+    assert mode_diff > 1e-4
+
+    wrong_parity = _eval_v0_checkpoint("baseline_taskid_s0.pt", legacy_odd_scalars=True)
+    parity_diff = (
+        torch.tensor(wrong_parity["dipole_vec"], dtype=torch.float64)
+        - torch.tensor(reference["baseline_taskid_s0.pt"]["dipole_vec"], dtype=torch.float64)
+    ).abs().max().item()
+    assert parity_diff > 1e-4
 
 
 def _train_script():
@@ -319,3 +413,11 @@ def test_quad_molecule_missing_from_questions(tmp_path, monkeypatch):
     assert saved["n_dropped"] == 1
     assert saved["test"]["n"] == 1
     assert saved["val"]["n"] == 1
+
+
+if __name__ == "__main__":
+    if "--regen-v0-reference" in sys.argv[1:]:
+        write_v0_reference()
+        print(f"Wrote {_V0_REFERENCE_PATH}")
+    else:
+        raise SystemExit("Usage: python tests/test_tensor_readout.py --regen-v0-reference")
