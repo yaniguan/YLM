@@ -305,6 +305,8 @@ def main():
             raise ValueError("Resume C tensor-product mode differs")
         if saved["args"].get("n_cross_layers", 1) != args.n_cross_layers:
             raise ValueError("Resume n_cross_layers differs")
+        if float(saved["args"].get("attn_sup", 0.0)) != float(args.attn_sup):
+            raise ValueError("Resume configuration differs: attn_sup")
         model.load_state_dict(saved["model"])
         opt.load_state_dict(saved["optimizer"])
         sched.load_state_dict(saved["scheduler"])
