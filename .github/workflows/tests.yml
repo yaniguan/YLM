@@ -7,8 +7,19 @@ permissions:
   contents: read
 jobs:
   pytest-cpu:
+    name: pytest-cpu (${{ matrix.label }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: torch 2.10 + e3nn 0.4.4
+            torch_spec: "torch==2.10.0"
+            e3nn_spec: "e3nn==0.4.4"
+          - label: recent torch + e3nn 0.6.0
+            torch_spec: "torch>=2.14"
+            e3nn_spec: "e3nn==0.6.0"
     env:
       CUDA_VISIBLE_DEVICES: ""
     steps:
@@ -21,7 +32,9 @@ jobs:
       - name: Install (CPU-only torch)
         run: |
           python -m pip install --upgrade pip
-          pip install torch==2.10.0 --index-url https://download.pytorch.org/whl/cpu
-          pip install "e3nn==0.4.4" numpy scipy rdkit "transformers==5.22.0" pandas pytest
+          pip install "${{ matrix.torch_spec }}" --index-url https://download.pytorch.org/whl/cpu
+          pip install "${{ matrix.e3nn_spec }}" numpy scipy rdkit "transformers==5.22.0" pandas pytest
+      - name: Print versions
+        run: python -c "import torch, e3nn; print('torch:', torch.__version__, 'e3nn:', e3nn.__version__)"
       - name: pytest (CPU; GPU-only tests skip themselves)
         run: python -m pytest -q
