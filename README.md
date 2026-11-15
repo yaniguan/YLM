@@ -28,8 +28,10 @@ YLM (Y_lm + Language Model) lets text tokens attend directly to rotation-equivar
 
 ```bash
 git clone https://github.com/yaniguan/YLM.git && cd YLM
-pip install torch "e3nn==0.4.4" numpy transformers
+pip install torch "e3nn==0.6.0" numpy transformers
 ```
+
+Training runs, Colab notebooks, and `environment.yml` use `e3nn==0.6.0` (`e3nn==0.4.4` also loads the v0 checkpoints and is tested in CI).
 
 Run from the repo root (the v0 checkpoints are in `checkpoints/v0/`; the text encoder downloads from Hugging Face):
 
