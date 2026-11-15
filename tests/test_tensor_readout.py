@@ -18,6 +18,7 @@ from src.tensor_readout import (
     check_quadrupole_matrix,
     load_quadrupole_labels,
     make_batch,
+    quadrupole_error,
     quadrupole_loss,
     rotate_matrix,
     split_rows,
@@ -92,6 +93,32 @@ def test_label_rotation_is_0e_plus_2e():
     got = cartesian.to_cartesian(irreps @ cartesian.D_from_matrix(R).T)
     torch.testing.assert_close(got, rotate_matrix(checked, R), atol=1e-8, rtol=1e-8)
     assert unique_entries(checked).shape == (6,)
+
+
+def test_quadrupole_loss_and_error_are_o3_invariant():
+    torch.manual_seed(17)
+    raw_p = torch.randn(6, 3, 3, dtype=torch.float64)
+    raw_t = torch.randn(6, 3, 3, dtype=torch.float64)
+    pred = 0.5 * (raw_p + raw_p.transpose(-1, -2))
+    target = 0.5 * (raw_t + raw_t.transpose(-1, -2))
+
+    base_loss = quadrupole_loss(pred, target)
+    base_err = quadrupole_error(pred, target)
+    for sign in (1.0, -1.0):
+        R = sign * o3.rand_matrix()
+        rot_p = rotate_matrix(pred, R)
+        rot_t = rotate_matrix(target, R)
+        torch.testing.assert_close(quadrupole_loss(rot_p, rot_t), base_loss, atol=1e-14, rtol=1e-14)
+        torch.testing.assert_close(quadrupole_error(rot_p, rot_t), base_err, atol=1e-14, rtol=1e-14)
+
+    # Off-diagonal pure shear rotated by 45 degrees into a diagonal matrix must keep the exact same loss (2/9)
+    off_diag = torch.tensor([[[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 0.0]]], dtype=torch.float64)
+    s = math.sqrt(0.5)
+    r45 = torch.tensor([[s, s, 0.0], [-s, s, 0.0], [0.0, 0.0, 1.0]], dtype=torch.float64)
+    diag_rot = rotate_matrix(off_diag, r45)
+    zeros = torch.zeros_like(off_diag)
+    torch.testing.assert_close(quadrupole_loss(off_diag, zeros), torch.tensor(2.0 / 9.0, dtype=torch.float64))
+    torch.testing.assert_close(quadrupole_loss(diag_rot, zeros), torch.tensor(2.0 / 9.0, dtype=torch.float64))
 
 
 def test_load_and_pack_quadrupole_labels(tmp_path):
@@ -211,16 +238,18 @@ def test_training_hook_one_step_and_eval():
     assert rows["test"].tolist() == [2]
     model = _small("A", tensor_readout=True, text_mode="taskid", n_tasks=1)
     inputs, target = make_batch(arrays, rows["train"], "cpu")
-    scale = unique_entries(target).pow(2).mean().sqrt()
+    scale = target.pow(2).mean().sqrt()
     pred = model(*inputs)[0]
     loss = quadrupole_loss(pred, target / scale)
     loss.backward()
     assert torch.isfinite(loss)
     assert model.readout.linear.weight.grad.abs().sum() > 0
-    report = _train_script().evaluate(model, arrays, rows["test"], scale, "cpu", n_rot=2, batch_size=4)
+    rep1 = _train_script().evaluate(model, arrays, rows["test"], scale, "cpu", n_rot=1, batch_size=4)
+    report = _train_script().evaluate(model, arrays, rows["test"], scale, "cpu", n_rot=4, batch_size=4)
     assert report["n"] == 1
     assert report["eq_err_mean"] < 1e-4
     assert math.isfinite(report["mae"])
+    assert abs(report["mae"] - rep1["mae"]) < 1e-5
 
 
 def test_question_splits_and_script_smoke(tmp_path, monkeypatch):

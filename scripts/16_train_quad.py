@@ -31,10 +31,10 @@ from src.tensor_readout import (  # noqa: E402
     build_arrays,
     load_quadrupole_labels,
     make_batch,
+    quadrupole_error,
     quadrupole_loss,
     split_rows,
     tensor_equivariance_error,
-    unique_entries,
 )
 
 
@@ -68,7 +68,7 @@ def splits_from_questions(mol_ids, questions_path):
 
 @torch.no_grad()
 def evaluate(model, arrays, rows, scale, device, n_rot, batch_size=32):
-    """MAE on the six unique entries, plus the rotation error of the 3x3 matrix."""
+    """Rotation-invariant Frobenius RMS error per 3x3 entry, plus the rotation error of the matrix."""
     model.eval()
     rotations = [torch.eye(3)]
     if n_rot > 1:
@@ -90,7 +90,7 @@ def evaluate(model, arrays, rows, scale, device, n_rot, batch_size=32):
                 y0 = pred
             else:
                 eq_err += tensor_equivariance_error(pred, y0, R).tolist()
-            abs_err += (unique_entries(pred) - unique_entries(target)).abs().mean(-1).tolist()
+            abs_err += quadrupole_error(pred, target).tolist()
     model.train()
     return {
         "n": int(len(rows)),
@@ -142,7 +142,7 @@ def main():
         if len(rows) == 0:
             raise SystemExit(f"Split {name} is empty. Check the quadrupole file and the question splits.")
     train_rows = splits["train"]
-    scale = unique_entries(arrays["target"][train_rows]).pow(2).mean().sqrt().clamp(min=1e-8)
+    scale = arrays["target"][train_rows].pow(2).mean().sqrt().clamp(min=1e-8)
     say("device", device, "| molecules", len(arrays["mol"]), "| scale", float(scale))
 
     tiny = {}
