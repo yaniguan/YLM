@@ -24,7 +24,7 @@ a model should not use it as input.
 | test_heldout | 7,703 | same molecules as test | **new wordings never seen in training** |
 
 Molecules are split at random (80/10/10). No molecule appears in two of train/val/test.
-584 unique question strings.
+584 unique question strings in the packaged v0 release (`tensorqa_v0.tar.gz`). Rebuilding from scratch with `scripts/01_make_labels.py` and `scripts/02_make_questions.py` can vary slightly across environments and `tblite` / `RDKit` builds (for example, the rebuild in [`docs/WORKLOG_oct29b.md`](docs/WORKLOG_oct29b.md) produced 84,787 questions and 571 unique strings).
 
 ## Where the numbers come from
 
