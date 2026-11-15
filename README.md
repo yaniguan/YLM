@@ -246,7 +246,9 @@ on training rows and chooses its penalty on validation rows. Results appear as
 `YLM(..., tensor_readout=True)` adds a `0e+2e` head and returns one symmetric
 3x3 matrix. The default model still returns one vector, and the v0 checkpoints
 still load. Quadrupole matrices from `scripts/12_make_quadrupole.py` can be
-trained with `scripts/16_train_quad.py`. That script stays unused unless you run it.
+trained with `scripts/16_train_quad.py` using a rotation-invariant Frobenius
+loss and RMS error over all nine `3x3` entries (`||pred - target||_F / 3`).
+That script stays unused unless you run it.
 
 ## Optional periodic crystal graph and packaging
 

@@ -46,8 +46,13 @@ def unique_entries(matrix):
 
 
 def quadrupole_loss(pred, target):
-    """Mean square error on the six independent entries."""
-    return (unique_entries(pred) - unique_entries(target)).pow(2).mean()
+    """Rotation-invariant Frobenius mean square error per entry of a 3x3 matrix."""
+    return (pred - target).pow(2).sum(dim=(-1, -2)).mean() / 9.0
+
+
+def quadrupole_error(pred, target):
+    """Rotation-invariant per-molecule Frobenius RMS error (||pred - target||_F / 3)."""
+    return ((pred - target).pow(2).sum(dim=(-1, -2)) / 9.0).sqrt()
 
 
 def check_quadrupole_matrix(q):
