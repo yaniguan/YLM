@@ -47,7 +47,7 @@ concatenation.
 | Benchmark | License | What is in this repo | Status |
 |---|---|---|---|
 | ChemProto-Twins (own set) | written for this study | 84 scenarios, 336 items (`data/items_own.jsonl`, source `data/scenarios_own.json`) | items ready; reader runs **not run** |
-| CALiSol-23 conductivity pairs | CC-BY 4.0, derived | 3000 / 251 / 300 train/dev/test pairs | probe measured (9 of 16 layer subsets); soft-token arms **not run** |
+| CALiSol-23 conductivity pairs | CC-BY 4.0, derived | 3000 / 251 / 300 train/dev/test pairs | 16-cell layer × modality probe measured; soft-token arms **not run** |
 | LAB-Bench ProtocolQA public | CC-BY-SA 4.0 | scripts only; no item text | **not run** |
 | BioProBench ERR subset | CC-BY-NC 4.0, research only | scripts only; ids and names only, no item text | **not run** |
 
@@ -76,18 +76,15 @@ salt-solvent system, so test systems are held out.
 - Accuracy uses a cluster bootstrap 95% CI (2000 resamples) over items
   (scenario groups on the own set; items on CALiSol). Paired differences use
   a cluster sign-flip p-value (5000 flips). Holm adjustment is applied to the
-  list of terms in the effect table. Main effects average only over matched
-  cells that were actually run.
+  list of terms in the effect table. Main effects average over matched cells
+  in the full 16-cell layer factorial.
 
 GPU numbers are not reported. All measured figures below are CPU runs.
 
 ## Measured results: CALiSol-23 probes
 
-N = 300 held-out test pairs. Seeds = 0, 1, 2, 3, 4. The layer subsets run are
-none, Q, F, S, M, QF, QS, QM, and FS. Missing, and therefore **not run**, are
-FM, SM, QFS, QFM, QSM, FSM, and QFSM. Main effects and interactions below use
-only the matched cells that exist, so they are not the completed 16-cell
-factorial.
+N = 300 held-out test pairs. Seeds = 0, 1, 2, 3, 4. All 16 layer subsets have
+been run, for three modalities and two probes (96 cells).
 
 Chance is 50%. The none / native / logistic cell is 63.5% [57.5, 68.6], so
 identity, temperature, and concentration already beat chance before any of
@@ -119,57 +116,78 @@ five seed means, in percentage points, for the native arm.
 | QM | knn | 69.7 [65.0, 74.3] | 61.9 [57.1, 66.6] | 63.7 [59.2, 68.3] | 0.65 |
 | FS | logreg | 72.0 [66.8, 77.1] | 67.5 [62.9, 71.9] | 66.3 [61.9, 70.7] | 0.79 |
 | FS | knn | 71.8 [67.1, 76.3] | 66.9 [62.2, 71.3] | 66.3 [61.6, 70.8] | 0.83 |
+| FM | logreg | 72.5 [67.3, 77.6] | 62.1 [57.4, 66.7] | 64.8 [60.5, 69.0] | 0.45 |
+| FM | knn | 71.5 [66.7, 76.0] | 63.9 [59.0, 68.5] | 65.9 [61.3, 70.3] | 1.17 |
+| SM | logreg | 63.1 [57.4, 68.1] | 64.2 [59.5, 68.9] | 63.8 [59.4, 68.1] | 0.39 |
+| SM | knn | 68.8 [64.1, 73.4] | 63.8 [59.1, 68.5] | 64.9 [60.4, 69.5] | 1.07 |
+| QFS | logreg | 71.1 [65.8, 76.1] | 65.1 [60.5, 69.7] | 68.2 [64.0, 72.3] | 0.49 |
+| QFS | knn | 71.8 [67.3, 76.5] | 59.3 [54.5, 64.3] | 61.5 [57.2, 66.0] | 1.41 |
+| QFM | logreg | 71.9 [66.7, 77.0] | 59.3 [54.6, 63.9] | 60.7 [56.3, 64.8] | 0.45 |
+| QFM | knn | 72.3 [67.7, 76.7] | 64.7 [59.9, 69.3] | 64.1 [59.7, 68.6] | 0.93 |
+| QSM | logreg | 62.9 [57.3, 67.7] | 61.9 [57.0, 66.9] | 60.7 [56.4, 65.1] | 0.75 |
+| QSM | knn | 69.9 [65.1, 74.4] | 63.3 [58.5, 67.9] | 65.6 [61.0, 70.1] | 0.91 |
+| FSM | logreg | 72.1 [67.0, 77.1] | 64.4 [60.0, 69.0] | 63.7 [59.4, 67.9] | 0.49 |
+| FSM | knn | 70.9 [66.3, 75.4] | 63.9 [59.1, 68.6] | 65.3 [60.8, 69.5] | 1.33 |
+| QFSM | logreg | 70.7 [65.5, 75.7] | 59.5 [54.7, 64.0] | 62.7 [58.1, 67.2] | 0.33 |
+| QFSM | knn | 71.8 [67.1, 76.3] | 62.2 [57.5, 67.1] | 61.7 [57.3, 66.2] | 1.89 |
 
 ### Main effects and two-way interactions
 
 Effects are in percentage points on accuracy, averaged over items and over
-matched cells. Holm p is adjusted across the 17 terms in this table.
+matched cells in the full 16-cell layer factorial. Holm p is adjusted across
+the 19 terms in this table.
 
 | Term | Effect (pp) [95% CI] | p (sign-flip) | Holm p | N |
 |---|---|---|---|---|
-| layer Q (main) | +0.4 [-0.8, +1.4] | 0.5054 | 1.0000 | 300 |
-| layer F (main) | +2.7 [+0.9, +4.5] | 0.0022 | 0.0352 | 300 |
-| layer S (main) | +0.1 [-0.9, +1.1] | 0.8536 | 1.0000 | 300 |
-| layer M (main) | -1.9 [-3.0, -0.6] | 0.0026 | 0.0390 | 300 |
-| native vs text (main) | +3.8 [+0.1, +7.5] | 0.0552 | 0.6072 | 300 |
-| both vs text (main) | +0.2 [-1.2, +1.6] | 0.7800 | 1.0000 | 300 |
-| both vs native (main) | -3.6 [-7.3, +0.2] | 0.0682 | 0.6820 | 300 |
-| kNN vs logistic probe (main) | +1.3 [-1.9, +4.3] | 0.4122 | 1.0000 | 300 |
-| layer Q × native-vs-text | -0.0 [-2.2, +2.1] | 1.0000 | 1.0000 | 300 |
-| layer F × native-vs-text | +5.3 [+2.8, +7.7] | 0.0002 | 0.0034 | 300 |
-| layer S × native-vs-text | -1.6 [-3.7, +0.5] | 0.1442 | 1.0000 | 300 |
-| layer M × native-vs-text | +2.4 [+0.2, +4.6] | 0.0240 | 0.2880 | 300 |
-| Q × F | -1.4 [-3.0, +0.1] | 0.0694 | 0.6820 | 300 |
-| Q × S | -2.0 [-3.5, -0.7] | 0.0034 | 0.0476 | 300 |
-| Q × M | +1.8 [+0.4, +3.2] | 0.0128 | 0.1664 | 300 |
-| F × S | -0.3 [-1.7, +1.0] | 0.6662 | 1.0000 | 300 |
-| native-vs-text × kNN | +5.0 [-2.0, +12.2] | 0.1622 | 1.0000 | 300 |
+| layer Q (main) | -0.6 [-1.5, +0.3] | 0.2058 | 1.0000 | 300 |
+| layer F (main) | +2.2 [+0.8, +3.6] | 0.0014 | 0.0238 | 300 |
+| layer S (main) | -0.0 [-0.8, +0.8] | 0.9866 | 1.0000 | 300 |
+| layer M (main) | -1.6 [-2.3, -0.9] | 0.0000 | 0.0000 | 300 |
+| native vs text (main) | +5.4 [+1.7, +9.0] | 0.0070 | 0.1050 | 300 |
+| both vs text (main) | +0.6 [-0.7, +2.0] | 0.3644 | 1.0000 | 300 |
+| both vs native (main) | -4.8 [-8.4, -0.9] | 0.0168 | 0.2016 | 300 |
+| kNN vs logistic probe (main) | +1.2 [-1.9, +4.2] | 0.4448 | 1.0000 | 300 |
+| layer Q × native-vs-text | +1.3 [-0.5, +3.0] | 0.1356 | 1.0000 | 300 |
+| layer F × native-vs-text | +5.7 [+3.2, +8.2] | 0.0000 | 0.0000 | 300 |
+| layer S × native-vs-text | -0.9 [-2.6, +0.8] | 0.3024 | 1.0000 | 300 |
+| layer M × native-vs-text | +2.1 [+0.8, +3.4] | 0.0026 | 0.0416 | 300 |
+| Q × F | -1.9 [-3.3, -0.4] | 0.0134 | 0.1742 | 300 |
+| Q × S | -1.9 [-3.3, -0.5] | 0.0114 | 0.1596 | 300 |
+| Q × M | +0.1 [-0.8, +0.9] | 0.8472 | 1.0000 | 300 |
+| F × S | -1.1 [-2.4, +0.2] | 0.0856 | 0.9416 | 300 |
+| F × M | -0.3 [-1.3, +0.7] | 0.5280 | 1.0000 | 300 |
+| S × M | +0.6 [-0.4, +1.6] | 0.2142 | 1.0000 | 300 |
+| native-vs-text × kNN | +3.3 [-3.6, +10.3] | 0.3550 | 1.0000 | 300 |
 
 ### What each factor changed (CALiSol probes only)
 
 - **F (MoLFormer logS and logD, plus RDKit logP and TPSA).** This is the only
-  layer with a clear positive main effect after Holm correction: +2.7 pp
-  [+0.9, +4.5], Holm p = 0.035. The gain is concentrated in the native arm
-  (F × native-vs-text +5.3 pp [+2.8, +7.7], Holm p = 0.003). The best cells
-  measured here are native F: logistic 72.7% [67.3, 77.7] and kNN 73.2%
-  [68.5, 77.6]. Writing the same F facts as text helps much less (text F
-  logistic 65.3% [60.5, 69.7]). Adding Q or S on top of native F does not
-  improve on F alone (native QF and FS stay near 72%).
+  layer with a clear positive main effect after Holm correction: +2.2 pp
+  [+0.8, +3.6], Holm p = 0.024. The gain is concentrated in the native arm
+  (F × native-vs-text +5.7 pp [+3.2, +8.2], Holm p < 0.001). The best cells
+  in the 16-cell design are native F: logistic 72.7% [67.3, 77.7] and kNN
+  73.2% [68.5, 77.6]. Writing the same F facts as text helps much less
+  (text F logistic 65.3% [60.5, 69.7]). Adding Q, S, or M on top of native F
+  does not improve on F alone; native QFSM is 70.7% [65.5, 75.7] (logistic)
+  and 71.8% [67.1, 76.3] (kNN).
 - **Q (GFN2-xTB HOMO, LUMO, gap, dipole, vertical IP and EA).** No clear main
-  effect (+0.4 pp, Holm p = 1.00). A negative Q × S interaction of -2.0 pp
-  [-3.5, -0.7] (Holm p = 0.048) means Q and S together did slightly worse
-  than the sum of their separate effects, on the cells that were run.
+  effect (-0.6 pp [-1.5, +0.3], Holm p = 1.00). Two-way interactions of Q
+  with F or S are slightly negative on the raw test but do not survive Holm
+  correction.
 - **S (ALPB solvation free energy, dielectric, viscosity).** No clear main
-  effect (+0.1 pp, Holm p = 1.00).
+  effect (-0.0 pp [-0.8, +0.8], Holm p = 1.00).
 - **M (melting and boiling points, temperature above the solvent melting
-  point).** A small negative main effect: -1.9 pp [-3.0, -0.6], Holm p =
-  0.039. The drop is largest when M is written as text (text M logistic
-  57.9% [53.1, 62.9], below the none / text / logistic cell).
-- **Native vs text.** Native numbers are slightly ahead on average (+3.8 pp
-  [+0.1, +7.5]), but this does not survive Holm correction (p = 0.055, Holm
-  p = 0.61). The advantage is real for layer F and is not a general rule for
-  every layer. Concatenating text and native ("both") does not beat native
-  alone.
+  point).** A negative main effect: -1.6 pp [-2.3, -0.9], Holm p < 0.001.
+  The drop is largest when M is written as text (text M logistic 57.9%
+  [53.1, 62.9], below the none / text / logistic cell). The M × native-vs-text
+  interaction is +2.1 pp [+0.8, +3.4], Holm p = 0.042: native numbers absorb
+  M better than text does, but native M still does not beat native none.
+- **Native vs text.** Native numbers are ahead on average (+5.4 pp [+1.7,
+  +9.0], p = 0.007). That contrast does not survive Holm correction across
+  the 19 terms in the table (Holm p = 0.105). The advantage is clearly
+  established for layer F, and is also present for layer M, rather than a
+  uniform rule for every layer. Concatenating text and native ("both") does
+  not beat native alone (both vs native -4.8 pp, Holm p = 0.20).
 - **Probe choice.** kNN and logistic regression do not differ reliably.
 
 These conclusions apply to a pairwise conductivity ranking on held-out
@@ -180,7 +198,7 @@ yet to protocol QA or error correction.
 
 | Cell | Status |
 |---|---|
-| CALiSol layer subsets FM, SM, QFS, QFM, QSM, FSM, QFSM | **not run** |
+| CALiSol layer × modality × probe factorial (16 × 3 × 2, five seeds) | measured, table above |
 | Qwen2.5-0.5B-Instruct on ChemProto-Twins and CALiSol (all layer and representation conditions) | **not run** |
 | Larger CLI model on ChemProto-Twins (A, B, +QFSM, ALL-shuf, ALL-plac, R2, R3, R4) | **not run** |
 | LabLean checker alone as an error detector on expressible twins | **not run** |
@@ -201,7 +219,7 @@ python assemble_own.py data/scenarios_own.json
 # rebuild CALiSol pairs (needs CALISOL_DIR with calisol23.csv and calisol_smiles.csv)
 python calisol_pairs.py
 
-# precompute xTB and MoLFormer caches, then resume the CALiSol probes
+# precompute xTB and MoLFormer caches, then run or resume the CALiSol probes
 python build_cache.py data/items_own.jsonl data/calisol_train.jsonl data/calisol_test.jsonl
 python probe_calisol.py
 
@@ -228,8 +246,7 @@ writes only item ids and resolved molecule names.
   stored here.
 - xTB numbers are single-conformer GFN2-xTB (MMFF or UFF geometry). They are
   descriptors, not refined first-principles targets.
-- Seven of the sixteen layer subsets, all language-model readers, all formal
-  representation conditions, and the public protocol benches are not run in
-  this report. Do not treat the CALiSol probe result as an answer to the
-  protocol QA, error-correction, or planning questions until those cells are
-  measured.
+- All language-model readers, all formal representation conditions, the
+  soft-token arms, and the public protocol benches are not run in this
+  report. Do not treat the CALiSol probe result as an answer to the protocol
+  QA, error-correction, or planning questions until those cells are measured.
