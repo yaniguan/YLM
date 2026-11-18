@@ -9,7 +9,7 @@
   "sql_gate": "sql-gate-v1"
  },
  "args": {
-  "lablean_dir": "/workspace/claude_review_nov18/lablean-7c17554/lean",
+  "lablean_dir": "/tmp/lablean_7c17554/lean",
   "seeds": [
    0,
    1,
@@ -20,7 +20,7 @@
   "sql_per_round": 50,
   "no_learn": false,
   "sql_lucky_seeds": 200,
-  "out": "/tmp/lab_tf_fix"
+  "out": "/tmp/lab_tf_fix2"
  },
  "kept": 3352,
  "rejected": 1142,
@@ -374,6 +374,6 @@
    "seed": 2
   }
  ],
- "seconds": 105.7,
+ "seconds": 106.7,
  "machine": "Linux x86_64, CPU only"
 }
