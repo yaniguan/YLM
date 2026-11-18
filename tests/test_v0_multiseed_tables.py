@@ -154,9 +154,8 @@ def test_17_make_options_table_enforces_provenance_and_separates_b_variants(tmp_
         mod17.build_options_table([str(too_few)], out_md=tmp_path / "x.md", min_seeds=3)
 
 
-def test_07_make_table_and_08_analyze_handle_multiseed_fractions_and_ignore_b_c(tmp_path: Path):
+def test_07_make_table_handles_multiseed_fractions_and_ignores_b_c(tmp_path: Path):
     mod07 = _load_script("scripts/07_make_table.py", "make_table_07")
-    mod08 = _load_script("scripts/08_analyze.py", "analyze_08")
 
     # Existing runs_slurm reproduces committed results.md
     baseline_md = tmp_path / "baseline_results.md"
@@ -182,6 +181,17 @@ def test_07_make_table_and_08_analyze_handle_multiseed_fractions_and_ignore_b_c(
             matching = [ln for ln in text_md.splitlines() if f"| {label} | {pct} | 3 |" in ln]
             assert len(matching) == 2  # test and test_heldout
             assert "±" in matching[0]
+
+
+def test_08_analyze_sample_efficiency_multiseed(tmp_path: Path):
+    pytest.importorskip("matplotlib")
+    mod08 = _load_script("scripts/08_analyze.py", "analyze_08")
+    extra = tmp_path / "extra_runs"
+    for seed in (1, 2):
+        for frac in (0.03, 0.1, 0.3):
+            for text in ("minilm", "matscibert", "taskid"):
+                _write_run(extra, f"frac_{text}_f{frac}_s{seed}", text=text, option="A", seed=seed, train_fraction=frac)
+        _write_run(extra, f"v0_optB_minilm_s{seed}", text="minilm", option="B", seed=seed)
 
     plot_dir = tmp_path / "analysis_out"
     plot_dir.mkdir()
