@@ -1,0 +1,35 @@
+{
+  "name": "protocol_brain_v0",
+  "status": "plan only; nothing run yet",
+  "teacher": {
+    "model": "TBD (large open-weight reasoning model)",
+    "use": "write step-by-step answers for protocol tasks; keep only answers that pass the checkers"
+  },
+  "student": {
+    "model": "TBD",
+    "max_params_b": 8,
+    "min_params_b": 1,
+    "molecule_adapter": "src/ylm_lm.py IrrepsAdapter (optional, for questions with 3D structures)"
+  },
+  "data": [
+    {"name": "LAB-Bench", "hf": "futurehouse/lab-bench", "arxiv": "2407.10362",
+     "subsets": ["ProtocolQA", "CloningScenarios", "SeqQA"], "use": "eval_only", "license": "CC-BY-SA-4.0"},
+    {"name": "BioProBench", "hf": "BioProBench/BioProBench", "arxiv": "2505.07889",
+     "subsets": ["step_ordering", "error_correction", "protocol_generation", "protocol_qa"],
+     "use": "train_and_eval", "license": "CC-BY-NC-4.0", "commercial_ok": false},
+    {"name": "BioProt", "url": "github.com/bioplanner/bioplanner", "arxiv": "2310.10632",
+     "use": "eval_only", "license": "TBD (check repo before use)"}
+  ],
+  "stages": [
+    {"name": "distill_sft", "method": "sft", "source": "teacher answers that pass checkers"},
+    {"name": "prefs", "method": "dpo", "source": "checker-pass vs checker-fail answers on the same prompt"},
+    {"name": "rl", "method": "grpo", "source": "BioProBench checker rewards (labbench-posttrain bioenvs/)"}
+  ],
+  "quantize": {"bits": 4, "targets": ["jetson_orin_class", "single_24gb_gpu"]},
+  "eval": {
+    "harness": "github.com/yaniguan/labbench-posttrain (labeval/)",
+    "local_stub": "lab/protocol_qa.py",
+    "compare": ["teacher", "student_fp16", "student_4bit"]
+  },
+  "compute": {"train": "rented A100/H100 bursts with checkpointing", "cost_doc": "docs/lab_cost_setup.md"}
+}

@@ -1,0 +1,5 @@
+id,smiles,accepted,margin,source_image
+img_001,CCO,true,0.92,notebook_p1.png
+img_002,F[C@H](Cl)Br,true,0.40,notebook_p1.png
+img_003,C/C=C/C,false,0.10,notebook_p2.png
+img_004,,true,,notebook_p2.png
