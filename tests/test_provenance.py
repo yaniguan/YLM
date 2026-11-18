@@ -8,9 +8,21 @@ import pickle
 import sys
 
 import e3nn
+import pytest
 import torch
 
-from src.provenance import build_provenance, file_sha256
+from src.provenance import (
+    OFFICIAL_V0_QUESTION_COUNT,
+    OFFICIAL_V0_QUESTIONS_CANONICAL_SHA256,
+    OFFICIAL_V0_SPLIT_COUNTS,
+    OFFICIAL_V0_TARBALL_SHA256,
+    OFFICIAL_V0_UNIQUE_STRINGS,
+    OFFICIAL_V0_UNPACKED_JSON_SHA256,
+    REPO_ROOT,
+    build_provenance,
+    file_sha256,
+    verify_official_v0_questions,
+)
 
 
 def _load_script(rel_path: str, mod_name: str):
@@ -197,3 +209,57 @@ def test_04_train_and_16_train_quad_write_provenance_block(tmp_path: Path, monke
     assert prov16["split_counts"] == {"train": 8, "val": 1, "test": 1}
     assert prov16["eval_rotations"] == 2
     assert prov16["eval_reflections"] is False
+
+
+def test_verify_official_v0_rejects_wrong_counts_or_hash(tmp_path: Path, monkeypatch):
+    # Wrong total question count fails immediately
+    bad_count = tmp_path / "wrong_count.json"
+    bad_count.write_text(
+        json.dumps([{"mol": 0, "split": "train", "task": "dipole", "atom": -1, "question": "q0"}]),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="Question count mismatch"):
+        verify_official_v0_questions(bad_count)
+
+    # Matching counts/unique strings with a modified question text fails the pinned hash check
+    import src.provenance as prov_mod
+
+    monkeypatch.setattr(prov_mod, "OFFICIAL_V0_QUESTION_COUNT", 4)
+    monkeypatch.setattr(prov_mod, "OFFICIAL_V0_UNIQUE_STRINGS", 2)
+    monkeypatch.setattr(prov_mod, "OFFICIAL_V0_SPLIT_COUNTS", {"train": 1, "val": 1, "test": 1, "test_heldout": 1})
+    tampered = tmp_path / "tampered.json"
+    tampered.write_text(
+        json.dumps([
+            {"mol": 0, "split": "train", "task": "dipole", "atom": -1, "question": "q_a"},
+            {"mol": 0, "split": "val", "task": "dipole", "atom": -1, "question": "q_a"},
+            {"mol": 0, "split": "test", "task": "force", "atom": 0, "question": "q_b"},
+            {"mol": 0, "split": "test_heldout", "task": "force", "atom": 0, "question": "q_b"},
+        ]),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="Official v0 question hash mismatch"):
+        verify_official_v0_questions(tampered)
+
+    # DATA_CARD.md must document the pinned hashes and counts
+    card = (REPO_ROOT / "DATA_CARD.md").read_text(encoding="utf-8")
+    assert OFFICIAL_V0_TARBALL_SHA256 in card
+    assert OFFICIAL_V0_UNPACKED_JSON_SHA256 in card
+    assert OFFICIAL_V0_QUESTIONS_CANONICAL_SHA256 in card
+    assert "84,757" in card and "584" in card
+
+
+@pytest.mark.skipif(
+    not (REPO_ROOT / "data" / "tensorqa_v0.json").exists()
+    and not (REPO_ROOT / "data" / "release" / "tensorqa_v0.tar.gz").exists(),
+    reason="Official TensorQA-v0 data file not present in this checkout.",
+)
+def test_official_v0_file_matches_pinned_hash_when_present():
+    q_json = REPO_ROOT / "data" / "tensorqa_v0.json"
+    tar_gz = REPO_ROOT / "data" / "release" / "tensorqa_v0.tar.gz"
+    target = q_json if q_json.exists() else tar_gz
+    info = verify_official_v0_questions(target)
+    assert info["n_questions"] == OFFICIAL_V0_QUESTION_COUNT
+    assert info["n_unique_strings"] == OFFICIAL_V0_UNIQUE_STRINGS
+    assert info["split_counts"] == OFFICIAL_V0_SPLIT_COUNTS
+    assert info["canonical_questions_sha256"] == OFFICIAL_V0_QUESTIONS_CANONICAL_SHA256
+

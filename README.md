@@ -138,7 +138,7 @@ colab/        GPU notebooks
 00–06_*.md    glossary, related work, novelty check, design, benchmark, risks, plan
 ```
 
-<a id="reproduce"></a>Reproduce from scratch: `conda env create -f environment.yml`, download QM9, then run `scripts/01`–`04` and `07` (see [`progress.md`](progress.md) and the script headers). The packaged benchmark `tensorqa_v0.tar.gz` is on the [v0.1.0 release](https://github.com/yaniguan/YLM/releases/tag/v0.1.0).
+<a id="reproduce"></a>To reproduce against the **exact official v0 benchmark** (`84,757` questions, `584` unique strings; pinned SHA-256 digests in [`DATA_CARD.md`](DATA_CARD.md)), unpack `tensorqa_v0.tar.gz` from the [v0.1.0 release](https://github.com/yaniguan/YLM/releases/tag/v0.1.0) with `python scripts/06b_unpack_release.py --download` and verify with `python -m src.provenance --check-v0 data/tensorqa_v0.json`, then run `scripts/03_embed_text.py`, `scripts/04_train.py`, and `scripts/07_make_table.py`. Rebuilding from `qm9.zip` via `scripts/01`–`02` produces a different question file and must not be compared directly to the v0 table above.
 
 ## Limitations / status
 

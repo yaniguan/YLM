@@ -24,7 +24,25 @@ a model should not use it as input.
 | test_heldout | 7,703 | same molecules as test | **new wordings never seen in training** |
 
 Molecules are split at random (80/10/10). No molecule appears in two of train/val/test.
-584 unique question strings in the packaged v0 release (`tensorqa_v0.tar.gz`). Rebuilding from scratch with `scripts/01_make_labels.py` and `scripts/02_make_questions.py` can vary slightly across environments and `tblite` / `RDKit` builds (for example, the rebuild in [`docs/WORKLOG_oct29b.md`](docs/WORKLOG_oct29b.md) produced 84,787 questions and 571 unique strings).
+
+## Official v0.1.0 hashes and counts
+
+The packaged v0 benchmark on the [`v0.1.0` release](https://github.com/yaniguan/YLM/releases/tag/v0.1.0) has **84,757 questions**, **584 unique question strings**, and **19,843 molecules**:
+
+| Artifact | Questions | SHA-256 |
+|---|---|---|
+| `tensorqa_v0.tar.gz` (release archive) | 84,757 | `8a51673f849c217febeebcbb934c40c2fab6dcc28884e689b99b6cd36c85c782` |
+| `tensorqa_v0/train.jsonl` | 61,619 | `1ac8fbd9da6135b55a6aba43a89a2c5e0cbb1d0765d92f492a6996288902c68f` |
+| `tensorqa_v0/val.jsonl` | 7,732 | `0b0cb4baae8d31b2b0ec5a0d35931ed68414236b7b7646445bbcafff001ce7fd` |
+| `tensorqa_v0/test.jsonl` | 7,703 | `24bf8adffdee1af126f914dce912c0c5d3a1a5143eea6f2bbdfe4a470791139b` |
+| `tensorqa_v0/test_heldout.jsonl` | 7,703 | `5f223d8f46917d63f2eb3abb1280c82914a29990ea27042bc09de57bebcbeffe` |
+| `data/tensorqa_v0.json` (unpacked via `scripts/06b_unpack_release.py`) | 84,757 | `76cf64ea621b5c5e521caeb1bbc6511bfb4b0fac7a521e79d67f5249a73630d3` |
+| Canonical `(split, task, atom, question)` stream | 84,757 | `e771153eb1de961de74dc82b7a4cae2001280fb7e8aa60bf05a62a430dcb6c34` |
+
+Check a local copy with `python -m src.provenance --check-v0 data/tensorqa_v0.json` (or pass `tensorqa_v0.tar.gz`).
+To unpack the official v0 training files without running `tblite`, run `python scripts/06b_unpack_release.py --download`.
+
+**Important:** Rebuilding from scratch with `scripts/01_make_labels.py` and `scripts/02_make_questions.py` produces a **different** question file across `tblite` / `RDKit` builds (for example, the rebuild in [`docs/WORKLOG_oct29b.md`](docs/WORKLOG_oct29b.md) gave `84,787` questions and `571` unique strings). Runs trained or evaluated on a fresh rebuild must **not** be compared directly to the official v0 results table.
 
 ## Where the numbers come from
 
@@ -36,7 +54,7 @@ Molecules are split at random (80/10/10). No molecule appears in two of train/va
 4. Dropped: 1 molecule where xTB failed, 156 molecules where any force component was above 0.5 hartree/bohr
    (the noise put two atoms too close).
 
-Reproduce: `scripts/01_make_labels.py`, `scripts/02_make_questions.py` (seed 0).
+Original generation scripts: `scripts/01_make_labels.py`, `scripts/02_make_questions.py` (seed 0). To unpack the exact official v0 files instead of running a fresh rebuild, use `python scripts/06b_unpack_release.py --download`.
 
 ## Units and frames
 
