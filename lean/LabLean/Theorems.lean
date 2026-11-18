@@ -33,14 +33,6 @@ theorem findC_spec {id : String} {c : Container} :
     · intro h; cases h; simp_all
     · intro h; have := findC_spec h; simp_all
 
-theorem findC_isSome_iff (id : String) :
-    ∀ l, (findC id l).isSome ↔ ∃ c ∈ l, c.id = id
-  | [] => by simp [findC]
-  | x :: l => by
-    unfold findC; split
-    · simp_all
-    · simp [findC_isSome_iff id l]; intro h; simp_all
-
 @[simp] theorem hasTipB_iff (s : LabState) : hasTipB s = true ↔ HasTip s := by
   unfold hasTipB HasTip; cases s.tip <;> simp
 
@@ -53,8 +45,8 @@ theorem findC_isSome_iff (id : String) :
 @[simp] theorem tipCleanB_iff (s : LabState) (c : Container) : tipCleanB s c = true ↔ TipClean s c := by
   simp [tipCleanB, mayEnterB, TipClean, MayEnter, NotMoreConc]
 
-@[simp] theorem knownB_iff (s : LabState) (x : String) : knownB s x = true ↔ Known s x := by
-  simp [knownB, Known, IsPlate, findC_isSome_iff]
+@[simp] theorem itemB_iff (s : LabState) (x : String) : itemB s x = true ↔ IsItem s x := by
+  simp [itemB, IsItem, IsPlate]
 
 theorem thawChecks_iff (s : LabState) (c : Container) :
     (∀ x ∈ thawChecks s c, x.1 = true) ↔ Thawed s c := by
@@ -126,10 +118,10 @@ theorem plateKnownB_iff (s : LabState) (c : Container) :
 theorem initChecks_iff (s : LabState) : (∀ x ∈ initChecks s, x.1 = true) ↔ WellFormed s := by
   simp only [initChecks, List.mem_cons, List.mem_append, List.mem_map, or_imp, forall_and,
     forall_exists_index, and_imp, forall_apply_eq_imp_iff₂, forall_eq, plateKnownB_iff]
-  simp only [nodupB_iff, decide_eq_true_eq, Bool.not_eq_eq_eq_not, Bool.not_true]
+  simp [nodupB_iff, and_assoc, forall_and]
   constructor
-  · rintro ⟨⟨⟨h1, h2⟩, h3⟩, h4⟩; exact ⟨h1, h2, by simpa using h3, h4⟩
-  · rintro ⟨h1, h2, h3, h4⟩; exact ⟨⟨⟨h1, h2⟩, by simpa using h3⟩, h4⟩
+  · intro ⟨h1, h2, h3, h4, h5, h6, h7, h8⟩; exact ⟨h1, h2, h3, h4, h5, h6, h7, h8⟩
+  · intro ⟨h1, h2, h3, h4, h5, h6, h7, h8⟩; exact ⟨h1, h2, h3, h4, h5, h6, h7, h8⟩
 
 /-! ## Checker ↔ spec -/
 

@@ -77,7 +77,7 @@ structure Container where
   tare : Nat := 0
 deriving DecidableEq, Repr
 
-/-- A 1.5 mL tube (plastic about 1 g) holding `v` of one reagent. -/
+/-- A 1.5 mL tube (plastic mass assumed 1 g) holding `v` of one reagent. -/
 def tube (id : String) (reagent : String) (v : Vol) (cap : Vol := 1500) : Container :=
   { id, cap, vol := v, contents := [(reagent, v.t * amtScale)], tare := 1000 }
 
@@ -180,6 +180,7 @@ deriving Repr
 
 inductive Error where
   | unknown (id : String)
+  | notTubeOrPlate (id : String)
   | noTip
   | tipAlreadyOn
   | outOfRange (pipette : String) (v : Vol)
@@ -201,6 +202,9 @@ inductive Error where
   | overfull (id : String)
   | idIsPlate (id : String)
   | unknownPlate (plate : String)
+  | duplicateReagents
+  | undeclaredReagent (container : String)
+  | badContents (container : String)
 deriving Repr, DecidableEq
 
 structure LabState where

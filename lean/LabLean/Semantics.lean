@@ -10,8 +10,9 @@ namespace LabLean
 /-- Opposite rotor positions may differ by at most this many mg (0.1 g). -/
 def rotorTol : Nat := 100
 def maxRpm : Nat := 15000
-/-- Tip rule tolerance: a liquid counts as "not more concentrated" up to 1%. -/
-def concTol : Nat := 1
+/-- Tip rule tolerance, in parts per thousand: a liquid counts as "not more concentrated" up to
+0.1%. It only absorbs integer rounding of the amounts. -/
+def concTolPermille : Nat := 1
 
 /-! ## Containers -/
 
@@ -48,9 +49,9 @@ def densityOf (s : LabState) (r : String) : Nat :=
   | some x => x.density
   | none => 1000
 
-/-- mg = amount (1e-5 uL) * density (mg/mL) / 1e8. -/
+/-- mg = tare + (sum of amount (1e-5 uL) * density (mg/mL)) / 1e8, rounded down once. -/
 def massOf (s : LabState) (c : Container) : Nat :=
-  c.tare + (c.contents.map fun (r, x) => x * densityOf s r / 100000000).sum
+  c.tare + (c.contents.map fun (r, x) => x * densityOf s r).sum / 100000000
 
 /-- Mass of a tube, or of a plate (plastic + all its wells). `none` if unknown. -/
 def itemMass (s : LabState) (id : String) : Option Nat :=

@@ -18,13 +18,13 @@ def diluentB (s : LabState) (r : String) : Bool :=
 def mayEnterB (s : LabState) (L c : Liquid) : Bool :=
   L.names.all fun r =>
     c.names.contains r &&
-    (diluentB s r || 100 * amt c.amts r * L.vol ≤ (100 + concTol) * amt L.amts r * c.vol)
+    (diluentB s r || 1000 * amt c.amts r * L.vol ≤ (1000 + concTolPermille) * amt L.amts r * c.vol)
 
 def tipCleanB (s : LabState) (c : Container) : Bool :=
   (touched s.tip).all fun L => mayEnterB s L c.liquid
 
-def knownB (s : LabState) (x : String) : Bool :=
-  (findC x s.cs).isSome || (plateIds s).contains x
+def itemB (s : LabState) (x : String) : Bool :=
+  s.cs.any (fun c => c.id == x && c.plate.isNone) || (plateIds s).contains x
 
 def nodupB : List String → Bool
   | [] => true
@@ -62,14 +62,14 @@ def checks (s : LabState) : Step → List (Bool × Error)
     match findC c s.cs with
     | some a => enterChecks s p c a v
     | none => [(false, .unknown c)]
-  | .incubate x t _ => [(knownB s x, .unknown x), (4 ≤ t.c && t.c ≤ 98, .badTemp t)]
+  | .incubate x t _ => [(itemB s x, .notTubeOrPlate x), (4 ≤ t.c && t.c ≤ 98, .badTemp t)]
   | .centrifuge rotor rpm _ =>
     let n := rotor.length
     let items := rotor.filterMap id
     [ (n % 2 == 0 && 0 < n, .badRotor n),
       (rpm ≤ maxRpm, .tooFast rpm),
       (nodupB items, .twiceInRotor) ] ++
-    items.map (fun x => (knownB s x, .unknown x)) ++
+    items.map (fun x => (itemB s x, .notTubeOrPlate x)) ++
     items.map (fun x => (!(plateIds s).contains x || s.sealed.contains x, .notSealed x)) ++
     (List.range (n / 2)).map (fun i =>
       let a := slotMass s rotor i
@@ -88,7 +88,12 @@ def initChecks (s : LabState) : List (Bool × Error) :=
   (nodupB (s.cs.map (·.id)), .duplicateIds) ::
   s.cs.map (fun c => (c.vol.t ≤ c.cap.t, .overfull c.id)) ++
   s.cs.map (fun c => (!(plateIds s).contains c.id, .idIsPlate c.id)) ++
-  s.cs.map (fun c => (plateKnownB s c, .unknownPlate (c.plate.getD "")))
+  s.cs.map (fun c => (plateKnownB s c, .unknownPlate (c.plate.getD ""))) ++
+  (nodupB (s.reagents.map (·.name)), .duplicateReagents) ::
+  s.cs.map (fun c => ((names c).all (fun r => s.reagents.any (·.name == r)),
+                      .undeclaredReagent c.id)) ++
+  s.cs.map (fun c => (nodupB (names c) && (c.contents.map Prod.snd).sum == c.vol.t * amtScale,
+                      .badContents c.id))
 
 def firstErr : List (Bool × Error) → Option Error
   | [] => none

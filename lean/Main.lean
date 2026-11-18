@@ -14,6 +14,10 @@ def main : IO Unit := do
       ("Broken: into sealed", Broken.init, Broken.intoSealed),
       ("Broken: no tip", Broken.init, Broken.noTip),
       ("Broken: tip back to stock", SerialDilution.init, Broken.backToStock),
-      ("Broken: duplicate ids", Broken.dupInit, []) ]
+      ("Broken: tip back up the row", SerialDilution.init, Broken.backUpRow),
+      ("Broken: single tube", Broken.init, Broken.singleTube),
+      ("Broken: well in rotor", Broken.init, Broken.wellInRotor),
+      ("Broken: duplicate ids", Broken.dupInit, []),
+      ("Broken: contents do not match volume", Broken.badInit, []) ]
   for (name, s, l) in cases do
     IO.println s!"{name}: {report s l}"

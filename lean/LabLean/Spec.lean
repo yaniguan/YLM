@@ -25,10 +25,10 @@ def Thawed (s : LabState) (c : Container) : Prop :=
   ∀ x ∈ s.reagents, x.name ∈ names c → x.state ≠ .frozen
 def IsDiluent (s : LabState) (r : String) : Prop :=
   ∃ x ∈ s.reagents, x.name = r ∧ x.diluent = true
-/-- `c` is not more concentrated in `r` than `L` (up to `concTol` %):
-`amt c r / c.vol ≤ (1 + concTol/100) * amt L r / L.vol`, cross-multiplied. -/
+/-- `c` is not more concentrated in `r` than `L` (up to `concTolPermille` per mille):
+`amt c r / c.vol ≤ (1 + concTolPermille/1000) * amt L r / L.vol`, cross-multiplied. -/
 def NotMoreConc (r : String) (L c : Liquid) : Prop :=
-  100 * amt c.amts r * L.vol ≤ (100 + concTol) * amt L.amts r * c.vol
+  1000 * amt c.amts r * L.vol ≤ (1000 + concTolPermille) * amt L.amts r * c.vol
 /-- A tip carrying liquid `L` may enter liquid `c`: every reagent of `L` is already in `c`,
 and `c` is downstream of `L` for every non-diluent reagent of `L`. -/
 def MayEnter (s : LabState) (L c : Liquid) : Prop :=
@@ -41,7 +41,10 @@ def SafeTemp (t : Temp) : Prop := 4 ≤ t.c ∧ t.c ≤ 98
 /-- Rotor balance: masses (mg) of opposite positions within `rotorTol`. -/
 def Balanced (a b : Nat) : Prop := a ≤ b + rotorTol ∧ b ≤ a + rotorTol
 def IsPlate (s : LabState) (p : String) : Prop := p ∈ plateIds s
-def Known (s : LabState) (x : String) : Prop := (∃ c ∈ s.cs, c.id = x) ∨ IsPlate s x
+/-- A loose item for a heat block or a rotor: a tube (a container not on a plate) or a plate.
+A single well is not an item. -/
+def IsItem (s : LabState) (x : String) : Prop :=
+  (∃ c ∈ s.cs, c.id = x ∧ c.plate = none) ∨ IsPlate s x
 
 /-! ## One step -/
 
@@ -58,10 +61,10 @@ inductive StepOK : LabState → Step → Prop
       (isOpen : ¬ IsSealed s a) (clean : TipClean s a) (thawed : Thawed s a)
       (enough : Enough a v) :
       StepOK s (.mix p c v n)
-  | incubate (known : Known s x) (safe : SafeTemp t) : StepOK s (.incubate x t time)
+  | incubate (item : IsItem s x) (safe : SafeTemp t) : StepOK s (.incubate x t time)
   | centrifuge (even : rotor.length % 2 = 0) (nonempty : 0 < rotor.length)
       (speed : rpm ≤ maxRpm) (once : (rotor.filterMap id).Nodup)
-      (known : ∀ x ∈ rotor.filterMap id, Known s x)
+      (items : ∀ x ∈ rotor.filterMap id, IsItem s x)
       (platesSealed : ∀ x ∈ rotor.filterMap id, IsPlate s x → x ∈ s.sealed)
       (balanced : ∀ i, i < rotor.length / 2 →
         Balanced (slotMass s rotor i) (slotMass s rotor (i + rotor.length / 2))) :
@@ -76,12 +79,18 @@ inductive StepsOK : LabState → List Step → Prop
   | nil : StepsOK s []
   | cons : StepOK s st → StepsOK (apply s st) rest → StepsOK s (st :: rest)
 
-/-- The start state is physically possible and ids are unambiguous. -/
+/-- The start state is physically possible and ids and names are unambiguous. -/
 structure WellFormed (s : LabState) : Prop where
   uniqueIds : (s.cs.map (·.id)).Nodup
   withinCap : ∀ c ∈ s.cs, c.vol.t ≤ c.cap.t
   notPlateId : ∀ c ∈ s.cs, c.id ∉ plateIds s
   plateKnown : ∀ c ∈ s.cs, ∀ p, c.plate = some p → p ∈ plateIds s
+  uniqueReagents : (s.reagents.map (·.name)).Nodup
+  /-- Every reagent named in a container is declared. -/
+  declared : ∀ c ∈ s.cs, ∀ r ∈ names c, ∃ x ∈ s.reagents, x.name = r
+  /-- Each reagent is listed once per container, and the amounts add up to the volume. -/
+  contentsNodup : ∀ c ∈ s.cs, (names c).Nodup
+  amountsMatch : ∀ c ∈ s.cs, (c.contents.map Prod.snd).sum = c.vol.t * amtScale
 
 def ValidProtocol (s : LabState) (l : List Step) : Prop := WellFormed s ∧ StepsOK s l
 

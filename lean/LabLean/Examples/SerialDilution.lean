@@ -8,14 +8,15 @@ Based on the iGEM plate reader fluorescein calibration protocol on protocols.io
 * 200 uL 1x fluorescein stock (in PBS) into column 1,
 * move 100 uL from column 1 to 2, mix 3x, 2 to 3, ... through column 11,
 * the last 100 uL from column 11 goes to waste; column 12 stays PBS only (blank).
-The source repeats this in several rows (replicates); here we do row A only.
+The source repeats this in several replicate rows; here we do row A only.
 
 The model treats the 1x stock as one named solution "fluorescein"; its concentration in a well
-is the volume fraction of stock (1, 1/2, 1/4, ...). PBS is a diluent.
+is the volume fraction of stock (1, 1/2, 1/4, ...). PBS is a diluent. Because the stock tube
+holds only "fluorescein", a tip that touched any diluted well can never re-enter it.
 
 One tip is used for the whole dilution, moving downstream only. The tip rule allows this:
 every liquid on the tip is at least as concentrated as the next well. Going back up the row,
-or back into the stock, is rejected (see `Broken.backToStock`).
+or back into the stock, is rejected (see `Broken.backUpRow`, `Broken.backToStock`).
 -/
 namespace LabLean.SerialDilution
 

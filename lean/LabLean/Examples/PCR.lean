@@ -4,8 +4,9 @@ import LabLean.Theorems
 
 Based on the Addgene PCR protocol on protocols.io
 (https://dx.doi.org/10.17504/protocols.io.betyjepw).
-Per 50 uL reaction: 2 uL template, 5 uL 10X buffer, 1 uL 10 mM dNTP,
-2.5 uL of each 10 uM primer, 0.2 uL Taq, 36.8 uL water. Keep reagents on ice.
+Per 50 uL reaction, as transcribed from the source (re-check against it before use):
+2 uL template, 5 uL 10X buffer, 1 uL 10 mM dNTP, 2.5 uL of each 10 uM primer, 0.2 uL Taq,
+36.8 uL water (these add up to 50 uL). Keeping reagents on ice is not checked.
 
 We run 4 reactions. The master mix (water, buffer, dNTP, Taq; no primers, no template) is
 43 uL per reaction and is made for **5 reactions** (4 + 1 extra, i.e. 25% overage):
@@ -18,7 +19,9 @@ Departures from the source, all deliberate:
   It is in glycerol (viscous); pipette slowly. The checker does not model this.
 * Template 2 uL is the bottom of the P20 range (least accurate); the source volume is kept.
 * After setup: seal, short spin against a balance plate, then one 94 C / 2 min step as the
-  start of the run. Thermal cycling itself is not modeled.
+  start of the run. These are model choices, not taken from the source. Thermal cycling is not
+  modeled.
+* Plate plastic mass (14 g) is an assumption. Both plates are the same type, so it cancels.
 -/
 namespace LabLean.PCR
 
@@ -36,7 +39,7 @@ def wells : List String := [1, 2, 3, 4].map (wellId "PCR")
 
 def init : LabState :=
   { reagents,
-    -- same plate type for the reactions and the balance plate (plastic mass assumed 14 g)
+    -- same plate type for the reactions and the balance plate
     plates := [("PCR", 14000), ("BAL", 14000)],
     cs := [ tube "WATER" "water" 1000,
             tube "BUF" "buffer" 100,
@@ -47,8 +50,8 @@ def init : LabState :=
             tube "TMPL" "template" 20,
             { id := "MM", cap := 1500, vol := 0, tare := 1000 } ] ++
           [1, 2, 3, 4].map (fun n => well "PCR" n 200) ++
-          -- balance plate: one well with 200 uL water (= 4 x 50 uL of reactions)
-          [ well "BAL" 1 300 "water" 200 ] }
+          -- balance plate: the same 4 wells, 50 uL water each
+          [1, 2, 3, 4].map (fun n => well "BAL" n 200 "water" 50) }
 
 /-- New tip, one transfer, drop the tip. -/
 def withFreshTip (p : Pipette) (src dst : String) (v : Vol) : List Step :=
