@@ -39,33 +39,63 @@ ELEMENT = {1: "H", 6: "C", 7: "N", 8: "O", 9: "F"}
 LABEL = {"minilm": "YLM + MiniLM", "matscibert": "YLM + MatSciBERT", "taskid": "task ID (no text)"}
 
 
+def _as_dirs(runs_dir) -> list[str]:
+    if isinstance(runs_dir, (str, os.PathLike)):
+        return [str(runs_dir)]
+    return [str(d) for d in runs_dir]
+
+
 def sample_efficiency(runs_dir, out_dir):
     points = defaultdict(lambda: defaultdict(list))   # text -> fraction -> [(force_cosine, force_mae)]
-    for path in glob.glob(f"{runs_dir}/*/results.json"):
-        r = json.load(open(path))
-        a = r["args"]
-        if "text" not in a:
-            continue  # LLM baseline
-        f = r["test"]["force"]
-        points[a["text"]][a.get("train_fraction", 1.0)].append((f["cosine"], f["mae"]))
+    for folder in _as_dirs(runs_dir):
+        for path in sorted(glob.glob(f"{folder}/*/results.json")):
+            with open(path, encoding="utf-8") as handle:
+                r = json.load(handle)
+            a = r["args"]
+            if "text" not in a:
+                continue  # LLM baseline
+            if a.get("model", "ylm") != "ylm" or a.get("option", "A") != "A":
+                continue
+            if float(a.get("attn_sup", 0.0) or 0.0) > 0.0 or a.get("legacy_odd_scalars", False):
+                continue
+            f = r["test"]["force"]
+            points[a["text"]][float(a.get("train_fraction", 1.0))].append((f["cosine"], f["mae"]))
     if not points:
         return
     fig, axes = plt.subplots(1, 2, figsize=(9, 3.5))
+    sub_counts = []
+    full_counts = []
     for text, by_frac in sorted(points.items()):
         fr = sorted(by_frac)
-        acc = [np.mean([p[0] for p in by_frac[x]]) for x in fr]
-        mae = [np.mean([p[1] for p in by_frac[x]]) for x in fr]
-        axes[0].plot(fr, acc, marker="o", label=LABEL.get(text, text))
-        axes[1].plot(fr, mae, marker="o", label=LABEL.get(text, text))
+        acc = [float(np.mean([p[0] for p in by_frac[x]])) for x in fr]
+        acc_std = [float(np.std([p[0] for p in by_frac[x]])) if len(by_frac[x]) > 1 else 0.0 for x in fr]
+        mae = [float(np.mean([p[1] for p in by_frac[x]])) for x in fr]
+        mae_std = [float(np.std([p[1] for p in by_frac[x]])) if len(by_frac[x]) > 1 else 0.0 for x in fr]
+        for x in fr:
+            (full_counts if x >= 1.0 else sub_counts).append(len(by_frac[x]))
+        has_err = any(len(by_frac[x]) > 1 for x in fr)
+        if has_err:
+            axes[0].errorbar(fr, acc, yerr=acc_std, marker="o", capsize=3, label=LABEL.get(text, text))
+            axes[1].errorbar(fr, mae, yerr=mae_std, marker="o", capsize=3, label=LABEL.get(text, text))
+        else:
+            axes[0].plot(fr, acc, marker="o", label=LABEL.get(text, text))
+            axes[1].plot(fr, mae, marker="o", label=LABEL.get(text, text))
     for ax, name in zip(axes, ["force direction (cosine), test", "force MAE (hartree/bohr), test"]):
         ax.set_xscale("log")
         ax.set_xlabel("fraction of training questions")
         ax.set_title(name)
         ax.grid(alpha=0.3)
     axes[0].legend()
-    fig.suptitle("100%: mean of 4-5 seeds. 3% / 10% / 30%: one seed each.", fontsize=9)
+    if sub_counts and min(sub_counts) >= 2:
+        lo, hi = min(sub_counts + full_counts), max(sub_counts + full_counts)
+        seed_note = f"{lo} seeds" if lo == hi else f"{lo}-{hi} seeds"
+        subtitle = f"Mean ± std across {seed_note} (32 rotations on official TensorQA-v0)."
+    else:
+        subtitle = "100%: mean of 4-5 seeds. 3% / 10% / 30%: one seed each."
+    fig.suptitle(subtitle, fontsize=9)
     fig.tight_layout()
     fig.savefig(f"{out_dir}/sample_efficiency.png", dpi=150)
+    plt.close(fig)
     print("wrote", f"{out_dir}/sample_efficiency.png")
 
 
@@ -164,27 +194,30 @@ def breakdown(runs_dir, out_dir):
 def routing_reports(runs_dir, out_dir):
     """Collect saved routing reports for unrotated molecules."""
     reports = {}
-    for path in sorted(glob.glob(f"{runs_dir}/*/results.json")):
-        result = json.load(open(path))
-        for split, values in result.items():
-            if isinstance(values, dict) and "routing" in values:
-                reports[f"{os.path.basename(os.path.dirname(path))}/{split}"] = values["routing"]
-    with open(f"{out_dir}/routing.json", "w") as handle:
+    for folder in _as_dirs(runs_dir):
+        for path in sorted(glob.glob(f"{folder}/*/results.json")):
+            result = json.load(open(path, encoding="utf-8"))
+            for split, values in result.items():
+                if isinstance(values, dict) and "routing" in values:
+                    reports[f"{os.path.basename(os.path.dirname(path))}/{split}"] = values["routing"]
+    with open(f"{out_dir}/routing.json", "w", encoding="utf-8") as handle:
         json.dump(reports, handle, indent=2)
 
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--runs", default="runs")
+    p.add_argument("--runs", nargs="+", default=["runs"], help="One or more run folders containing */results.json")
     p.add_argument("--out", default="analysis")
     p.add_argument("--routing_reports", action="store_true", help="Collect saved routing audits only")
+    p.add_argument("--sample_efficiency_only", action="store_true", help="Write sample_efficiency.png only")
     args = p.parse_args()
     os.makedirs(args.out, exist_ok=True)
     if args.routing_reports:
         routing_reports(args.runs, args.out)
         return
     sample_efficiency(args.runs, args.out)
-    breakdown(args.runs, args.out)
+    if not args.sample_efficiency_only:
+        breakdown(args.runs[0], args.out)
 
 
 if __name__ == "__main__":
