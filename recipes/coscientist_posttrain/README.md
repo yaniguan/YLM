@@ -31,6 +31,14 @@ Tags used everywhere (records and configs):
 | `examples/records.jsonl` | 6 example records |
 | `tests/test_coscientist_recipe.py` | CPU smoke test (runs in CI) |
 
+## Decisions
+
+- **Model size.** Default: a <= 4B decoder, full fine-tune (`full_ft_4b` in
+  `configs/h200.json` and `configs/b200.json`). Alternative: 7-8B with LoRA
+  (`lora_8b` in the same files). Colab stays on `lora_small`.
+- **DPO.** Optional. It stays in the pipeline only if verifier pass@1 goes up by
+  at least 2 points over SFT; otherwise GRPO starts from the SFT checkpoint.
+
 ## 1. Pipeline and stage gates
 
 ```
