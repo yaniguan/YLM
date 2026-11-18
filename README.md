@@ -138,7 +138,7 @@ colab/        GPU notebooks
 00–06_*.md    glossary, related work, novelty check, design, benchmark, risks, plan
 ```
 
-<a id="reproduce"></a>To reproduce against the **exact official v0 benchmark** (`84,757` questions, `584` unique strings; pinned SHA-256 digests in [`DATA_CARD.md`](DATA_CARD.md)), unpack `tensorqa_v0.tar.gz` from the [v0.1.0 release](https://github.com/yaniguan/YLM/releases/tag/v0.1.0) with `python scripts/06b_unpack_release.py --download` and verify with `python -m src.provenance --check-v0 data/tensorqa_v0.json`, then run `scripts/03_embed_text.py`, `scripts/04_train.py`, and `scripts/07_make_table.py`. Rebuilding from `qm9.zip` via `scripts/01`–`02` produces a different question file and must not be compared directly to the v0 table above.
+<a id="reproduce"></a>To reproduce against the **exact official v0 benchmark** (`84,757` questions, `584` unique strings; pinned SHA-256 digests in [`DATA_CARD.md`](DATA_CARD.md)), unpack `tensorqa_v0.tar.gz` from the [v0.1.0 release](https://github.com/yaniguan/YLM/releases/tag/v0.1.0) with `python scripts/06b_unpack_release.py --download` and verify with `python -m src.provenance --check-v0 data/tensorqa_v0.json`, then run `scripts/03_embed_text.py`, `scripts/04_train.py`, and `scripts/07_make_table.py`. For multi-seed Option A/B/C runs on the packaged v0 file (32 rotations), use `jobs/sweep_options_v0.sh` + `scripts/17_make_options_table.py` (or `colab/ylm_train.ipynb` with `YLM_MODE=options`); for multi-seed 3%/10%/30% data curves, use `jobs/sweep_fractions.sh` + `scripts/08_analyze.py` (or `YLM_MODE=fractions`). Rebuilding from `qm9.zip` via `scripts/01`–`02` produces a different question file and must not be compared directly to the v0 table above.
 
 ## Limitations / status
 
