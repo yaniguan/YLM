@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0a0f15">
+  <title>YLM: Equivariant Language-Geometry Alignment · YLM Directional Chemistry Studio</title>
+  <meta name="description" content="Ask a question in English, get a 3D vector, chiral sign, or symmetric 3x3 tensor that rotates and reflects with the molecule by construction.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="YLM — Irreps-to-Text Cross-Attention for 3D Directional Chemistry">
+  <meta property="og:description" content="0.960 force cosine across 32 rotations, 8/8 exact O(3) conservation laws, and interactive 3D chemistry studio.">
+  <link rel="icon" href="assets/ylm-orbital-static.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="mol3d-stage.js"></script>
+  <script defer src="benchmark-chart.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="YLM home">
+      <img src="assets/ylm-orbital-animated.svg" width="60" height="30" alt="">
+      <span>YLM</span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="#method">Method</a>
+      <a href="#benchmarks">Benchmarks</a>
+      <a href="#symmetry">Symmetry &amp; Chirality</a>
+      <a href="#studio">Interactive Studio</a>
+      <a href="#citation">Cite</a>
+      <a class="nav-cta" href="https://github.com/yaniguan/YLM" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero wrap">
+      <p class="eyebrow"><span class="status-dot"></span> O(3) Equivariant · Language-Geometry Alignment</p>
+      <h1>
+        <span class="hero-name">YLM<span class="title-colon">:</span></span>
+        <span class="hero-title">Irreps-to-Text Cross-Attention for 3D Directional Chemistry</span>
+      </h1>
+      <p class="hero-deck">
+        Plain numbers lose 3D direction and mirror handedness.<br>
+        YLM lets question tokens attend directly to <strong>spherical-harmonic tensors</strong> — so forces, dipoles, chirality, and 3×3 matrices transform with the molecule by construction.
+      </p>
+      <div class="hero-actions">
+        <a class="button primary" href="#studio">Open Interactive Studio <span aria-hidden="true">↓</span></a>
+        <a class="button secondary" href="https://github.com/yaniguan/YLM" target="_blank" rel="noopener">Code &amp; Checkpoints <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="#citation">BibTeX <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="meta-strip" aria-label="Project metadata">
+        <span>Yani Guan</span>
+        <span>·</span>
+        <span>MIT License</span>
+        <span>·</span>
+        <span>PyTorch + e3nn + MACE / NequIP</span>
+        <span>·</span>
+        <span>1–2 MB v0 Checkpoints</span>
+      </div>
+      <p class="meta-note">Supported by API credits from the <a href="https://antigravity.google/" target="_blank" rel="noopener">Google Antigravity for Science</a> program &nbsp; · &nbsp; <a href="#repo-map">Repository architecture</a></p>
+    </section>
+
+    <!-- Headline Results at a Glance -->
+    <section class="headline-results wrap" aria-label="Key quantitative results">
+      <a class="headline-result" href="#benchmarks">
+        <span class="small-label">TensorQA-v0 per-atom force (32 rotations)</span>
+        <div class="big-result">
+          <strong>0.960</strong>
+          <span class="vs">vs</span>
+          <span class="baseline">0.113</span>
+        </div>
+        <p>Force cosine similarity with MatSciBERT question routing (5 seeds) vs task-ID baseline without question text.</p>
+        <span class="result-arrow" aria-hidden="true">↗</span>
+      </a>
+      <a class="headline-result" href="#symmetry">
+        <span class="small-label blue">64-bit O(3) conservation &amp; mirror parity</span>
+        <div class="big-result">
+          <strong>8<span> / 8</span></strong>
+          <span class="vs">vs</span>
+          <span class="baseline orange">1.31<span> err</span></span>
+        </div>
+        <p>Physical symmetry laws verified to machine precision vs rotation error on distance-only 3D Transformers.</p>
+        <span class="result-arrow" aria-hidden="true">↗</span>
+      </a>
+    </section>
+
+    <!-- Live 5-Chapter Cinematic 3D Stage -->
+    <section class="demo-section wrap" id="demo" aria-labelledby="demo-heading">
+      <div class="section-line">
+        <h2 id="demo-heading">See equivariance in action.</h2>
+        <span>Real-time 3D · Drag stage to orbit</span>
+      </div>
+      <div class="film-frame">
+        <div class="stage-topbar">
+          <span id="hero-stage-prompt" class="stage-prompt">“What is the 3D molecular dipole moment vector of (R)-fluoroethylene carbonate?”</span>
+          <button type="button" id="hero-stage-toggle" class="stage-ctrl-btn">Ⅱ Pause</button>
+        </div>
+        <canvas id="hero-stage-canvas" width="1120" height="520" aria-label="Side-by-side 3D molecular comparison between equivariant YLM and a distance-only baseline"></canvas>
+      </div>
+      <div class="chapters" aria-label="Select 3D symmetry chapter">
+        <button type="button" data-hero-chapter="0" class="active"><span>00 · Overview</span> Dipole &amp; 3D pose</button>
+        <button type="button" data-hero-chapter="1"><span>01 · SO(3) Rotation</span> Per-atom force (1o)</button>
+        <button type="button" data-hero-chapter="2"><span>02 · Mirror Parity</span> (R) vs (S) twins (0o)</button>
+        <button type="button" data-hero-chapter="3"><span>03 · Token Routing</span> Language selects atom</button>
+        <button type="button" data-hero-chapter="4"><span>04 · 3×3 Tensor</span> Quadrupole &amp; planar zero</button>
+      </div>
+    </section>
+
+    <!-- 01 / The Method -->
+    <section class="section wrap" id="method">
+      <div class="section-heading">
+        <p class="eyebrow">01 / The method</p>
+        <h2>Invariant attention weights.<br><span class="muted-heading">Equivariant tensor values.</span></h2>
+        <p class="section-intro">
+          Standard multimodal bridges flatten 3D geometry into rotation-invariant numbers before text can read it. YLM keeps directional spherical harmonics intact all the way through cross-attention.
+        </p>
+      </div>
+
+      <div class="method-layout">
+        <div class="loop-steps">
+          <article>
+            <span class="step-number teal">01</span>
+            <div>
+              <h3>Query with invariants, route to atoms</h3>
+              <p>Frozen question tokens from MiniLM or MatSciBERT score each atom using only rotation-invariant norms and even scalars, so attention weights α_ti never drift when the molecule rotates or reflects.</p>
+            </div>
+          </article>
+          <article>
+            <span class="step-number purple">02</span>
+            <div>
+              <h3>Transport 0e, 0o, 1o, and 2e irreps</h3>
+              <p>Selected atoms pass full Wigner-D equivariant values to each token. Option A uses linear equivariant values; Option B adds same-irrep directional inner-product keys; Option C adds a text-weighted Clebsch–Gordan self-product.</p>
+            </div>
+          </article>
+          <div class="memory-callout">
+            <span class="small-label">Plug-and-play 3D backbones</span>
+            <p>Mount on lightweight built-in <code>e3nn</code> layers (1–2 MB checkpoints) or pretrained <strong>MACE-MP-0, MACE-OFF23, and NequIP / Allegro</strong> force fields with periodic crystal cells.</p>
+          </div>
+        </div>
+
+        <figure class="figure-shell">
+          <button type="button" class="image-expand" data-image="assets/irreps-architecture.svg" data-caption="YLM Irreps-to-Text architecture: invariant token-to-atom routing paired with Wigner-D equivariant value transport across four physical tensor ranks." aria-label="Enlarge the YLM architecture diagram">
+            <img src="assets/irreps-architecture.svg" width="1920" height="1080" alt="Schematic of YLM aligning question tokens with 0e, 0o, 1o, and 2e spherical-harmonic atom features.">
+            <span class="expand-icon" aria-hidden="true">↗</span>
+          </button>
+          <figcaption>Two-stream alignment in <code>src/model.py</code> and <code>src/universe_fm.py</code>. Click ↗ to inspect full diagram.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 02 / Quantitative Benchmarks -->
+    <section class="section evidence-section" id="benchmarks">
+      <div class="wrap">
+        <div class="section-heading">
+          <p class="eyebrow">02 / Quantitative benchmarks</p>
+          <h2>Does language routing generalize?</h2>
+          <p class="section-intro">
+            Evaluated on 84,757 dipole and atom-force questions across 20,000 QM9 molecules under 32 random 3D rotations per test question, plus held-out phrasings and multi-rank ablations.
+          </p>
+        </div>
+
+        <div class="finding-columns">
+          <article>
+            <span class="small-label">TensorQA-v0 · 5 seeds</span>
+            <h3>6.6× lower force MAE with text.</h3>
+            <p>Without the question text, a symmetry-preserving model cannot tell which atom is asked about (force cosine <code>0.113 ± 0.004</code>, MAE <code>0.0424</code>). Adding MatSciBERT token routing raises force cosine to <code>0.960 ± 0.004</code> (MAE <code>0.0064</code>) and holds <code>0.917 ± 0.021</code> on unseen phrasings.</p>
+          </article>
+          <article>
+            <span class="small-label blue">Option C · Clebsch–Gordan self-product</span>
+            <h3>Stronger multi-atom vector algebra.</h3>
+            <div class="inline-metric">
+              <strong>0.890 vs 0.759</strong>
+              <span>Force-difference cosine (F_A − F_B) · Option C-lite vs Option A</span>
+            </div>
+            <p>Channel-wise CG coupling cuts Option C parameters from 13.1M to 0.85M while lifting single-atom force cosine to <code>0.976</code> and two-atom projection cosine to <code>0.781</code>.</p>
+          </article>
+        </div>
+
+        <div class="chart-shell">
+          <div class="chart-heading">
+            <div>
+              <h3>Explore the repository benchmarks</h3>
+              <p>Verbatim results from <code>results.md</code>, <code>docs/results_options_abc.md</code>, and <code>results/cpu_smoke_nov12/</code></p>
+            </div>
+            <div class="comparison-controls">
+              <label for="benchmark-select" class="small-label" style="letter-spacing:1.2px;">Suite</label>
+              <select id="benchmark-select" aria-label="Select benchmark view"></select>
+              <label class="sd-toggle"><input type="checkbox" id="benchmark-show-sd" checked> Show ±1 SD</label>
+            </div>
+          </div>
+          <div id="benchmark-chart"></div>
+          <div id="benchmark-chart-legend" class="benchmark-legend"></div>
+          <p id="benchmark-chart-caption" class="chart-caption"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 / Symmetry Laws & Stereochemistry -->
+    <section class="section wrap" id="symmetry">
+      <div class="section-heading">
+        <p class="eyebrow">03 / Symmetry &amp; stereochemistry</p>
+        <h2>Exact conservation laws.<br><span class="muted-heading">Plainly stated scope.</span></h2>
+      </div>
+
+      <article class="application" id="eight-laws">
+        <div class="application-header">
+          <span class="task-badge">Audit 1</span>
+          <h3>Eight-law 64-bit physical verification</h3>
+        </div>
+        <p class="application-lead">
+          Rather than hoping data augmentation approximates rotational invariance, <code>ylm audit-physics</code> tests eight conservation and group-theoretic selection rules directly in IEEE-754 double precision.
+        </p>
+
+        <ol class="workflow" aria-label="Eight physical symmetry checks">
+          <li>Translation invariance</li>
+          <li>SO(3) rotation</li>
+          <li>O(3) mirror parity</li>
+          <li>Atom permutation</li>
+          <li>Symmetric 3×3 matrix</li>
+          <li>Curie planar zero</li>
+          <li>Conservative F = −∂E/∂x</li>
+          <li>3D crystal PBC</li>
+        </ol>
+
+        <div class="experiment-layout">
+          <div>
+            <p class="small-label">Random O(3) rotations + reflections</p>
+            <h4>Vector equivariance error across 3D model families.</h4>
+            <div class="native-bars" role="img" aria-label="Vector O(3) equivariance error: YLM 8.1e-7 in float32 and 1.1e-9 in float64 versus 1.31 on distance-only 3D Transformer.">
+              <div class="bar-col">
+                <strong>~10⁻⁹</strong>
+                <div class="bar-track"><div class="bar ours" style="height:8%"></div></div>
+                <span>YLM (float64)</span>
+                <small>8 / 8 laws passed</small>
+              </div>
+              <div class="bar-col">
+                <strong class="orange">1.31</strong>
+                <div class="bar-track"><div class="bar expert" style="height:88%"></div></div>
+                <span>Distance-only 0e</span>
+                <small>Cannot rotate 3D vectors</small>
+              </div>
+            </div>
+            <p class="fine-print">In <code>float32</code>, YLM’s mean rotation error on QM9 is ~2 × 10⁻⁶ (numerical round-off). On v0’s 12 simple templates, a rule parser + equivariant force model also reaches 0.0057 force MAE vs 0.0064 for YLM (<code>results_baselines.md</code>).</p>
+          </div>
+
+          <div class="assay-details">
+            <h4>Measured float64 residuals on (R)-FEC &amp; LiFePO₄.</h4>
+            <dl>
+              <div>
+                <dt>Translation shift (+17.3, −11.9, +24.6 bohr)</dt>
+                <dd><strong class="mono">3.3 × 10⁻¹⁶</strong> <span>exact zero drift</span></dd>
+              </div>
+              <div>
+                <dt>Improper roto-reflection (det Q = −1)</dt>
+                <dd><strong class="mono">1.0 × 10⁻⁹</strong> <span>1o, 0o &amp; 2e parity</span></dd>
+              </div>
+              <div>
+                <dt>Periodic lattice wrap (LiFePO₄ unit cell)</dt>
+                <dd><strong class="mono">8.4 × 10⁻¹⁷</strong> <span>minimum-image PBC</span></dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </article>
+
+      <article class="application" id="chirality">
+        <div class="application-header">
+          <span class="task-badge blue-badge">Audit 2</span>
+          <h3>Chiral enantiomers &amp; Ouroboros 2D-to-3D bridge</h3>
+        </div>
+        <p class="application-lead">
+          Pairwise distances are identical on left-handed <code>(R)</code> and right-handed <code>(S)</code> mirror molecules. YLM’s parity-odd <code>0o</code> head separates mirror twins and connects directly to 2D stereochemical drawings from <code>ouroboros-ocsr</code>.
+        </p>
+
+        <div class="binder-summary">
+          <div>
+            <p class="small-label blue">Mirror twins &amp; scalar trade-offs</p>
+            <h4><span class="lime">Exact 0o mirror flip.</span><br>Honest scalar energy comparison.</h4>
+            <p>Models with <code>0e</code>-only language bridges cannot represent chirality and are marked accordingly rather than scored at 50% coin-flip accuracy. Adding a 4-atom signed volume enables chirality on distance Transformers, while YLM unifies <code>0o</code>, <code>1o</code>, and <code>0e+2e</code>.</p>
+          </div>
+          <div>
+            <table class="editorial-table">
+              <thead>
+                <tr>
+                  <th scope="col">Model (size-matched ~650k)</th>
+                  <th scope="col" class="lime">(R)/(S) Seen</th>
+                  <th scope="col">1o Vec Cos</th>
+                  <th scope="col">0e Energy MAE ↓</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">GraphMVP / 3D-InfoMax</th>
+                  <td class="orange">cannot represent</td>
+                  <td class="mono">+0.054</td>
+                  <td class="mono">0.091</td>
+                </tr>
+                <tr>
+                  <th scope="row">Uni-Mol (3D Distance)</th>
+                  <td class="orange">cannot represent</td>
+                  <td class="mono">+0.047</td>
+                  <td class="mono">0.237</td>
+                </tr>
+                <tr>
+                  <th scope="row">EquiLLM (0e Bridge + 1o)</th>
+                  <td class="orange">cannot represent</td>
+                  <td class="mono blue">+0.707</td>
+                  <td class="mono blue">0.087</td>
+                </tr>
+                <tr>
+                  <th scope="row">Uni-Mol + Signed-Vol (0o)</th>
+                  <td class="mono teal">64.9%</td>
+                  <td class="mono">+0.049</td>
+                  <td class="mono">0.149</td>
+                </tr>
+                <tr>
+                  <th scope="row" class="lime">YLM-Universe (Ours)</th>
+                  <td class="mono lime">100.0%</td>
+                  <td class="mono lime">+0.720</td>
+                  <td class="mono">0.098</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <p class="criteria-note">
+          <strong>Plainly stated limitation:</strong> On invariant scalar energy (<code>0e</code> MAE), <code>YLMUniverseModel</code> (<code>0.098 ± 0.010</code>) does not beat dedicated invariant bridges such as size-matched <code>EquiLLM</code> (<code>0.087 ± 0.020</code>) or <code>GraphMVP</code> (<code>0.091 ± 0.009</code>). Its gains come on directional vectors, 3×3 tensors, and parity-odd stereochemistry.
+        </p>
+
+        <figure class="figure-shell">
+          <button type="button" class="image-expand" data-image="assets/chiral-symmetry-figure.svg" data-caption="Mirror reflection across plane sigma flips YLM 0o handedness sign (+0.842 to -0.842) while planar C2v geometries cancel to machine-precision zero." aria-label="Enlarge the chirality and Curie symmetry figure">
+            <img src="assets/chiral-symmetry-figure.svg" width="1920" height="1080" loading="lazy" alt="Mirror enantiomer reflection schematic and multi-rank symmetry comparison table.">
+            <span class="expand-icon" aria-hidden="true">↗</span>
+          </button>
+          <figcaption>Enantiomer parity anti-symmetry and Curie planar cancellation. Click ↗ to expand.</figcaption>
+        </figure>
+      </article>
+    </section>
+
+    <!-- 04 / Interactive Live Workbench: YLM Directional Chemistry Studio -->
+    <section class="section studio-section" id="studio">
+      <div class="wrap">
+        <div class="section-heading" style="margin-bottom: 30px;">
+          <p class="eyebrow">04 / Interactive workbench</p>
+          <h2>YLM Directional Chemistry Studio</h2>
+          <p class="section-intro">
+            Inspect 3D pose transformations, ask natural-language vector questions, scrub reactive proton-transfer trajectories, and verify <code>(R)/(S)</code> stereochemistry live.
+          </p>
+        </div>
+
+        <div class="studio-bar">
+          <div class="studio-tabs" role="tablist" aria-label="Studio tools">
+            <button type="button" class="studio-tab active" data-pane="pane-physics" role="tab" aria-selected="true">Symmetry Sandbox</button>
+            <button type="button" class="studio-tab" data-pane="pane-playground" role="tab" aria-selected="false">Ask 3D Molecule</button>
+            <button type="button" class="studio-tab" data-pane="pane-md" role="tab" aria-selected="false">Reaction Dynamics</button>
+            <button type="button" class="studio-tab" data-pane="pane-ouroboros" role="tab" aria-selected="false">2D → 3D Chirality</button>
+            <button type="button" class="studio-tab" data-pane="pane-benchmark" role="tab" aria-selected="false">Live Benchmark</button>
+          </div>
+          <span id="studio-engine-status" class="engine-badge"><span class="status-dot" style="margin-right:2px;"></span> Checking local engine…</span>
+        </div>
+
+        <!-- Tab 1: Symmetry Sandbox -->
+        <div id="pane-physics" class="studio-pane active">
+          <div class="controls-row">
+            <select id="sym-preset" class="studio-select" aria-label="Select molecule preset">
+              <option value="r_fec_chiral">(R)-Fluoroethylene carbonate · Chiral electrolyte</option>
+              <option value="r_bcfm_chiral">(R)-CHBrClF · Classic chiral tetrahedron</option>
+              <option value="water_c2v">Water (H₂O) · Planar C₂v control</option>
+              <option value="trans_difluoroethene_c2h">trans-FHC=CHF · Centrosymmetric C₂h</option>
+              <option value="lifepo4_pbc_crystal">LiFePO₄ · 3D periodic cathode crystal</option>
+            </select>
+            <select id="sym-precision" class="studio-select" aria-label="Floating-point precision">
+              <option value="float64">64-bit strict (float64)</option>
+              <option value="float32">32-bit standard (float32)</option>
+            </select>
+            <button type="button" id="btn-run-audit" class="studio-btn">Verify 8 Physics Laws</button>
+          </div>
+
+          <div class="studio-grid-2">
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>3D Pose &amp; Mirror Sandbox</h3>
+                <span id="sym-det-pill" class="pill-tag mono">det(Q) = −1.0</span>
+              </div>
+              <div class="dual-stage">
+                <div class="mini-stage-box">
+                  <span class="mini-stage-label">Original frame X</span>
+                  <canvas id="canvas-sym-orig" class="mini-stage-canvas"></canvas>
+                </div>
+                <div class="mini-stage-box">
+                  <span class="mini-stage-label">Transformed X Qᵀ + t</span>
+                  <canvas id="canvas-sym-trans" class="mini-stage-canvas"></canvas>
+                </div>
+              </div>
+
+              <div class="slider-grid">
+                <div>
+                  <label for="sl-rx">X rotation · <span id="lbl-rx" class="mono">35°</span></label>
+                  <input type="range" id="sl-rx" min="-180" max="180" value="35">
+                </div>
+                <div>
+                  <label for="sl-ry">Y rotation · <span id="lbl-ry" class="mono">−48°</span></label>
+                  <input type="range" id="sl-ry" min="-180" max="180" value="-48">
+                </div>
+                <div>
+                  <label for="sl-rz">Z rotation · <span id="lbl-rz" class="mono">72°</span></label>
+                  <input type="range" id="sl-rz" min="-180" max="180" value="72">
+                </div>
+              </div>
+
+              <div class="check-row">
+                <label class="check-chip"><input type="checkbox" id="chk-reflect" checked> Mirror reflection (det = −1)</label>
+                <label class="check-chip"><input type="checkbox" id="chk-permute"> Permute atom order</label>
+                <label class="check-chip"><input type="checkbox" id="chk-shift"> Shift +t in 3D space</label>
+              </div>
+
+              <table class="editorial-table" style="margin-top:18px;">
+                <thead>
+                  <tr>
+                    <th>Model</th>
+                    <th>0e Drift</th>
+                    <th>0o Mirror Err</th>
+                    <th>1o Arrow Cos</th>
+                    <th>3×3 Matrix Err</th>
+                  </tr>
+                </thead>
+                <tbody id="sym-metrics-tbody"></tbody>
+              </table>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>8 Conservation &amp; Symmetry Laws</h3>
+                <span id="audit-summary-pill" class="pill-tag ok">8 / 8 Passed</span>
+              </div>
+              <div id="audit-laws-list" class="law-rows"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Ask 3D Molecule -->
+        <div id="pane-playground" class="studio-pane">
+          <div class="studio-grid-2">
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>Ask a Directional Question in English</h3>
+                <span class="pill-tag">v0 Checkpoint + O(3) Check</span>
+              </div>
+              <div class="preset-chips" id="ask-preset-chips">
+                <button type="button" class="preset-chip active" data-struct="water_c2v" data-q="What is the force vector on the oxygen atom?">H₂O · Oxygen force</button>
+                <button type="button" class="preset-chip" data-struct="r_fec_chiral" data-q="What is the 3D molecular dipole moment vector?">(R)-FEC · Dipole vector</button>
+                <button type="button" class="preset-chip" data-struct="CCO" data-q="What is the force on the hydroxyl oxygen atom?">Ethanol · Hydroxyl O</button>
+                <button type="button" class="preset-chip" data-struct="c1ccncc1" data-q="What is the molecular dipole vector of pyridine?">Pyridine · Ring dipole</button>
+              </div>
+              <div class="controls-row">
+                <input type="text" id="ask-structure" class="studio-input mono" value="water_c2v" aria-label="Preset ID or SMILES">
+                <button type="button" id="btn-ask-run" class="studio-btn">Predict 3D Vector</button>
+              </div>
+              <div class="controls-row" style="margin-bottom:0;">
+                <input type="text" id="ask-question" class="studio-input" value="What is the force vector on the oxygen atom?" aria-label="Question in English">
+              </div>
+
+              <div id="ask-result-summary" style="margin-top:20px;"></div>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>3D Vector &amp; Token-to-Atom Attention</h3>
+                <span id="ask-rot-pill" class="pill-tag ok mono">rot err: 1.2e-6</span>
+              </div>
+              <div class="mini-stage-box">
+                <span class="mini-stage-label">Drag to rotate · Lime halo shows routed atom α_ti</span>
+                <canvas id="canvas-ask-3d" class="mini-stage-canvas" style="height:300px;"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Reaction Dynamics -->
+        <div id="pane-md" class="studio-pane">
+          <div class="controls-row">
+            <select id="md-mode" class="studio-select" aria-label="Trajectory mode">
+              <option value="scan_zundel">Zundel H₅O₂⁺ Proton-Transfer Barrier Scan</option>
+              <option value="live_md">Live Velocity-Verlet NVE/Langevin Trajectory</option>
+            </select>
+            <button type="button" id="btn-run-md" class="studio-btn">Run Trajectory &amp; Hooks</button>
+            <span style="font-size:12.5px;color:var(--muted);">Monitors bond formation, cleavage &amp; H⁺ hopping step by step</span>
+          </div>
+
+          <div class="studio-grid-2">
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>3D Reactive Trajectory Frame</h3>
+                <span id="md-frame-label" class="pill-tag mono">Frame 1 / 9</span>
+              </div>
+              <div class="mini-stage-box">
+                <span class="mini-stage-label">Proton-transfer geometry &amp; force vector</span>
+                <canvas id="canvas-md-3d" class="mini-stage-canvas" style="height:270px;"></canvas>
+              </div>
+              <div style="margin-top:14px;">
+                <label for="md-scrubber" style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">Scrub reaction coordinate / MD step</label>
+                <input type="range" id="md-scrubber" min="0" max="8" value="0" style="width:100%;accent-color:var(--lime);">
+              </div>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>Potential Energy &amp; Reaction Events</h3>
+                <span id="md-event-pill" class="pill-tag ok">H⁺ transfer detected</span>
+              </div>
+              <div id="md-energy-chart"></div>
+              <div id="md-events-log" style="margin-top:14px;font-size:13px;color:var(--muted);"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Ouroboros 2D -> 3D Chirality -->
+        <div id="pane-ouroboros" class="studio-pane">
+          <div class="controls-row">
+            <input type="text" id="ob-smiles" class="studio-input mono" value="O=C1OC[C@H](F)O1" aria-label="Chiral SMILES">
+            <button type="button" id="btn-run-ob" class="studio-btn">Embed 3D &amp; Check Enantiomer Twin</button>
+          </div>
+          <div class="preset-chips" id="ob-chips">
+            <button type="button" class="preset-chip active" data-smi="O=C1OC[C@H](F)O1">(R)-FEC · O=C1OC[C@H](F)O1</button>
+            <button type="button" class="preset-chip" data-smi="O=C1OC[C@@H](F)O1">(S)-FEC · O=C1OC[C@@H](F)O1</button>
+            <button type="button" class="preset-chip" data-smi="F[C@H](Cl)Br">(R)-CHBrClF</button>
+            <button type="button" class="preset-chip" data-smi="C[C@H](O)C(=O)O">L-Lactic acid</button>
+          </div>
+
+          <div class="studio-grid-2">
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>Embedded 3D Stereoisomer</h3>
+                <span id="ob-stereo-pill" class="pill-tag ok">CIP Stereocenter Verified</span>
+              </div>
+              <div class="mini-stage-box">
+                <span class="mini-stage-label">3D ETKDGv3 conformer + chiral center highlight</span>
+                <canvas id="canvas-ob-3d" class="mini-stage-canvas" style="height:265px;"></canvas>
+              </div>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>Enantiomer Anti-Symmetry Check</h3>
+                <span class="pill-tag mono">f(R) + f(S) = 0</span>
+              </div>
+              <div id="ob-metrics-box"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 5: Benchmark Suite -->
+        <div id="pane-benchmark" class="studio-pane">
+          <div class="studio-card">
+            <div class="studio-card-head">
+              <div>
+                <h3>Multi-Task O(3) Model Comparison</h3>
+                <p style="font-size:12.5px;color:var(--muted);margin-top:3px;">Reference 3-seed size-matched results from <code>results/cpu_smoke_nov12/</code>, or run a fresh mini CPU training loop when <code>ylm serve</code> is active.</p>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;">
+                <select id="bench-epochs" class="studio-select" aria-label="Live training epochs">
+                  <option value="3">Live run: 3 epochs (~12s)</option>
+                  <option value="6">Live run: 6 epochs (~24s)</option>
+                </select>
+                <button type="button" id="btn-run-bench" class="studio-btn ghost">Run Live CPU Check</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="editorial-table">
+                <thead>
+                  <tr>
+                    <th>Model Family</th>
+                    <th>0e Energy MAE ↓</th>
+                    <th>1o Vec Cos ↑</th>
+                    <th>Vec O(3) Err ↓</th>
+                    <th>0e+2e Tensor Cos ↑</th>
+                    <th>Atom Routing ↑</th>
+                  </tr>
+                </thead>
+                <tbody id="bench-live-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 / Quickstart & Citation -->
+    <section class="section paper-section" id="citation">
+      <div class="wrap">
+        <div class="paper-heading">
+          <div>
+            <p class="eyebrow">05 / Reproduce &amp; cite</p>
+            <h2>Run locally in two lines.</h2>
+            <p>Install the repository in editable mode to run the 8-law physics audit, query the packaged 1–2 MB v0 checkpoints, or launch this Studio locally with live PyTorch inference.</p>
+          </div>
+          <div class="paper-links">
+            <a class="button primary" href="https://github.com/yaniguan/YLM" target="_blank" rel="noopener">GitHub Repository <span aria-hidden="true">↗</span></a>
+            <a class="button secondary" href="https://github.com/yaniguan/YLM/releases/tag/v0.1.0" target="_blank" rel="noopener">TensorQA-v0 Release <span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+
+        <div class="citation-box" style="margin-top:28px;">
+          <div class="citation-top">
+            <span>Quickstart CLI</span>
+          </div>
+          <pre>git clone https://github.com/yaniguan/YLM.git &amp;&amp; cd YLM
+pip install -e . &amp;&amp; ylm serve --port 8765</pre>
+        </div>
+
+        <div class="citation-box" style="margin-top:20px;">
+          <div class="citation-top">
+            <span>BibTeX</span>
+            <button type="button" id="copy-citation">Copy citation</button>
+            <span id="copy-status" role="status" aria-live="polite"></span>
+          </div>
+          <pre id="bibtex">@misc{ylm2026,
+  title  = {{YLM}: Irreps-to-Text Cross-Attention for Equivariant Language-Geometry Alignment},
+  author = {Guan, Yani},
+  year   = {2026},
+  url    = {https://github.com/yaniguan/YLM},
+  note   = {Open-source research code, TensorQA-v0 benchmark, and v0 checkpoints}
+}</pre>
+        </div>
+
+        <details id="repo-map" class="repo-details">
+          <summary>Repository modules &amp; technical notes <span aria-hidden="true">+</span></summary>
+          <div class="repo-grid">
+            <div><strong class="lime mono">src/model.py &amp; src/irreps_to_text.py</strong><br>Core YLM model and Options A / B / C equivariant cross-attention.</div>
+            <div><strong class="lime mono">src/universe_fm.py &amp; src/fm_baselines.py</strong><br>Multi-rank (0e + 0o + 1o + 2e) model plus Uni-Mol, Signed-Volume, GraphMVP, and EquiLLM baselines.</div>
+            <div><strong class="blue mono">src/mace_backbone.py &amp; src/nequip_backbone.py</strong><br>Adapters for pretrained MACE-MP-0, MACE-OFF23, and TorchScript NequIP / Allegro backbones.</div>
+            <div><strong class="blue mono">src/toolkit/physics_audit.py &amp; ouroboros_bridge.py</strong><br>64-bit 8-law conservation checker, live MD reaction hooks, and 2D-to-3D stereo SMILES bridge.</div>
+          </div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <a class="brand" href="#">
+      <img src="assets/ylm-orbital-static.svg" width="52" height="26" alt="">
+      <span>YLM</span>
+    </a>
+    <p>Ask in words. Rotate in 3D. Exact by construction.</p>
+    <a href="https://github.com/yaniguan/YLM" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
+    <span>MIT · 2026</span>
+  </footer>
+
+  <dialog id="figure-dialog" aria-label="Expanded research figure">
+    <button type="button" id="close-figure" aria-label="Close expanded figure">×</button>
+    <img id="expanded-image" alt="">
+    <p id="expanded-caption"></p>
+  </dialog>
+</body>
+</html>

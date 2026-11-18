@@ -14,6 +14,7 @@
 
 **Ask a question in words, get a 3D vector back that rotates exactly with the molecule.**
 
+[![Project Page](https://img.shields.io/badge/project_page-live_site-b5d88e.svg)](https://yaniguan.github.io/YLM/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](environment.yml)
 [![tests](https://github.com/yaniguan/YLM/actions/workflows/tests.yml/badge.svg)](https://github.com/yaniguan/YLM/actions/workflows/tests.yml)
