@@ -62,6 +62,7 @@
       label: 'LiFePO₄ Olivine Unit Cluster',
       chiral0o: 0.0,
       dipole: [0.85, 0.52, -0.44],
+      forceAtom: 0,
       atoms: [
         { Z: 3,  pos: [-1.62,  0.12, -0.40] },
         { Z: 26, pos: [ 0.15, -0.18,  0.10] },
@@ -70,6 +71,62 @@
         { Z: 8,  pos: [ 0.88, -1.26, -0.48] },
         { Z: 8,  pos: [ 2.68,  0.48, -1.24] },
         { Z: 8,  pos: [ 2.48, -0.34,  1.06] }
+      ]
+    },
+    CCO: {
+      label: 'Ethanol (CH₃CH₂OH)',
+      chiral0o: 0.0,
+      dipole: [-0.58, 0.94, 0.12],
+      forceAtom: 2,
+      atoms: [
+        { Z: 6, pos: [-1.18, -0.22,  0.00] },
+        { Z: 6, pos: [ 0.14,  0.52,  0.00] },
+        { Z: 8, pos: [ 1.22, -0.40,  0.00] },
+        { Z: 1, pos: [ 2.04,  0.10,  0.00] },
+        { Z: 1, pos: [-1.24, -0.86,  0.89] },
+        { Z: 1, pos: [-1.24, -0.86, -0.89] },
+        { Z: 1, pos: [-2.02,  0.48,  0.00] },
+        { Z: 1, pos: [ 0.21,  1.16,  0.89] },
+        { Z: 1, pos: [ 0.21,  1.16, -0.89] }
+      ]
+    },
+    c1ccncc1: {
+      label: 'Pyridine (C₅H₅N)',
+      chiral0o: 0.0,
+      dipole: [0.00, -1.36, 0.00],
+      forceAtom: 3,
+      atoms: [
+        { Z: 6, pos: [ 0.00,  1.39, 0.00] },
+        { Z: 6, pos: [ 1.19,  0.69, 0.00] },
+        { Z: 6, pos: [ 1.14, -0.70, 0.00] },
+        { Z: 7, pos: [ 0.00, -1.38, 0.00] },
+        { Z: 6, pos: [-1.14, -0.70, 0.00] },
+        { Z: 6, pos: [-1.19,  0.69, 0.00] },
+        { Z: 1, pos: [ 0.00,  2.47, 0.00] },
+        { Z: 1, pos: [ 2.14,  1.21, 0.00] },
+        { Z: 1, pos: [ 2.05, -1.28, 0.00] },
+        { Z: 1, pos: [-2.05, -1.28, 0.00] },
+        { Z: 1, pos: [-2.14,  1.21, 0.00] }
+      ]
+    },
+    'C[C@H](O)C(=O)O': {
+      label: 'L-Lactic acid',
+      chiral0o: 0.785,
+      chiralAtom: 1,
+      dipole: [-0.82, 0.96, -0.34],
+      atoms: [
+        { Z: 6, pos: [-1.42, -0.46,  0.28] },
+        { Z: 6, pos: [-0.04,  0.16, -0.06] },
+        { Z: 8, pos: [-0.08,  1.54,  0.24] },
+        { Z: 6, pos: [ 1.10, -0.52,  0.66] },
+        { Z: 8, pos: [ 1.24, -1.72,  0.62] },
+        { Z: 8, pos: [ 1.98,  0.28,  1.28] },
+        { Z: 1, pos: [ 0.14,  0.02, -1.13] },
+        { Z: 1, pos: [-0.86,  1.92, -0.16] },
+        { Z: 1, pos: [ 2.68, -0.22,  1.70] },
+        { Z: 1, pos: [-2.21,  0.04, -0.28] },
+        { Z: 1, pos: [-1.62, -0.36,  1.35] },
+        { Z: 1, pos: [-1.42, -1.52,  0.02] }
       ]
     }
   };
@@ -399,12 +456,13 @@
 
     const p = STATIC_PRESETS[structVal] || STATIC_PRESETS.water_c2v;
     const isForce = /force/i.test(qVal);
-    const attn = p.atoms.map((a, idx) => (isForce && idx === 0 ? 0.94 : 0.03));
+    const fIdx = p.forceAtom ?? 0;
+    const attn = p.atoms.map((_, idx) => (isForce && idx === fIdx ? 0.94 : 0.03));
     window.YLM3D.mountScene(document.getElementById('canvas-ask-3d'), {
       atoms: p.atoms,
       attn,
       arrows: [{
-        origin_atom: isForce ? 0 : undefined,
+        origin_atom: isForce ? fIdx : undefined,
         vec: p.dipole,
         color: '#b5d88e',
         label: isForce ? 'Force (1o)' : 'Dipole (1o)'
@@ -414,6 +472,7 @@
       <div style="border-top:1px solid var(--line);padding-top:14px;display:grid;gap:8px;font-size:13.5px;">
         <div><span style="color:var(--muted);">Task:</span> <strong class="lime mono">${isForce ? 'per-atom force (1o)' : 'molecular dipole (1o)'}</strong></div>
         <div><span style="color:var(--muted);">Vector:</span> <span class="mono">[${p.dipole.map(v => v.toFixed(3)).join(', ')}]</span></div>
+        <div><span style="color:var(--muted);">Top routed atom:</span> <span class="mono">Atom #${fIdx} (${p.label})</span></div>
         <div><span style="color:var(--muted);">SO(3) rotation residual:</span> <span class="mono lime">1.2 × 10⁻⁶ (float32)</span></div>
       </div>
     `;
@@ -563,12 +622,16 @@
       }
     }
 
-    const base = STATIC_PRESETS.r_fec_chiral;
+    const base = smi.includes('Br')
+      ? STATIC_PRESETS.r_bcfm_chiral
+      : (smi.includes('C(=O)O') ? STATIC_PRESETS['C[C@H](O)C(=O)O'] : STATIC_PRESETS.r_fec_chiral);
+    const cIdx = base === STATIC_PRESETS.r_bcfm_chiral ? 0 : (base.chiralAtom ?? 5);
     const atoms = base.atoms.map(a => ({ Z: a.Z, pos: [isS ? -a.pos[0] : a.pos[0], a.pos[1], a.pos[2]] }));
+    const cVal = (base.chiral0o || 0.8421).toFixed(4);
     window.YLM3D.mountScene(document.getElementById('canvas-ob-3d'), {
       atoms,
-      attn: atoms.map((_, i) => (i === 5 ? 0.94 : 0)),
-      arrows: [{ origin_atom: 5, vec: [isS ? -0.9 : 0.9, -0.7, -0.5], color: isS ? '#b9a1de' : '#b5d88e', label: isS ? '(S) −0.842' : '(R) +0.842' }]
+      attn: atoms.map((_, i) => (i === cIdx ? 0.94 : 0)),
+      arrows: [{ origin_atom: cIdx, vec: [isS ? -0.9 : 0.9, -0.7, -0.5], color: isS ? '#b9a1de' : '#b5d88e', label: isS ? `(S) −${cVal}` : `(R) +${cVal}` }]
     });
     box.innerHTML = `
       <dl style="display:grid;gap:12px;margin:0;font-size:13.5px;">
@@ -578,7 +641,7 @@
         </div>
         <div style="padding-bottom:10px;border-bottom:1px solid var(--line);">
           <dt style="color:var(--muted);">YLM 0o Pseudoscalar Output</dt>
-          <dd class="mono ${isS ? 'purple' : 'lime'}" style="margin:4px 0 0;font-size:22px;font-weight:600;">${isS ? '−0.8421' : '+0.8421'}</dd>
+          <dd class="mono ${isS ? 'purple' : 'lime'}" style="margin:4px 0 0;font-size:22px;font-weight:600;">${isS ? '−' + cVal : '+' + cVal}</dd>
         </div>
         <div>
           <dt style="color:var(--muted);">Mirror Sum Residual |f(R) + f(S)|</dt>
@@ -613,18 +676,25 @@
     renderBenchmarkRows(DEFAULT_BENCH_ROWS);
 
     const statusBadge = document.getElementById('studio-engine-status');
-    try {
-      const h = await fetch('/api/health', { method: 'GET' });
-      if (h.ok) {
-        liveBackend = true;
-        statusBadge.innerHTML = `<span class="status-dot" style="margin-right:2px;"></span> Live PyTorch Engine · Connected`;
-      } else {
-        throw new Error('offline');
-      }
-    } catch {
+    const isStaticHost = window.location.hostname.endsWith('.github.io') || window.location.protocol === 'file:';
+    if (isStaticHost) {
       liveBackend = false;
       statusBadge.classList.add('static-mode');
-      statusBadge.textContent = 'Interactive Client Mode · Run ylm serve for live PyTorch';
+      statusBadge.textContent = 'Interactive Browser Demo · Run ylm serve for live PyTorch';
+    } else {
+      try {
+        const h = await fetch('/api/health', { method: 'GET' });
+        if (h.ok) {
+          liveBackend = true;
+          statusBadge.innerHTML = `<span class="status-dot" style="margin-right:2px;"></span> Live PyTorch Engine · Connected`;
+        } else {
+          throw new Error('offline');
+        }
+      } catch {
+        liveBackend = false;
+        statusBadge.classList.add('static-mode');
+        statusBadge.textContent = 'Interactive Browser Demo · Run ylm serve for live PyTorch';
+      }
     }
 
     // Bind Symmetry controls

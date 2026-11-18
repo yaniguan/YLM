@@ -9,9 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
@@ -19,15 +17,18 @@ concurrency:
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish site/ to gh-pages branch
+        run: |
+          tmpdir=$(mktemp -d)
+          cp -r site/. "$tmpdir/"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan gh-pages-deploy
+          git rm -rf .
+          cp -r "$tmpdir/." .
+          git add -A
+          git commit -m "chore(pages): deploy site from ${GITHUB_SHA::7}"
+          git push origin HEAD:refs/heads/gh-pages --force
