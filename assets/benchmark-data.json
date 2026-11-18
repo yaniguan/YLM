@@ -1,0 +1,100 @@
+{
+  "methods": [
+    { "name": "YLM + MatSciBERT", "color": "#b5d88e", "dash": [], "primary": true },
+    { "name": "YLM + MiniLM", "color": "#79c2bd", "dash": [], "primary": false },
+    { "name": "Task-ID Baseline (no text)", "color": "#d97757", "dash": [7, 6], "primary": false }
+  ],
+  "views": [
+    {
+      "key": "scaling_test",
+      "kind": "line",
+      "title": "TensorQA-v0 data scaling — Test split (32 random rotations)",
+      "xLabel": "Training set fraction (% of QM9 TensorQA-v0)",
+      "yLabel": "Force vector cosine similarity",
+      "xTicks": [3, 10, 30, 100],
+      "yRange": [0.0, 1.05],
+      "yTicks": [0.0, 0.25, 0.5, 0.75, 1.0],
+      "caption": "Per-atom force cosine across 32 random SO(3) rotations per test question as training data scales from 3% to 100% (84,757 questions). At 100%, whiskers show ±1 SD across 5 seeds (4 seeds for task-ID baseline). Source: results.md.",
+      "series": [
+        {
+          "name": "YLM + MatSciBERT",
+          "points": [[3, 0.422, 0.0], [10, 0.713, 0.0], [30, 0.951, 0.0], [100, 0.960, 0.004]]
+        },
+        {
+          "name": "YLM + MiniLM",
+          "points": [[3, 0.630, 0.0], [10, 0.799, 0.0], [30, 0.890, 0.0], [100, 0.946, 0.006]]
+        },
+        {
+          "name": "Task-ID Baseline (no text)",
+          "points": [[3, 0.039, 0.0], [10, 0.062, 0.0], [30, 0.092, 0.0], [100, 0.113, 0.004]]
+        }
+      ]
+    },
+    {
+      "key": "scaling_heldout",
+      "kind": "line",
+      "title": "TensorQA-v0 data scaling — Held-out question wordings",
+      "xLabel": "Training set fraction (% of QM9 TensorQA-v0)",
+      "yLabel": "Held-out force cosine similarity",
+      "xTicks": [3, 10, 30, 100],
+      "yRange": [0.0, 1.05],
+      "yTicks": [0.0, 0.25, 0.5, 0.75, 1.0],
+      "caption": "Zero-shot generalization to 4 unseen question phrasings held out during training (32 random rotations per test item). MatSciBERT reaches 0.917 ± 0.021 at 100% data. Source: results.md.",
+      "series": [
+        {
+          "name": "YLM + MatSciBERT",
+          "points": [[3, 0.402, 0.0], [10, 0.679, 0.0], [30, 0.854, 0.0], [100, 0.917, 0.021]]
+        },
+        {
+          "name": "YLM + MiniLM",
+          "points": [[3, 0.593, 0.0], [10, 0.753, 0.0], [30, 0.858, 0.0], [100, 0.859, 0.040]]
+        },
+        {
+          "name": "Task-ID Baseline (no text)",
+          "points": [[3, 0.039, 0.0], [10, 0.062, 0.0], [30, 0.092, 0.0], [100, 0.113, 0.004]]
+        }
+      ]
+    },
+    {
+      "key": "options_abc",
+      "kind": "grouped_bar",
+      "title": "IrrepsToText Options A / B / C & compositional vectors",
+      "yLabel": "Cosine similarity / Atom routing accuracy",
+      "yRange": [0.0, 1.05],
+      "yTicks": [0.0, 0.25, 0.5, 0.75, 1.0],
+      "categories": [
+        "Force Cosine (QM9)",
+        "Atom Routing Acc",
+        "Held-out Force Cos",
+        "Comp. Diff (F_A − F_B)"
+      ],
+      "caption": "Option A (invariant keys × equivariant values), Option B (same-irrep directional inner-product keys), and Option C (Clebsch–Gordan self-product) evaluated under O(3) rotations + reflections. Compositional F_A − F_B rows compare Option A vs Option B/C-lite (3 seeds). Sources: docs/results_options_abc.md & results_baselines.md.",
+      "bars": [
+        { "name": "Option A", "color": "#91b6df", "values": [0.9559, 0.909, 0.903, 0.7586], "sds": [0.0, 0.0, 0.0, 0.0057] },
+        { "name": "Option B", "color": "#79c2bd", "values": [0.9588, 0.696, 0.923, null], "sds": [0.0, 0.0, 0.0, 0.0] },
+        { "name": "Option C (CG Product)", "color": "#b5d88e", "values": [0.9762, 0.920, 0.892, 0.8897], "sds": [0.0, 0.0, 0.0, 0.0918] }
+      ]
+    },
+    {
+      "key": "universe_multirank",
+      "kind": "grouped_bar",
+      "title": "Multi-rank 3D comparison — 1o vectors, 3×3 tensors & routing",
+      "yLabel": "Test score under K = 8 O(3) rotations + reflections",
+      "yRange": [0.0, 1.05],
+      "yTicks": [0.0, 0.25, 0.5, 0.75, 1.0],
+      "categories": [
+        "1o Vector Cos",
+        "Held-out Vec Cos",
+        "0e+2e Tensor Cos",
+        "Atom Routing Acc"
+      ],
+      "caption": "CPU smoke benchmark comparing multi-task 3D models under K = 8 random O(3) rotations and mirror flips. Distance-only (Uni-Mol) and 2D graph (GraphMVP) models fail to rotate 1o vectors (near-zero cosine), while YLM leads on directional vectors and 3×3 matrices. Note: on invariant 0e scalar energy MAE, YLM does not beat dedicated invariant baselines. Source: results/cpu_smoke_nov12/.",
+      "bars": [
+        { "name": "GraphMVP / 3D-InfoMax", "color": "#6f8296", "values": [0.0351, 0.0551, 0.6500, 0.750], "sds": [0.010, 0.009, 0.003, 0.056] },
+        { "name": "Uni-Mol (3D Distance)", "color": "#d97757", "values": [0.0661, 0.0227, 0.6586, 0.764], "sds": [0.022, 0.010, 0.008, 0.024] },
+        { "name": "EquiLLM (0e Bridge + 1o)", "color": "#91b6df", "values": [0.5356, 0.3095, 0.9256, 0.653], "sds": [0.040, 0.053, 0.012, 0.013] },
+        { "name": "YLM-Universe (Ours)", "color": "#b5d88e", "values": [0.6292, 0.4963, 0.9915, 0.875], "sds": [0.038, 0.025, 0.002, 0.040] }
+      ]
+    }
+  ]
+}
