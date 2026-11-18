@@ -136,6 +136,18 @@ def test_studio_five_tab_http_endpoints_and_audit_cli(tmp_path) -> None:
         assert "pane-ouroboros" in html
         assert "pane-benchmark" in html
 
+        for asset_path in (
+            "/styles.css",
+            "/app.js",
+            "/benchmark-chart.js",
+            "/mol3d-stage.js",
+            "/assets/ylm-orbital-animated.svg",
+            "/assets/benchmark-data.json",
+        ):
+            with urllib.request.urlopen(base + asset_path, timeout=15) as asset_resp:
+                assert asset_resp.status == 200
+                assert len(asset_resp.read()) > 50
+
         health = _get_json("/api/health")
         assert health["status"] == "ok"
         assert "physics_audit" in health["capabilities"]

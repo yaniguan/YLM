@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" role="img" aria-labelledby="arch-title arch-desc">
+  <title id="arch-title">YLM Irreps-to-Text Architecture</title>
+  <desc id="arch-desc">Two-stream alignment between frozen question tokens and O(3)-equivariant spherical-harmonic atom features, producing symmetry-typed scalar, chiral, vector, and 3x3 tensor outputs.</desc>
+  <style>
+    text { font-family: Inter, "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif; }
+    .mono { font-family: "SFMono-Regular", Consolas, ui-monospace, monospace; }
+    .flow-pulse { stroke-dasharray: 14 190; animation: pulse-move 5.5s linear infinite; }
+    .flow-pulse-slow { stroke-dasharray: 18 240; animation: pulse-move 7.5s linear infinite; }
+    @keyframes pulse-move {
+      from { stroke-dashoffset: 220; }
+      to { stroke-dashoffset: -220; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .flow-pulse, .flow-pulse-slow { animation: none; opacity: 0; }
+    }
+  </style>
+  <defs>
+    <radialGradient id="bg-glow-1" cx="52%" cy="48%" r="48%">
+      <stop offset="0%" stop-color="#1b2a27" stop-opacity="0.55"/>
+      <stop offset="58%" stop-color="#0f1720" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#0a0f15" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="card-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#131d27"/>
+      <stop offset="100%" stop-color="#0e151d"/>
+    </linearGradient>
+    <linearGradient id="hub-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#162321"/>
+      <stop offset="55%" stop-color="#121c25"/>
+      <stop offset="100%" stop-color="#191928"/>
+    </linearGradient>
+    <linearGradient id="orbital-brand" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#79c2bd"/>
+      <stop offset="50%" stop-color="#b5d88e"/>
+      <stop offset="100%" stop-color="#b9a1de"/>
+    </linearGradient>
+    <marker id="arr-lime" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="#b5d88e"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="#91b6df"/>
+    </marker>
+    <marker id="arr-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="#79c2bd"/>
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="#b9a1de"/>
+    </marker>
+  </defs>
+
+  <rect width="1920" height="1080" fill="#0a0f15"/>
+  <rect width="1920" height="1080" fill="url(#bg-glow-1)"/>
+
+  <!-- Top Header Bar -->
+  <g transform="translate(88, 66)">
+    <path d="M 0 16 C 14 -2, 34 -2, 48 16 C 62 34, 82 34, 96 16 C 82 -2, 62 -2, 48 16 C 34 34, 14 34, 0 16 Z"
+          fill="none" stroke="url(#orbital-brand)" stroke-width="2.8"/>
+    <circle cx="48" cy="16" r="3" fill="#b5d88e"/>
+    <text x="116" y="24" fill="#b5d88e" font-size="28" font-weight="700" letter-spacing="-0.6">YLM</text>
+    <text x="194" y="24" fill="#8fa1b3" font-size="18" font-weight="500">IRREPS-TO-TEXT CROSS-ATTENTION ARCHITECTURE</text>
+    <text x="1744" y="24" fill="#7c8e9f" font-size="15" text-anchor="end" class="mono">O(3) = SO(3) × {+1, −1}</text>
+  </g>
+
+  <text x="960" y="156" fill="#edf1f7" font-size="44" font-weight="600" text-anchor="middle" letter-spacing="-1.2">
+    Invariant attention weights. Equivariant spherical-tensor values.
+  </text>
+  <text x="960" y="198" fill="#9fb0c1" font-size="21" text-anchor="middle">
+    Rotating or reflecting the input atoms transforms every output tensor by exact Wigner-D matrices — without retraining the language encoder.
+  </text>
+
+  <!-- LEFT TOP: Language Stream -->
+  <g transform="translate(88, 256)">
+    <rect width="470" height="292" rx="14" fill="url(#card-grad)" stroke="#2c3a48" stroke-width="1.5"/>
+    <text x="30" y="42" fill="#91b6df" font-size="13" font-weight="700" letter-spacing="1.8">STREAM A · NATURAL LANGUAGE</text>
+    <text x="30" y="78" fill="#edf1f7" font-size="25" font-weight="600" letter-spacing="-0.4">Question Tokens</text>
+
+    <rect x="30" y="100" width="410" height="72" rx="9" fill="#0a1017" stroke="#263442"/>
+    <text x="48" y="130" fill="#d7e2ee" font-size="16" font-style="italic">“What is the force vector on the</text>
+    <text x="48" y="154" fill="#b5d88e" font-size="16" font-weight="600" font-style="italic">oxygen atom bonded to two carbons?”</text>
+
+    <rect x="30" y="194" width="410" height="72" rx="9" fill="#131f2c" stroke="#3b5168"/>
+    <text x="50" y="225" fill="#edf1f7" font-size="18" font-weight="600">Frozen Language Encoder</text>
+    <text x="50" y="249" fill="#9ab0c5" font-size="14">MatSciBERT (768d) · MiniLM-L6 (384d) → h_t ∈ ℝ²⁵⁶ (0e)</text>
+  </g>
+
+  <!-- LEFT BOTTOM: 3D Geometry Stream -->
+  <g transform="translate(88, 596)">
+    <rect width="470" height="352" rx="14" fill="url(#card-grad)" stroke="#2c3a48" stroke-width="1.5"/>
+    <text x="30" y="42" fill="#79c2bd" font-size="13" font-weight="700" letter-spacing="1.8">STREAM B · 3D ATOMIC GEOMETRY</text>
+    <text x="30" y="78" fill="#edf1f7" font-size="25" font-weight="600" letter-spacing="-0.4">Equivariant 3D Backbone</text>
+
+    <!-- Stylized 3D molecule miniature -->
+    <g transform="translate(30, 100)">
+      <rect width="166" height="126" rx="9" fill="#0a1017" stroke="#263442"/>
+      <line x1="82" y1="64" x2="44" y2="38" stroke="#6d8196" stroke-width="4.5" stroke-linecap="round"/>
+      <line x1="82" y1="64" x2="124" y2="42" stroke="#6d8196" stroke-width="4.5" stroke-linecap="round"/>
+      <line x1="82" y1="64" x2="84" y2="104" stroke="#6d8196" stroke-width="4.5" stroke-linecap="round"/>
+      <circle cx="44" cy="38" r="11" fill="#5e7082" stroke="#8fa3b8" stroke-width="1.5"/>
+      <circle cx="124" cy="42" r="11" fill="#5e7082" stroke="#8fa3b8" stroke-width="1.5"/>
+      <circle cx="84" cy="104" r="9" fill="#b5d88e"/>
+      <circle cx="82" cy="64" r="14" fill="#d97757" stroke="#f3b29b" stroke-width="1.5"/>
+      <line x1="82" y1="64" x2="136" y2="86" stroke="#b5d88e" stroke-width="3" marker-end="url(#arr-lime)"/>
+      <text x="14" y="116" fill="#7f93a6" font-size="12" class="mono">r_ij = r_i − r_j</text>
+    </g>
+
+    <g transform="translate(212, 100)">
+      <rect width="228" height="126" rx="9" fill="#112024" stroke="#35575a"/>
+      <text x="18" y="34" fill="#edf1f7" font-size="17" font-weight="600">Backbone Options</text>
+      <text x="18" y="61" fill="#79c2bd" font-size="14">• e3nn TFN / NequIP (l ≤ 2)</text>
+      <text x="18" y="85" fill="#79c2bd" font-size="14">• MACE-MP-0 / MACE-OFF23</text>
+      <text x="18" y="109" fill="#9ab0c5" font-size="13">• Molecules &amp; 3D Crystal PBC</text>
+    </g>
+
+    <!-- Irrep channel pills -->
+    <g transform="translate(30, 248)">
+      <text x="0" y="18" fill="#9fb0c1" font-size="13" font-weight="600">Per-atom spherical harmonics x_i:</text>
+      <g transform="translate(0, 32)">
+        <rect x="0" y="0" width="94" height="42" rx="7" fill="#121e28" stroke="#395066"/>
+        <text x="47" y="26" fill="#91b6df" font-size="15" font-weight="600" text-anchor="middle" class="mono">64×0e</text>
+        <rect x="105" y="0" width="94" height="42" rx="7" fill="#1b1829" stroke="#534574"/>
+        <text x="152" y="26" fill="#b9a1de" font-size="15" font-weight="600" text-anchor="middle" class="mono">8×0o</text>
+        <rect x="210" y="0" width="94" height="42" rx="7" fill="#172318" stroke="#4f6c42"/>
+        <text x="257" y="26" fill="#b5d88e" font-size="15" font-weight="600" text-anchor="middle" class="mono">32×1o</text>
+        <rect x="315" y="0" width="95" height="42" rx="7" fill="#122325" stroke="#3a6668"/>
+        <text x="362" y="26" fill="#79c2bd" font-size="15" font-weight="600" text-anchor="middle" class="mono">16×2e</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- CENTER HUB: IrrepsToText Cross-Attention -->
+  <g transform="translate(664, 286)">
+    <rect width="568" height="632" rx="18" fill="url(#hub-grad)" stroke="#4c6444" stroke-width="1.8"/>
+    <text x="36" y="46" fill="#b5d88e" font-size="13" font-weight="700" letter-spacing="1.8">CORE MECHANISM · IRREPSTOTEXT</text>
+    <text x="36" y="86" fill="#edf1f7" font-size="30" font-weight="600" letter-spacing="-0.6">Symmetry-Locked Cross-Attention</text>
+
+    <!-- Step 1: Invariant Scoring -->
+    <g transform="translate(36, 114)">
+      <rect width="496" height="132" rx="11" fill="#0b1219" stroke="#2d3d4d"/>
+      <text x="24" y="34" fill="#91b6df" font-size="15" font-weight="600">1. O(3)-Invariant Attention Routing</text>
+      <text x="24" y="66" fill="#edf1f7" font-size="18" class="mono">α_ti = softmax_i( q(h_t) · k( inv(x_i) ) / √d )</text>
+      <text x="24" y="96" fill="#98aab9" font-size="14">Keys use even scalars, |0o| magnitudes, and ||x_i^(l)||₂ channel norms —</text>
+      <text x="24" y="116" fill="#98aab9" font-size="14">so atom routing weights α_ti stay strictly unchanged under any Q ∈ O(3).</text>
+    </g>
+
+    <!-- Step 2: Equivariant Value Transport -->
+    <g transform="translate(36, 268)">
+      <rect width="496" height="142" rx="11" fill="#0b1219" stroke="#395238"/>
+      <text x="24" y="34" fill="#b5d88e" font-size="15" font-weight="600">2. Routed + Global Equivariant Value Transport</text>
+      <text x="24" y="66" fill="#edf1f7" font-size="17" class="mono">e_t = g_pick(h_t) ⊙ Σ_i α_ti v_i + g_sum(h_t) ⊙ Σ_i v_i</text>
+      <text x="24" y="98" fill="#98aab9" font-size="14">Local queries (“force on O3”) open g_pick; whole-molecule queries</text>
+      <text x="24" y="119" fill="#98aab9" font-size="14">(“total dipole”) open g_sum. Scalar gates never mix directional xyz axes.</text>
+    </g>
+
+    <!-- Step 3: Options A / B / C -->
+    <g transform="translate(36, 432)">
+      <rect width="496" height="164" rx="11" fill="#0b1219" stroke="#473d61"/>
+      <text x="24" y="34" fill="#b9a1de" font-size="15" font-weight="600">3. Three Composable Attention Options</text>
+      <text x="24" y="66" fill="#d9e3ee" font-size="15"><tspan fill="#b5d88e" font-weight="700">Option A</tspan> · Invariant keys × equivariant o3.Linear values (1–2 MB v0)</text>
+      <text x="24" y="96" fill="#d9e3ee" font-size="15"><tspan fill="#91b6df" font-weight="700">Option B</tspan> · Same-irrep global/atom directional inner-product keys</text>
+      <text x="24" y="126" fill="#d9e3ee" font-size="15"><tspan fill="#b9a1de" font-weight="700">Option C</tspan> · Text-weighted Clebsch–Gordan self-product (1o ⊗ 1o → 0e+1e+2e)</text>
+      <text x="24" y="150" fill="#8b9db0" font-size="13">Channel-wise CG cuts Option C parameters from 13.1M → 0.85M with exact O(3).</text>
+    </g>
+  </g>
+
+  <!-- RIGHT: Four Symmetry-Typed Readouts -->
+  <g transform="translate(1338, 256)">
+    <rect width="494" height="692" rx="14" fill="url(#card-grad)" stroke="#2c3a48" stroke-width="1.5"/>
+    <text x="32" y="42" fill="#b5d88e" font-size="13" font-weight="700" letter-spacing="1.8">OUTPUT HEADS · EXACT COVARIANCE</text>
+    <text x="32" y="78" fill="#edf1f7" font-size="25" font-weight="600" letter-spacing="-0.4">Four Physical Tensor Ranks</text>
+
+    <!-- Rank 0e -->
+    <g transform="translate(32, 108)">
+      <rect width="430" height="122" rx="10" fill="#0c141d" stroke="#354b63"/>
+      <text x="22" y="34" fill="#91b6df" font-size="14" font-weight="700" class="mono">RANK 0e · INVARIANT SCALAR</text>
+      <text x="22" y="64" fill="#edf1f7" font-size="19" font-weight="600">Energy, HOMO–LUMO Gap, Charges</text>
+      <text x="22" y="96" fill="#9ab0c5" font-size="15" class="mono">f(X Qᵀ) = f(X)   ∀ Q ∈ O(3)</text>
+    </g>
+
+    <!-- Rank 0o -->
+    <g transform="translate(32, 248)">
+      <rect width="430" height="122" rx="10" fill="#12101d" stroke="#534373"/>
+      <text x="22" y="34" fill="#b9a1de" font-size="14" font-weight="700" class="mono">RANK 0o · CHIRAL PSEUDOSCALAR</text>
+      <text x="22" y="64" fill="#edf1f7" font-size="19" font-weight="600">(R)/(S) Handedness · Planar Zero</text>
+      <text x="22" y="96" fill="#cbbbe9" font-size="15" class="mono">f(X Qᵀ) = det(Q) · f(X)</text>
+    </g>
+
+    <!-- Rank 1o -->
+    <g transform="translate(32, 388)">
+      <rect width="430" height="122" rx="10" fill="#101a12" stroke="#4d6d41"/>
+      <text x="22" y="34" fill="#b5d88e" font-size="14" font-weight="700" class="mono">RANK 1o · POLAR 3D VECTOR</text>
+      <text x="22" y="64" fill="#edf1f7" font-size="19" font-weight="600">Dipole Moment &amp; Per-Atom Force</text>
+      <text x="22" y="96" fill="#c7e2a8" font-size="15" class="mono">f(X Qᵀ) = f(X) Qᵀ</text>
+    </g>
+
+    <!-- Rank 0e + 2e -->
+    <g transform="translate(32, 528)">
+      <rect width="430" height="128" rx="10" fill="#0d1a1c" stroke="#386466"/>
+      <text x="22" y="34" fill="#79c2bd" font-size="14" font-weight="700" class="mono">RANK 0e ⊕ 2e · SYMMETRIC 3×3 TENSOR</text>
+      <text x="22" y="64" fill="#edf1f7" font-size="19" font-weight="600">Quadrupole, Polarizability, Stress</text>
+      <text x="22" y="96" fill="#9fd7d3" font-size="15" class="mono">f(X Qᵀ) = Q f(X) Qᵀ ,  M = Mᵀ</text>
+    </g>
+  </g>
+
+  <!-- Connector Paths + Animated Signal Pulses -->
+  <g fill="none" stroke-width="2.4">
+    <path id="conn-a" d="M 558 430 C 610 430, 612 430, 660 430" stroke="#4d6884" marker-end="url(#arr-blue)"/>
+    <path d="M 558 430 C 610 430, 612 430, 660 430" stroke="#91b6df" stroke-width="3.2" class="flow-pulse"/>
+
+    <path id="conn-b" d="M 558 760 C 614 760, 610 624, 660 624" stroke="#3c6b68" marker-end="url(#arr-teal)"/>
+    <path d="M 558 760 C 614 760, 610 624, 660 624" stroke="#79c2bd" stroke-width="3.2" class="flow-pulse-slow"/>
+
+    <path d="M 1232 456 C 1285 456, 1285 424, 1334 424" stroke="#53684c" marker-end="url(#arr-lime)"/>
+    <path d="M 1232 456 C 1285 456, 1285 424, 1334 424" stroke="#b5d88e" stroke-width="3.2" class="flow-pulse"/>
+
+    <path d="M 1232 560 C 1285 560, 1285 556, 1334 556" stroke="#534574" marker-end="url(#arr-purple)"/>
+    <path d="M 1232 652 C 1285 652, 1285 704, 1334 704" stroke="#4d6d41" marker-end="url(#arr-lime)"/>
+    <path d="M 1232 740 C 1285 740, 1285 846, 1334 846" stroke="#3a6668" marker-end="url(#arr-teal)"/>
+  </g>
+
+  <text x="88" y="1024" fill="#77899b" font-size="15">
+    Schematic of src/model.py (YLM) and src/universe_fm.py (YLMUniverseModel). All Wigner-D transformations hold to machine precision (&lt; 10⁻¹⁰ in float64).
+  </text>
+</svg>
