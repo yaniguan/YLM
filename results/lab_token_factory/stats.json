@@ -1,0 +1,379 @@
+{
+ "factory": "lab-tf-v1",
+ "checkers": {
+  "lablean": {
+   "git": "7c17554284a1e584c56453cae93b0a2c43e6ced7",
+   "toolchain": "leanprover/lean4:v4.36.0"
+  },
+  "mirror": "lab_world-v1",
+  "sql_gate": "sql-gate-v1"
+ },
+ "args": {
+  "lablean_dir": "/workspace/claude_review_nov18/lablean-7c17554/lean",
+  "seeds": [
+   0,
+   1,
+   2
+  ],
+  "rounds": 6,
+  "per_round": 200,
+  "sql_per_round": 50,
+  "no_learn": false,
+  "sql_lucky_seeds": 200,
+  "out": "/tmp/lab_tf_fix"
+ },
+ "kept": 3352,
+ "rejected": 1142,
+ "kept_by_domain": {
+  "protocol": 3187,
+  "sql": 165
+ },
+ "total_by_domain": {
+  "protocol": 3594,
+  "sql": 900
+ },
+ "first_fail": {
+  "V1_lablean": 118,
+  "V3_volumes": 289,
+  "S5_answer": 54,
+  "dedup": 406,
+  "S3_schema": 34,
+  "S4_execution": 127,
+  "S2_read-only": 71,
+  "S1_parse": 43
+ },
+ "mirror_disagrees_with_lean": 0,
+ "lean_checked": 3594,
+ "kept_chars": 1145107,
+ "sql_lucky_pass": {
+  "seeds": 200,
+  "wrong_queries": 6400,
+  "pass_one_db": 259,
+  "pass_two_db": 31
+ },
+ "per_seed": [
+  {
+   "rounds": [
+    {
+     "round": 0,
+     "frontier": 1,
+     "ignore_before": [
+      "contaminated",
+      "noTip",
+      "overflow"
+     ],
+     "protocol_yield_by_level": {
+      "1": 0.765
+     },
+     "protocol_kept": 153,
+     "protocol_total": 200,
+     "sql_kept": 13,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 2
+    },
+    {
+     "round": 1,
+     "frontier": 2,
+     "ignore_before": [
+      "contaminated"
+     ],
+     "protocol_yield_by_level": {
+      "1": 0.93,
+      "2": 0.89
+     },
+     "protocol_kept": 182,
+     "protocol_total": 200,
+     "sql_kept": 13,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 3
+    },
+    {
+     "round": 2,
+     "frontier": 3,
+     "ignore_before": [
+      "contaminated"
+     ],
+     "protocol_yield_by_level": {
+      "1": 0.9393939393939394,
+      "2": 0.8636363636363636,
+      "3": 0.8787878787878788
+     },
+     "protocol_kept": 177,
+     "protocol_total": 198,
+     "sql_kept": 10,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 4
+    },
+    {
+     "round": 3,
+     "frontier": 4,
+     "ignore_before": [],
+     "protocol_yield_by_level": {
+      "1": 0.9,
+      "2": 0.9,
+      "3": 0.94,
+      "4": 0.98
+     },
+     "protocol_kept": 186,
+     "protocol_total": 200,
+     "sql_kept": 10,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 4
+    },
+    {
+     "round": 4,
+     "frontier": 4,
+     "ignore_before": [],
+     "protocol_yield_by_level": {
+      "1": 0.88,
+      "2": 0.92,
+      "3": 0.94,
+      "4": 0.86
+     },
+     "protocol_kept": 180,
+     "protocol_total": 200,
+     "sql_kept": 10,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 4
+    },
+    {
+     "round": 5,
+     "frontier": 4,
+     "ignore_before": [],
+     "protocol_yield_by_level": {
+      "1": 0.94,
+      "2": 0.92,
+      "3": 0.98,
+      "4": 0.94
+     },
+     "protocol_kept": 189,
+     "protocol_total": 200,
+     "sql_kept": 11,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 4
+    }
+   ],
+   "used_lean": true,
+   "seed": 0
+  },
+  {
+   "rounds": [
+    {
+     "round": 0,
+     "frontier": 1,
+     "ignore_before": [
+      "noTip",
+      "notEnough",
+      "notThawed",
+      "overflow"
+     ],
+     "protocol_yield_by_level": {
+      "1": 0.545
+     },
+     "protocol_kept": 109,
+     "protocol_total": 200,
+     "sql_kept": 10,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 1
+    },
+    {
+     "round": 1,
+     "frontier": 1,
+     "ignore_before": [],
+     "protocol_yield_by_level": {
+      "1": 0.9
+     },
+     "protocol_kept": 180,
+     "protocol_total": 200,
+     "sql_kept": 12,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 2
+    },
+    {
+     "round": 2,
+     "frontier": 2,
+     "ignore_before": [],
+     "protocol_yield_by_level": {
+      "1": 0.94,
+      "2": 0.91
+     },
+     "protocol_kept": 185,
+     "protocol_total": 200,
+     "sql_kept": 10,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 3
+    },
+    {
+     "round": 3,
+     "frontier": 3,
+     "ignore_before": [],
+     "protocol_yield_by_level": {
+      "1": 0.9696969696969697,
+      "2": 0.9393939393939394,
+      "3": 0.9242424242424242
+     },
+     "protocol_kept": 187,
+     "protocol_total": 198,
+     "sql_kept": 8,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 4
+    },
+    {
+     "round": 4,
+     "frontier": 4,
+     "ignore_before": [],
+     "protocol_yield_by_level": {
+      "1": 0.94,
+      "2": 0.94,
+      "3": 0.98,
+      "4": 0.86
+     },
+     "protocol_kept": 186,
+     "protocol_total": 200,
+     "sql_kept": 7,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 4
+    },
+    {
+     "round": 5,
+     "frontier": 4,
+     "ignore_before": [],
+     "protocol_yield_by_level": {
+      "1": 0.86,
+      "2": 0.9,
+      "3": 0.92,
+      "4": 0.86
+     },
+     "protocol_kept": 177,
+     "protocol_total": 200,
+     "sql_kept": 8,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 4
+    }
+   ],
+   "used_lean": true,
+   "seed": 1
+  },
+  {
+   "rounds": [
+    {
+     "round": 0,
+     "frontier": 1,
+     "ignore_before": [
+      "contaminated",
+      "overflow"
+     ],
+     "protocol_yield_by_level": {
+      "1": 0.88
+     },
+     "protocol_kept": 176,
+     "protocol_total": 200,
+     "sql_kept": 8,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 2
+    },
+    {
+     "round": 1,
+     "frontier": 2,
+     "ignore_before": [
+      "contaminated"
+     ],
+     "protocol_yield_by_level": {
+      "1": 0.95,
+      "2": 0.88
+     },
+     "protocol_kept": 183,
+     "protocol_total": 200,
+     "sql_kept": 7,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 3
+    },
+    {
+     "round": 2,
+     "frontier": 3,
+     "ignore_before": [],
+     "protocol_yield_by_level": {
+      "1": 0.9242424242424242,
+      "2": 0.9090909090909091,
+      "3": 0.8636363636363636
+     },
+     "protocol_kept": 178,
+     "protocol_total": 198,
+     "sql_kept": 7,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 4
+    },
+    {
+     "round": 3,
+     "frontier": 4,
+     "ignore_before": [],
+     "protocol_yield_by_level": {
+      "1": 0.98,
+      "2": 0.9,
+      "3": 0.9,
+      "4": 0.92
+     },
+     "protocol_kept": 185,
+     "protocol_total": 200,
+     "sql_kept": 10,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 4
+    },
+    {
+     "round": 4,
+     "frontier": 4,
+     "ignore_before": [],
+     "protocol_yield_by_level": {
+      "1": 0.98,
+      "2": 0.92,
+      "3": 0.9,
+      "4": 0.9
+     },
+     "protocol_kept": 185,
+     "protocol_total": 200,
+     "sql_kept": 5,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 4
+    },
+    {
+     "round": 5,
+     "frontier": 4,
+     "ignore_before": [],
+     "protocol_yield_by_level": {
+      "1": 0.96,
+      "2": 0.92,
+      "3": 0.94,
+      "4": 0.96
+     },
+     "protocol_kept": 189,
+     "protocol_total": 200,
+     "sql_kept": 6,
+     "sql_total": 50,
+     "sql_wrong_but_passed": 0,
+     "frontier_after": 4
+    }
+   ],
+   "used_lean": true,
+   "seed": 2
+  }
+ ],
+ "seconds": 105.7,
+ "machine": "Linux x86_64, CPU only"
+}

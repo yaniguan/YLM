@@ -1,7 +1,7 @@
 """A small lab world that mirrors LabLean (YLM PR #92, lean/LabLean/Semantics.lean).
 
-Used by the lab token factory (src/lab_token_factory.py) and the token-quality test
-(src/token_quality.py).
+Used by the lab token factory (src/lab_token_factory.py), and by the token-quality test
+added in the stacked PR #99.
 
 * `check(state, steps)` is a Python copy of LabLean's `run`: same rules, same order of
   checks, same integer arithmetic. It returns ("OK", final volumes) or ("FAIL", step, error).

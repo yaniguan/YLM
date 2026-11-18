@@ -96,6 +96,9 @@ def test_sql_gate_layers():
     assert SG.gate(con, "SELECT COUNT(* FROM experiments", gold)[0] == 0
     assert SG.gate(con, "DELETE FROM experiments", gold)[0] == 1
     assert SG.gate(con, "SELECT 1; DROP TABLE samples", gold)[0] == 1
+    assert SG.gate(con, "SELECT 1;;", gold)[0] == 1
+    assert SG.gate(con, gold + " ;  ", gold)[0] is None              # one trailing ';' is fine
+    assert not SG.more_than_one_statement("SELECT ';' FROM experiments")   # ';' inside a string
     assert SG.gate(con, "SELECT COUNT(*) FROM experiments WHERE colour = 'x'", gold)[0] == 2
     assert SG.gate(con, "SELECT COUNT(*) FROM experiments", gold)[0] == 3
     assert con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0] == 30   # nothing deleted
@@ -103,18 +106,12 @@ def test_sql_gate_layers():
 
 def test_sql_second_database_catches_lucky_match():
     """Wrong SQL that matches gold on one database must still fail if a second one differs."""
-    lucky = 0
-    for seed in range(40):
-        con, other = SG.build_db(seed), SG.build_db(seed + 7919)
-        for _q, gold, wrongs in SG.questions():
-            for label, sql in wrongs:
-                if SG.gate(con, sql, gold)[0] is None:
-                    lucky += 1
-                    assert label != "correct"
-    assert lucky > 0
-    caught = sum(SG.gate(SG.build_db(s), sql, gold, [SG.build_db(s + 7919)])[0] is None
-                 for s in range(40) for _q, gold, ws in SG.questions() for _l, sql in ws)
-    assert caught < lucky
+    c = SG.lucky_pass_counts(range(40))
+    still_pass = sum(SG.gate(SG.build_db(s), sql, gold, [SG.build_db(s + 7919)])[0] is None
+                     for s in range(40) for _q, gold, ws in SG.questions() for _l, sql in ws)
+    # measured for seeds 0-39: 32 wrong variants x 40 databases; 40 pass with one db, 4 with two
+    assert c == {"wrong_queries": 1280, "pass_one_db": 40, "pass_two_db": 4}
+    assert still_pass == 4
 
 
 def test_factory_loop_provenance_and_dedup():
@@ -132,3 +129,13 @@ def test_factory_loop_provenance_and_dedup():
         assert x["provenance"]["trust"] == "rejected" and x["provenance"]["first_fail"]
     fr = [r["frontier"] for r in stats["rounds"]]
     assert fr == sorted(fr) and fr[0] == 1
+
+
+def test_dedup_across_seeds():
+    seen, kept = set(), []
+    for seed in (0, 1):
+        k, _r, _s = F.run_factory(seed=seed, rounds=2, per_round=40, sql_per_round=30,
+                                  lablean_dir=None, seen=seen)
+        kept += k
+    ids = [x["provenance"]["text_sha256"] for x in kept]
+    assert len(ids) == len(set(ids)) == len(seen)
