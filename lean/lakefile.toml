@@ -1,0 +1,11 @@
+name = "lablean"
+version = "0.1.0"
+defaultTargets = ["LabLean", "lablean"]
+
+[[lean_lib]]
+name = "LabLean"
+globs = ["LabLean", "LabLean.+"]
+
+[[lean_exe]]
+name = "lablean"
+root = "Main"
