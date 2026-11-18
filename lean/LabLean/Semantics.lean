@@ -1,32 +1,19 @@
 import LabLean.Basic
 /-!
-# Semantics: rules, step function, checker
+# Semantics: the lab model and what each step does
 
-Each step has a list of `Check`s. A check is a decidable `Prop` plus the error to report
-when it fails. `StepOK s st` (the spec) says all checks hold. `step` (the checker) returns
-the first failing check's error, or the new state.
-
-Rules (stated simply):
-* **Pipette range**: `minV ≤ v ≤ maxV`.
-* **No overflow**: `dst.vol + v ≤ dst.cap`. **Enough liquid**: `v ≤ src.vol`.
-* **Tip discipline**: you must hold a tip to transfer or mix. A tip remembers every reagent
-  in every container it has entered (source and destination). A tip may enter a source
-  (aspirate or mix) only if that source already contains every reagent on the tip.
-  So one source to many destinations with one tip is fine, but a tip that touched
-  reagent X cannot go into a tube of reagent Y.
-* **Thawed**: every reagent in the source must not be frozen.
-* **Sealed**: no pipetting into or out of a well of a sealed plate.
-* **Incubate**: temperature must be in `4..98` C (heat block / thermocycler range).
-* **Centrifuge**: the rotor has an even number of slots `n ≥ 2`; slot `i` is opposite
-  slot `i + n/2`. Opposite slots must hold volumes within `rotorTol` (empty slot = 0).
-  A plate weighs the sum of its wells. Plates must be sealed. Speed `≤ maxRpm`.
+Shared by the spec (`Spec.lean`) and the checker (`Checker.lean`): container lookup,
+concentration, mass, and `apply` (the effect of a step). Nothing here checks a rule.
 -/
 namespace LabLean
 
-def rotorTol : Nat := 50      -- 5.0 uL
+/-- Opposite rotor positions may differ by at most this many mg (0.1 g). -/
+def rotorTol : Nat := 100
 def maxRpm : Nat := 15000
+/-- Tip rule tolerance: a liquid counts as "not more concentrated" up to 1%. -/
+def concTol : Nat := 1
 
-/-! ## Helpers on the container list -/
+/-! ## Containers -/
 
 def findC (id : String) : List Container → Option Container
   | [] => none
@@ -43,105 +30,49 @@ def total : List Container → Nat
   | c :: l => c.vol.t + total l
 
 def names (c : Container) : List String := c.contents.map Prod.fst
+def Liquid.names (L : Liquid) : List String := L.amts.map Prod.fst
 
-def tipNames : TipState → List String
-  | .used l => l
-  | _ => []
+/-- Amount of reagent `r` in a contents list (0 if absent). -/
+def amt (l : List (String × Nat)) (r : String) : Nat := (l.lookup r).getD 0
 
-def union (a b : List String) : List String := a ++ b.filter (fun x => !a.contains x)
+def touched : TipState → List Liquid
+  | .held l => l
+  | .none => []
 
-def isSealed (s : LabState) (c : Container) : Bool :=
-  match c.plate with
-  | some p => s.sealed.contains p
-  | none => false
+def plateIds (s : LabState) : List String := s.plates.map Prod.fst
 
-def isPlate (s : LabState) (p : String) : Bool := s.cs.any (·.plate == some p)
+/-! ## Mass (for rotor balance) -/
 
-def plateVol (s : LabState) (p : String) : Nat := total (s.cs.filter (·.plate == some p))
+def densityOf (s : LabState) (r : String) : Nat :=
+  match s.reagents.find? (·.name == r) with
+  | some x => x.density
+  | none => 1000
 
-/-- Volume of a tube, or of a whole plate. `none` if unknown. -/
-def weight (s : LabState) (id : String) : Option Nat :=
+/-- mg = amount (1e-5 uL) * density (mg/mL) / 1e8. -/
+def massOf (s : LabState) (c : Container) : Nat :=
+  c.tare + (c.contents.map fun (r, x) => x * densityOf s r / 100000000).sum
+
+/-- Mass of a tube, or of a plate (plastic + all its wells). `none` if unknown. -/
+def itemMass (s : LabState) (id : String) : Option Nat :=
   match findC id s.cs with
-  | some c => some c.vol.t
-  | none => if isPlate s id then some (plateVol s id) else none
+  | some c => some (massOf s c)
+  | none =>
+    match s.plates.lookup id with
+    | some tare => some (tare + ((s.cs.filter (·.plate == some id)).map (massOf s)).sum)
+    | none => none
 
-def slotVol (s : LabState) (rotor : List (Option String)) (i : Nat) : Nat :=
+/-- Mass in rotor slot `i` (empty slot = 0). -/
+def slotMass (s : LabState) (rotor : List (Option String)) (i : Nat) : Nat :=
   match rotor[i]? with
-  | some (some id) => (weight s id).getD 0
+  | some (some id) => (itemMass s id).getD 0
   | _ => 0
 
-/-! ## Preconditions as Props (all decidable) -/
+/-! ## Effects -/
 
-abbrev InRange (p : Pipette) (v : Vol) : Prop := p.minV.t ≤ v.t ∧ v.t ≤ p.maxV.t
-abbrev NoOverflow (c : Container) (v : Vol) : Prop := c.vol.t + v.t ≤ c.cap.t
-abbrev Enough (c : Container) (v : Vol) : Prop := v.t ≤ c.vol.t
-abbrev HasTip (s : LabState) : Prop := s.tip ≠ .none
-abbrev TipClean (s : LabState) (c : Container) : Prop := ∀ r ∈ tipNames s.tip, r ∈ names c
-abbrev SafeTemp (t : Temp) : Prop := 4 ≤ t.c ∧ t.c ≤ 98
-abbrev Balanced (a b : Nat) : Prop := a ≤ b + rotorTol ∧ b ≤ a + rotorTol
-
-structure Check where
-  prop : Prop
-  [dec : Decidable prop]
-  err : Error
-
-instance (c : Check) : Decidable c.prop := c.dec
-
-def need (p : Prop) [Decidable p] (e : Error) : Check := ⟨p, e⟩
-
-/-- All reagents in container `c` must be thawed. -/
-def thawChecks (s : LabState) (c : Container) : List Check :=
-  s.reagents.map fun r => need (r.name ∈ names c → r.Usable) (.notThawed r.name)
-
-/-- Checks for entering a source with a tip (aspirate or mix). -/
-def sourceChecks (s : LabState) (p : Pipette) (id : String) (a : Container) (v : Vol) :
-    List Check :=
-  [ need (HasTip s) .noTip,
-    need (InRange p v) (.outOfRange p.name v),
-    need (isSealed s a = false) (.sealed id),
-    need (TipClean s a) (.contaminated id),
-    need (Enough a v) (.notEnough id a.vol v) ] ++ thawChecks s a
-
-def checks (s : LabState) : Step → List Check
-  | .pickTip => [need (s.tip = .none) .tipAlreadyOn]
-  | .dropTip => [need (HasTip s) .noTip]
-  | .transfer p src dst v =>
-    match findC src s.cs, findC dst s.cs with
-    | some a, some b =>
-      sourceChecks s p src a v ++
-      [ need (src ≠ dst) (.sameContainer src),
-        need (isSealed s b = false) (.sealed dst),
-        need (NoOverflow b v) (.overflow dst b.vol v b.cap) ]
-    | none, _ => [need False (.unknown src)]
-    | _, none => [need False (.unknown dst)]
-  | .mix p c v _ =>
-    match findC c s.cs with
-    | some a => sourceChecks s p c a v
-    | none => [need False (.unknown c)]
-  | .incubate x t _ =>
-    [ need ((weight s x).isSome) (.unknown x),
-      need (SafeTemp t) (.badTemp t) ]
-  | .centrifuge rotor rpm _ =>
-    let n := rotor.length
-    [ need (n % 2 = 0 ∧ 0 < n) (.badRotor n),
-      need (rpm ≤ maxRpm) (.tooFast rpm) ] ++
-    (rotor.filterMap id).flatMap (fun x =>
-      [ need ((weight s x).isSome) (.unknown x),
-        need ((findC x s.cs).isNone → x ∈ s.sealed) (.notSealed x) ]) ++
-    (List.range (n / 2)).map (fun i =>
-      let a := slotVol s rotor i
-      let b := slotVol s rotor (i + n / 2)
-      need (Balanced a b) (.unbalanced i (i + n / 2) ⟨a⟩ ⟨b⟩))
-  | .seal p =>
-    [ need (isPlate s p) (.unknown p),
-      need (p ∉ s.sealed) (.alreadySealed p) ]
-  | .thaw r => [need (s.reagents.any (·.name == r)) (.unknown r)]
-
-/-! ## Effects (what a step does, assuming its checks pass) -/
-
+/-- Take `v` out. Amounts are rounded down, so the concentration never goes up. -/
 def takeOut (v : Nat) (c : Container) : Container :=
   { c with vol := ⟨c.vol.t - v⟩,
-           contents := c.contents.map fun (r, x) => (r, x - x * v / c.vol.t) }
+           contents := c.contents.map fun (r, x) => (r, x * (c.vol.t - v) / c.vol.t) }
 
 def addAmt (r : String) (x : Nat) : List (String × Nat) → List (String × Nat)
   | [] => [(r, x)]
@@ -153,20 +84,23 @@ def putIn (a : Container) (v : Nat) (c : Container) : Container :=
            contents := a.contents.foldl (fun acc (r, x) => addAmt r (x * v / a.vol.t) acc)
                          c.contents }
 
-def touch (s : LabState) (l : List String) : TipState := .used (union (tipNames s.tip) l)
+/-- The tip touches more liquids (duplicates are kept once). -/
+def touch (s : LabState) (ls : List Liquid) : TipState :=
+  .held (ls.foldl (fun acc L => if acc.contains L then acc else L :: acc) (touched s.tip))
 
 def apply (s : LabState) : Step → LabState
-  | .pickTip => { s with tip := .fresh }
+  | .pickTip => { s with tip := .held [] }
   | .dropTip => { s with tip := .none }
   | .transfer _ src dst v =>
     match findC src s.cs, findC dst s.cs with
     | some a, some b =>
+      -- the tip touches the source, then the destination after the dispense
       { s with cs := modifyC dst (putIn a v.t) (modifyC src (takeOut v.t) s.cs),
-               tip := touch s (union (names a) (names b)) }
+               tip := touch s [a.liquid, (putIn a v.t b).liquid] }
     | _, _ => s
   | .mix _ c _ _ =>
     match findC c s.cs with
-    | some a => { s with tip := touch s (names a) }
+    | some a => { s with tip := touch s [a.liquid] }
     | none => s
   | .incubate .. => s
   | .centrifuge .. => s
@@ -175,60 +109,5 @@ def apply (s : LabState) : Step → LabState
     { s with reagents := s.reagents.map fun x =>
         if x.name = r ∧ x.state = .frozen
         then { x with state := if x.keepCold then .onIce else .thawed } else x }
-
-/-! ## Spec -/
-
-/-- All preconditions of one step hold. -/
-def StepOK (s : LabState) (st : Step) : Prop := ∀ c ∈ checks s st, c.prop
-
-instance (s : LabState) (st : Step) : Decidable (StepOK s st) :=
-  inferInstanceAs (Decidable (∀ c ∈ checks s st, c.prop))
-
-/-- Every step's preconditions hold in the state reached so far. -/
-def ValidProtocol : LabState → List Step → Prop
-  | _, [] => True
-  | s, st :: rest => StepOK s st ∧ ValidProtocol (apply s st) rest
-
-instance decValid : (s : LabState) → (l : List Step) → Decidable (ValidProtocol s l)
-  | _, [] => isTrue trivial
-  | s, st :: rest =>
-    have := decValid (apply s st) rest
-    inferInstanceAs (Decidable (StepOK s st ∧ ValidProtocol (apply s st) rest))
-
-/-! ## Checker (with error messages) -/
-
-def firstFail : List Check → Option Error
-  | [] => none
-  | c :: l => if c.prop then firstFail l else some c.err
-
-def step (s : LabState) (st : Step) : Except Error LabState :=
-  match firstFail (checks s st) with
-  | some e => .error e
-  | none => .ok (apply s st)
-
-def run (s : LabState) : List Step → Except Error LabState
-  | [] => .ok s
-  | st :: rest =>
-    match step s st with
-    | .error e => .error e
-    | .ok s' => run s' rest
-
-/-- The gate: `true` means the protocol may go to the robot. -/
-def check (s : LabState) (l : List Step) : Bool :=
-  match run s l with
-  | .ok _ => true
-  | .error _ => false
-
-/-- The error of a rejected protocol, `none` if it passes. -/
-def errorOf (s : LabState) (l : List Step) : Option Error :=
-  match run s l with
-  | .ok _ => none
-  | .error e => some e
-
-/-- Short result text, used by `#eval` and the executable. -/
-def report (s : LabState) (l : List Step) : String :=
-  match run s l with
-  | .ok _ => "OK"
-  | .error e => s!"REJECTED: {repr e}"
 
 end LabLean

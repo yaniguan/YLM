@@ -6,76 +6,103 @@ The checker must accept a protocol before it goes to the robot:
 
     text -> protocol (LabLean steps) -> checker -> robot
 
-Valid protocols are proved valid in Lean. Broken ones are rejected with an error message.
-No Mathlib; core Lean only.
+No Mathlib; core Lean only. Toolchain: `leanprover/lean4:v4.36.0`.
 
 ## Build
 
     source ~/.elan/env
-    lake build          # builds the library, all examples and proofs
+    lake build          # library, examples and all proofs
     lake exe lablean    # prints the checker result for every example
 
-Toolchain: `leanprover/lean4:v4.36.0`.
+## Design
+
+* `Spec.lean` is the spec. `StepOK` is an inductive with one constructor per kind of step, and
+  each lab rule is a named field (`range`, `fits`, `enough`, `clean`, `thawed`, `balanced`, ...).
+  `ValidProtocol s l` = `WellFormed s` (start state) and every step is `StepOK` in the state reached.
+* `Checker.lean` is separate `Bool` code with error messages.
+* `Theorems.lean` proves they agree: `check s l = true ↔ ValidProtocol s l`.
+  `decide` on `ValidProtocol` runs the checker; this is correct because of that theorem.
 
 ## Units
 
-* Volume: `Nat` in **0.1 uL** steps. `(2.5 : Vol)` is 2.5 uL, stored as 25.
-* Temperature: whole degrees C. Time: seconds.
+* Volume: 0.1 uL steps (`(2.5 : Vol)` is stored as 25). Reagent amounts inside a container:
+  1e-5 uL steps. Mass: mg. Density: mg/mL. Temperature: whole degrees C. Time: seconds.
 
-## Well index convention (96-well plate)
+## Well ids (96-well plate)
 
-Row-major, 1-based numbers: 1 = A1, 12 = A12, 13 = B1, ..., 65 = F5, ..., 96 = H12.
-`wellOfIndex : String -> Fin 96 -> Well` takes a 0-based `i` (well number `i + 1`):
-row = i / 12 (A..H), column = i % 12 + 1. `label 65 = "F5"` is checked with `decide`.
+Row-major, 1-based: 1 = A1, 12 = A12, 13 = B1, ..., 65 = F5, ..., 96 = H12.
+`wellOfIndex` / `indexOfWell` convert between a 0-based `Fin 96` and (row, column); both round
+trips are proved. A well's container id is `plate:label`, e.g. `wellId "CAL" 65 = "CAL:F5"`.
 
-## Rules the checker enforces
+## The rules
 
-* volume inside the pipette range (P2 0.2-2, P20 2-20, P200 20-200, P1000 100-1000 uL)
-* no overflow (`dst + v <= capacity`), enough liquid in the source
-* must hold a tip to transfer or mix
-* a tip remembers every reagent it has touched; it may enter a source only if the
-  source already contains all of them (one source -> many destinations is fine)
-* frozen reagents must be thawed first
-* no pipetting into or out of a sealed plate
-* incubation temperature 4..98 C
-* centrifuge: even slot count, slot i opposite slot i + n/2, opposite loads within 5 uL,
-  plates must be sealed, speed <= 15000 rpm
+Start state (`WellFormed`): container ids unique; each container within capacity; no container id
+equals a plate id; every well's plate is declared.
 
-## What is proven (no `sorry`, no extra axioms)
+Per step:
 
-* `check_sound`: `check init steps = true -> ValidProtocol init steps`
-  (and `check_complete`, `check_iff`: they agree).
-* `transfer_conserves`, `step_conserves`, `run_conserves`: total liquid volume over all
-  containers never changes in a successful step or run (waste is a container too).
-* `indexOfWell_wellOfIndex` (and the reverse): the well index round trip.
+* **Pipette range**: `minV ≤ v ≤ maxV` (P2 0.2-2, P20 2-20, P200 20-200, P1000 100-1000 uL).
+* **No overflow**: `dst.vol + v ≤ dst.cap`. **Enough**: `v ≤ src.vol` (also for `mix`).
+* **Tip on** to transfer or mix; no second tip on top of a tip.
+* **Thawed**: no reagent in the source is frozen.
+* **Not sealed**: no pipetting into or out of a well of a sealed plate.
+* **Incubate**: 4..98 C.
+* **Tip discipline (contamination)**. A tip remembers every liquid it touched since it was
+  picked up: each source, and each destination *after* the dispense. A reagent's
+  concentration in a liquid is the volume fraction of that reagent's stock. The tip may
+  enter a container `c` (aspirate or mix) only if, for every liquid `L` it touched:
+  1. every reagent in `L` is also in `c` (no foreign reagent), and
+  2. for every reagent in `L` that is not a diluent (water, PBS), `c` is not more concentrated
+     than `L` (1% tolerance, for rounding).
+
+  So: the same tip from one source to many empty wells is OK. Down a dilution row is OK.
+  Back up the row, back into the stock, into a different reagent, or back to the source
+  after touching a well that held other liquid: rejected. Dispensing is not checked by
+  itself, because the dispensed liquid comes from a source that was already checked.
+* **Centrifuge**: even slot count `n ≥ 2`, and slot `i` is opposite slot `i + n/2`. Each item is in
+  at most one slot, and every item is known. Plates must be sealed. Speed ≤ 15000 rpm.
+  **Balance by mass**: the mass of an item is its plastic (`tare` for tubes; plate mass for plates)
+  plus the liquid mass (amount × reagent density, default 1000 mg/mL). For a plate, that is the
+  sum over its wells. Opposite slots must be within **100 mg (0.1 g)**. An empty slot weighs 0.
+
+## What is proven (no `sorry`, no `native_decide`)
+
+* `check_sound`, `check_complete`, `check_iff`: the checker accepts ↔ `ValidProtocol`.
+  `checks_iff` (per step) and `initChecks_iff` (start state) are the building blocks.
+* `step_conserves`, `steps_conserve`, `run_conserves`: total volume over all containers is
+  unchanged by every valid step (liquid only moves; waste is a container; mix moves nothing).
+* `step_fits`, `steps_fit`, `valid_fits`: in a valid protocol no container ever exceeds capacity.
+* `indexOfWell_wellOfIndex`, `wellOfIndex_indexOfWell`: the well index round trip;
+  `label 65 = "F5"` by `decide`.
 * `pcr_valid`, `dilution_valid`: the two example protocols are valid.
-* Six broken protocols are proved invalid (`overflow_rejected`, `unbalanced_rejected`,
-  `reusedTip_rejected`, ...), and their exact errors are checked.
-
-All example proofs use `decide` (kernel check). `native_decide` is not used.
+* Nine broken protocols are proved invalid, and each one's exact error is checked
+  (overflow, unbalanced by volume, unbalanced by density, reused tip, not thawed, sealed plate,
+  no tip, tip back to stock, duplicate ids).
 
 ## What is NOT proven
 
-This is a model, not the physical world. It says nothing about pipette error,
-evaporation, liquid class (viscous, foamy liquids), dead volume, real rotor masses
-(we compare volumes), temperature dynamics, timing, or chemistry (does the PCR work?).
-Mixed contents are tracked only as an estimate; the total volume is exact.
+* That the rules are the right lab rules. The spec is written separately from the checker and is
+  readable, but people still have to review it.
+* The physical world: pipette error, dead volume, evaporation, liquid class (viscous, foamy),
+  temperature dynamics, timing, chemistry (does the PCR work?).
+* Contents after mixing are integer estimates; total volume is exact. Mass has small rounding.
+* A tip that touched only a diluent may enter any liquid that holds that diluent.
+* Not modeled: number of mix cycles, unsealing, seal required for hot incubation, keeping
+  reagents on ice (`keepCold`), thermal cycling (the PCR example ends with one 94 C step).
 
-Other limits:
+## Examples
 
-* The spec (`ValidProtocol`) and the checker use the same rule list. `check_sound` proves the
-  checker applies the rules correctly. It does not prove the rules are the right lab rules;
-  people still have to review them.
-* The tip rule works on reagent names, not concentrations. A tip that goes back upstream in a
-  dilution (for example from A5 to A2) is not caught, because both wells hold the same reagents.
-* Only the start of PCR is modeled (one 94 C step). Thermal cycling is not modeled.
+* `Examples/PCR.lean` - Addgene PCR, 4 reactions, master mix for 5 (25% overage, 43 uL left).
+* `Examples/SerialDilution.lean` - iGEM fluorescein 2-fold dilution, row A only.
+* `Examples/Broken.lean` - protocols that must be rejected.
+
+Departures from the sources are listed at the top of each example file.
 
 ## Path to training
 
-An LLM (YLM) turns protocol text into LabLean steps. The checker gates them.
-Pass/fail is a verifiable reward for GRPO: cheap and exact. On its own it is easy to game
-(an empty protocol passes), so the reward must also check that the protocol does the task,
-for example the final volumes and contents of the target wells.
+A model turns protocol text into LabLean steps; the checker gates them. Pass/fail is a cheap,
+exact reward, but on its own it is easy to game (an empty protocol passes), so the reward must also
+check that the protocol does the task (e.g. final volumes and contents of the target wells).
 
 ## Sources
 
@@ -85,7 +112,9 @@ for example the final volumes and contents of the target wells.
 ## Files
 
 * `LabLean/Basic.lean` - units, reagents, containers, wells, pipettes, steps, errors
-* `LabLean/Semantics.lean` - rules (Props), `step`, `run`, `check`, `ValidProtocol`
-* `LabLean/Theorems.lean` - soundness and volume conservation
-* `LabLean/Examples/PCR.lean`, `SerialDilution.lean`, `Broken.lean`
+* `LabLean/Semantics.lean` - lookup, concentration, mass, effects of steps (`apply`)
+* `LabLean/Spec.lean` - the rules as Props: `StepOK`, `StepsOK`, `WellFormed`, `ValidProtocol`
+* `LabLean/Checker.lean` - Bool checks with errors: `step`, `run`, `check`, `report`
+* `LabLean/Theorems.lean` - checker ↔ spec, volume conservation, capacity invariant
+* `LabLean/Examples/` - PCR, serial dilution, broken protocols
 * `Main.lean` - `lake exe lablean`

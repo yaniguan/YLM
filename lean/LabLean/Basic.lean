@@ -5,6 +5,9 @@ Units (all are plain `Nat`/`Int` inside, so every check is decidable):
 * `Vol`  : volume in **0.1 uL** steps. `(2.5 : Vol)` is stored as `25`.
 * `Temp` : temperature in whole degrees C.
 * `Time` : time in whole seconds.
+* Reagent amounts inside a container: `Nat` in units of `1 / amtScale` of a `Vol` step
+  (1e-5 uL), so mixing estimates stay fine-grained.
+* Mass: whole mg. Density: mg/mL.
 -/
 namespace LabLean
 
@@ -20,6 +23,9 @@ instance : OfScientific Vol where
   ofScientific m isNeg e := if isNeg then ⟨m * 10 / 10 ^ e⟩ else ⟨m * 10 * 10 ^ e⟩
 
 instance : Repr Vol := ⟨fun v _ => s!"{v.t / 10}.{v.t % 10}uL"⟩
+
+/-- Reagent amounts are counted in `1 / amtScale` of a `Vol` step (1e-5 uL). -/
+def amtScale : Nat := 10000
 
 /-- Temperature in whole degrees C. -/
 structure Temp where
@@ -42,21 +48,24 @@ inductive Storage where
   | frozen | thawed | onIce | roomTemp
 deriving DecidableEq, Repr
 
+/-- A named solution (a stock). Its "concentration" in a container is the volume fraction
+of that stock in the container. -/
 structure Reagent where
   name : String
   state : Storage
   /-- After thawing, keep it on ice (enzymes, buffers for PCR). -/
   keepCold : Bool := false
+  /-- Water, PBS: used only to dilute. A tip carrying it does not raise any concentration. -/
+  diluent : Bool := false
+  /-- mg/mL. -/
+  density : Nat := 1000
 deriving DecidableEq, Repr
-
-/-- The "needs thawed" rule: a reagent can be pipetted only if it is not frozen. -/
-abbrev Reagent.Usable (r : Reagent) : Prop := r.state ≠ .frozen
 
 /-! ## Containers -/
 
-/-- A tube, reservoir or plate well.
-`contents` lists reagent names with amounts (0.1 uL). After mixing, the amounts are
-an estimate (integer division); `vol` is the exact total that the checker uses. -/
+/-- A tube, reservoir or plate well. Ids must be unique (see `WellFormed`).
+`contents` lists reagent names with amounts (units of `1 / amtScale` of 0.1 uL). After mixing,
+the amounts are an estimate (integer division); `vol` is the exact total. -/
 structure Container where
   id : String
   /-- The plate this well belongs to (`none` for tubes). -/
@@ -64,11 +73,21 @@ structure Container where
   cap : Vol
   vol : Vol
   contents : List (String × Nat) := []
+  /-- Mass of the empty tube in mg (0 for wells: the plate carries the plastic mass). -/
+  tare : Nat := 0
 deriving DecidableEq, Repr
 
-/-- A tube holding `v` of one reagent. -/
-def tube (id : String) (cap : Vol) (reagent : String) (v : Vol) : Container :=
-  { id, cap, vol := v, contents := [(reagent, v.t)] }
+/-- A 1.5 mL tube (plastic about 1 g) holding `v` of one reagent. -/
+def tube (id : String) (reagent : String) (v : Vol) (cap : Vol := 1500) : Container :=
+  { id, cap, vol := v, contents := [(reagent, v.t * amtScale)], tare := 1000 }
+
+/-- A snapshot of a liquid (amounts and total volume), as remembered by a used tip. -/
+structure Liquid where
+  amts : List (String × Nat)
+  vol : Nat
+deriving DecidableEq, Repr
+
+def Container.liquid (c : Container) : Liquid := ⟨c.contents, c.vol.t⟩
 
 /-! ## 96-well plate addresses
 
@@ -115,6 +134,16 @@ example : label 13 = "B1" := by decide
 example : label 65 = "F5" := by decide
 example : label 96 = "H12" := by decide
 
+/-- Container id of well number `n` on plate `p`, e.g. `wellId "CAL" 65 = "CAL:F5"`.
+Ids are unique across plates. -/
+def wellId (p : String) (n : Nat) : String := p ++ ":" ++ label n
+
+/-- Well number `n` of plate `p`, holding `v` of one reagent (empty by default). -/
+def well (p : String) (n : Nat) (cap : Vol) (reagent : String := "") (v : Vol := 0) :
+    Container :=
+  { id := wellId p n, plate := some p, cap, vol := v,
+    contents := if v.t = 0 then [] else [(reagent, v.t * amtScale)] }
+
 /-! ## Pipettes and tips -/
 
 structure Pipette where
@@ -128,9 +157,9 @@ def P20   : Pipette := ⟨"P20", 2, 20⟩
 def P200  : Pipette := ⟨"P200", 20, 200⟩
 def P1000 : Pipette := ⟨"P1000", 100, 1000⟩
 
-/-- `used l`: the tip has touched liquid holding the reagents in `l`. -/
+/-- `held l`: a tip is on the pipette and has touched the liquids `l` (`[]` = fresh tip). -/
 inductive TipState where
-  | none | fresh | used (touched : List String)
+  | none | held (touched : List Liquid)
 deriving DecidableEq, Repr
 
 /-! ## Steps -/
@@ -163,14 +192,22 @@ inductive Error where
   | badTemp (t : Temp)
   | badRotor (slots : Nat)
   | tooFast (rpm : Nat)
+  | twiceInRotor
   | notSealed (plate : String)
-  | unbalanced (slot1 slot2 : Nat) (vol1 vol2 : Vol)
+  | unbalanced (slot1 slot2 : Nat) (mg1 mg2 : Nat)
   | alreadySealed (plate : String)
+  -- start state (`WellFormed`)
+  | duplicateIds
+  | overfull (id : String)
+  | idIsPlate (id : String)
+  | unknownPlate (plate : String)
 deriving Repr, DecidableEq
 
 structure LabState where
   cs : List Container
   reagents : List Reagent := []
+  /-- Plate ids with the plastic mass of the plate (mg). -/
+  plates : List (String × Nat) := []
   tip : TipState := .none
   sealed : List String := []
 deriving Repr
