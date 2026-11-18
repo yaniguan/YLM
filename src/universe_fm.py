@@ -76,6 +76,8 @@ def _equivariant_triple_0o(u: torch.Tensor, v: torch.Tensor, w: torch.Tensor) ->
 class YLMUniverseModel(nn.Module):
     """Multi-rank (0e + 1o + 2e) equivariant language-geometry foundation model."""
 
+    can_represent_chirality: bool = True
+
     def __init__(
         self,
         text_dim: int = 128,

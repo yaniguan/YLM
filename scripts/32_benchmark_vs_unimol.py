@@ -29,6 +29,8 @@ from src.fm_baselines import (  # noqa: E402
     EquiLLMMultiTaskBaseline,
     GraphMVP3DInfoMaxBaseline,
     UniMolStyle3DBaseline,
+    match_baseline_d_model,
+    match_equillm_d_model,
 )
 from src.universe_data import (  # noqa: E402
     QuestionFeaturizer,
@@ -138,9 +140,61 @@ def _train_one_model(
     }
 
 
-def _render_markdown(rows: list[dict], eval_rotations: int) -> str:
+def _parse_seeds(seeds_arg: list[str] | None, default_seed: int) -> list[int]:
+    if not seeds_arg:
+        return [int(default_seed)]
+    out: list[int] = []
+    for item in seeds_arg:
+        for part in str(item).split(","):
+            part = part.strip()
+            if part:
+                out.append(int(part))
+    return out or [int(default_seed)]
+
+
+def _aggregate_seed_runs(label: str, seed_runs: list[dict], seeds: list[int]) -> dict:
+    def _mean_std_dict(split_key: str) -> tuple[dict[str, float], dict[str, float]]:
+        keys = seed_runs[0][split_key].keys()
+        means: dict[str, float] = {}
+        stds: dict[str, float] = {}
+        for k in keys:
+            vals = [float(r[split_key][k]) for r in seed_runs if isinstance(r[split_key].get(k), (int, float))]
+            if vals:
+                means[k] = float(np.mean(vals))
+                stds[k] = float(np.std(vals))
+        return means, stds
+
+    test_mean, test_std = _mean_std_dict("test")
+    held_mean, held_std = _mean_std_dict("test_heldout")
+    return {
+        "model": label,
+        "n_params": seed_runs[0]["n_params"],
+        "seeds": list(seeds),
+        "elapsed_sec": round(float(sum(r["elapsed_sec"] for r in seed_runs)), 2),
+        "test": test_mean,
+        "test_std": test_std,
+        "test_heldout": held_mean,
+        "test_heldout_std": held_std,
+        "per_seed": seed_runs,
+    }
+
+
+def _fmt_pm(mean: float, std: float, fmt: str, multi_seed: bool) -> str:
+    if not multi_seed:
+        return format(mean, fmt)
+    std_fmt = fmt.lstrip("+")
+    return f"{format(mean, fmt)} ± {format(std, std_fmt)}"
+
+
+def _render_markdown(rows: list[dict], eval_rotations: int, seeds: list[int] | None = None, match_params: bool = False) -> str:
+    seeds = seeds or rows[0].get("seeds", [42])
+    multi = len(seeds) > 1
+    seed_note = f"Seeds: `{', '.join(str(s) for s in seeds)}`" + (" (`mean ± std`)" if multi else " (single seed)")
+    size_note = "size-matched (`--match_params`)" if match_params else "default widths"
     lines = [
         f"# 3D Model Comparison ($K={eval_rotations}$ Random $O(3)$ Rotations + Mirror Flips)",
+        "",
+        f"{seed_note}; baseline widths: {size_note}.",
         "",
         "## Table A: Invariant Scalar (`0e`) & Language-to-Atom Routing Performance",
         "",
@@ -149,26 +203,44 @@ def _render_markdown(rows: list[dict], eval_rotations: int) -> str:
     ]
     for r in rows:
         t = r["test"]
+        ts = r.get("test_std", {})
         h = r["test_heldout"]
+        hs = r.get("test_heldout_std", {})
         lines.append(
-            f"| **{r['model']}** | {r['n_params']:,} | {t['scalar_mae']:.4f} | "
-            f"{t['scalar_inv_err']:.2e} | {t['routing_acc']:.3f} | {h['routing_acc']:.3f} |"
+            f"| **{r['model']}** | {r['n_params']:,} | "
+            f"{_fmt_pm(t['scalar_mae'], ts.get('scalar_mae', 0.0), '.4f', multi)} | "
+            f"{_fmt_pm(t['scalar_inv_err'], ts.get('scalar_inv_err', 0.0), '.2e', multi)} | "
+            f"{_fmt_pm(t['routing_acc'], ts.get('routing_acc', 0.0), '.3f', multi)} | "
+            f"{_fmt_pm(h['routing_acc'], hs.get('routing_acc', 0.0), '.3f', multi)} |"
         )
     lines.extend([
         "",
         "## Table B: Covariant Vector (`1o`: T1/T3/T4/T5) & Symmetric Tensor (`0e+2e`: T2) Performance",
         "",
-        "| Model Family | Vec Cos (`1o`) ↑ | Force Cos (T3) ↑ | Comp Diff/Proj Cos ↑ | Vec $O(3)$ Eq Err ↓ | Tensor Cos (`0e+2e`) ↑ | Held-out Vec Cos ↑ |",
-        "| :--- | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| Model Family | Params | Vec Cos (`1o`) ↑ | Force Cos (T3) ↑ | Comp Diff/Proj Cos ↑ | Vec $O(3)$ Eq Err ↓ | Tensor Cos (`0e+2e`) ↑ | Held-out Vec Cos ↑ |",
+        "| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ])
     for r in rows:
         t = r["test"]
+        ts = r.get("test_std", {})
         h = r["test_heldout"]
-        comp_vals = [t[k] for k in ("diff_cos", "proj_cos") if k in t]
-        comp_cos = float(sum(comp_vals) / len(comp_vals)) if comp_vals else 0.0
+        hs = r.get("test_heldout_std", {})
+        per_seed = r.get("per_seed", [r])
+        comp_per_seed = []
+        for sr in per_seed:
+            st = sr["test"]
+            vals = [st[k] for k in ("diff_cos", "proj_cos") if k in st]
+            comp_per_seed.append(float(sum(vals) / len(vals)) if vals else 0.0)
+        comp_mean = float(np.mean(comp_per_seed))
+        comp_std = float(np.std(comp_per_seed))
         lines.append(
-            f"| **{r['model']}** | {t['vector_cos']:+.4f} | {t.get('force_cos', 0.0):+.4f} | "
-            f"{comp_cos:+.4f} | {t['vector_eq_err']:.2e} | {t['tensor_cos']:+.4f} | {h['vector_cos']:+.4f} |"
+            f"| **{r['model']}** | {r['n_params']:,} | "
+            f"{_fmt_pm(t['vector_cos'], ts.get('vector_cos', 0.0), '+.4f', multi)} | "
+            f"{_fmt_pm(t.get('force_cos', 0.0), ts.get('force_cos', 0.0), '+.4f', multi)} | "
+            f"{_fmt_pm(comp_mean, comp_std, '+.4f', multi)} | "
+            f"{_fmt_pm(t['vector_eq_err'], ts.get('vector_eq_err', 0.0), '.2e', multi)} | "
+            f"{_fmt_pm(t['tensor_cos'], ts.get('tensor_cos', 0.0), '+.4f', multi)} | "
+            f"{_fmt_pm(h['vector_cos'], hs.get('vector_cos', 0.0), '+.4f', multi)} |"
         )
     lines.append("")
     return "\n".join(lines)
@@ -180,6 +252,8 @@ def main(argv=None) -> dict:
     parser.add_argument("--out_dir", type=str, default="runs/benchmark_vs_unimol")
     parser.add_argument("--ylm_backbone", type=str, default="e3nn")
     parser.add_argument("--tiny", action="store_true")
+    parser.add_argument("--match_params", action="store_true", help="Widen baselines to match YLM parameter count.")
+    parser.add_argument("--baseline_d_model", type=int, default=None, help="Explicit d_model width for baselines.")
     parser.add_argument("--text_encoder", type=str, default="fast", choices=["fast", "minilm", "matscibert"])
     parser.add_argument("--text_dim", type=int, default=128)
     parser.add_argument("--epochs", type=int, default=20)
@@ -190,14 +264,17 @@ def main(argv=None) -> dict:
     parser.add_argument("--infonce_weight", type=float, default=0.20)
     parser.add_argument("--eval_rotations", type=int, default=8)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--seeds", nargs="+", type=str, default=None, help="Seeds for mean +/- std, e.g. --seeds 42 43 44.")
     parser.add_argument("--device", type=str, default="cpu")
     args = parser.parse_args(argv)
 
-    splits = _load_splits(args.data_dir, args.seed)
+    seeds = _parse_seeds(args.seeds, args.seed)
+    splits = _load_splits(args.data_dir, seeds[0])
     featurizer = QuestionFeaturizer(mode=args.text_encoder, dim=args.text_dim)
 
     d_model = 64 if args.tiny else 128
     n_layers = 2 if args.tiny else 3
+    n_vec = 16 if args.tiny else 32
     hidden_irreps = (
         "24x0e + 4x0o + 16x1o + 4x1e + 8x2e"
         if args.tiny
@@ -209,55 +286,79 @@ def main(argv=None) -> dict:
         else "32x0e + 32x1o + 8x1e + 16x2e"
     )
 
+    def _make_ylm() -> torch.nn.Module:
+        if args.ylm_backbone.lower().startswith("mace"):
+            return YLMUniverseModel.from_mace(
+                text_dim=featurizer.dim, backbone=args.ylm_backbone,
+                cross_irreps=cross_irreps, n_cross_layers=2, option="C", c_tp_mode="channelwise", d_text=d_model * 2,
+            )
+        return YLMUniverseModel(
+            text_dim=featurizer.dim, backbone="e3nn",
+            hidden_irreps=hidden_irreps, cross_irreps=cross_irreps,
+            n_layers=n_layers, n_cross_layers=2, option="C", c_tp_mode="channelwise", d_text=d_model * 2,
+        )
+
+    if args.baseline_d_model is not None:
+        d_gmvp = d_unimol = d_equillm = int(args.baseline_d_model)
+    elif args.match_params:
+        ylm_params = sum(p.numel() for p in _make_ylm().parameters())
+        d_gmvp = match_baseline_d_model(
+            lambda d: GraphMVP3DInfoMaxBaseline(text_dim=featurizer.dim, d_model=d, n_layers=n_layers),
+            ylm_params,
+        )
+        d_unimol = match_baseline_d_model(
+            lambda d: UniMolStyle3DBaseline(text_dim=featurizer.dim, d_model=d, n_layers=n_layers, n_heads=4),
+            ylm_params,
+        )
+        d_equillm = match_equillm_d_model(
+            ylm_params,
+            text_dim=featurizer.dim,
+            hidden_irreps=hidden_irreps,
+            n_layers=n_layers,
+            n_vec=n_vec,
+        )
+    else:
+        d_gmvp = d_unimol = d_equillm = d_model
+
     candidates = [
         (
             "GraphMVP / 3D-InfoMax",
-            GraphMVP3DInfoMaxBaseline(text_dim=featurizer.dim, d_model=d_model, n_layers=n_layers),
+            lambda: GraphMVP3DInfoMaxBaseline(text_dim=featurizer.dim, d_model=d_gmvp, n_layers=n_layers),
         ),
         (
             "Uni-Mol (3D Dist-Transformer)",
-            UniMolStyle3DBaseline(text_dim=featurizer.dim, d_model=d_model, n_layers=n_layers, n_heads=4),
+            lambda: UniMolStyle3DBaseline(text_dim=featurizer.dim, d_model=d_unimol, n_layers=n_layers, n_heads=4),
         ),
         (
             "EquiLLM (Inv-Bridge + 1o)",
-            EquiLLMMultiTaskBaseline(
+            lambda: EquiLLMMultiTaskBaseline(
                 text_dim=featurizer.dim, hidden_irreps=hidden_irreps, n_layers=n_layers,
-                d_model=d_model, n_vec=(16 if args.tiny else 32),
+                d_model=d_equillm, n_vec=n_vec,
             ),
         ),
-        (
-            "YLM-Universe FM (Ours)",
-            (
-                YLMUniverseModel.from_mace(
-                    text_dim=featurizer.dim, backbone=args.ylm_backbone,
-                    cross_irreps=cross_irreps, n_cross_layers=2, option="C", c_tp_mode="channelwise", d_text=d_model * 2,
-                )
-                if args.ylm_backbone.lower().startswith("mace")
-                else YLMUniverseModel(
-                    text_dim=featurizer.dim, backbone="e3nn",
-                    hidden_irreps=hidden_irreps, cross_irreps=cross_irreps,
-                    n_layers=n_layers, n_cross_layers=2, option="C", c_tp_mode="channelwise", d_text=d_model * 2,
-                )
-            ),
-        ),
+        ("YLM-Universe FM (Ours)", _make_ylm),
     ]
 
     rows = []
-    for label, mdl in candidates:
-        res = _train_one_model(
-            label, mdl, splits, featurizer,
-            epochs=args.epochs, batch_size=args.batch_size, lr=args.lr,
-            attn_loss_weight=args.attn_loss_weight, denoise_weight=args.denoise_weight,
-            infonce_weight=args.infonce_weight, eval_rotations=args.eval_rotations,
-            seed=args.seed, device=args.device,
-        )
-        rows.append(res)
+    for label, make_mdl in candidates:
+        seed_runs = []
+        for s in seeds:
+            res = _train_one_model(
+                label, make_mdl(), splits, featurizer,
+                epochs=args.epochs, batch_size=args.batch_size, lr=args.lr,
+                attn_loss_weight=args.attn_loss_weight, denoise_weight=args.denoise_weight,
+                infonce_weight=args.infonce_weight, eval_rotations=args.eval_rotations,
+                seed=s, device=args.device,
+            )
+            res["seed"] = s
+            seed_runs.append(res)
+        rows.append(_aggregate_seed_runs(label, seed_runs, seeds))
 
     out_p = Path(args.out_dir)
     out_p.mkdir(parents=True, exist_ok=True)
-    md_text = _render_markdown(rows, args.eval_rotations)
+    md_text = _render_markdown(rows, args.eval_rotations, seeds=seeds, match_params=args.match_params)
     (out_p / "benchmark_table.md").write_text(md_text, encoding="utf-8")
-    payload = {"args": vars(args), "models": rows}
+    payload = {"args": {**vars(args), "resolved_seeds": seeds}, "models": rows}
     (out_p / "results.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print("\n" + md_text)
     return payload

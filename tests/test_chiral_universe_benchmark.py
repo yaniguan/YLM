@@ -1,12 +1,16 @@
 """Tests for `0o` chiral pseudoscalar equivariance (`YLMUniverseModel`) and enantiomer benchmark."""
 from __future__ import annotations
 
+import importlib.util
+from pathlib import Path
+
 import numpy as np
 import torch
 
 from src.fm_baselines import (
     EquiLLMMultiTaskBaseline,
     GraphMVP3DInfoMaxBaseline,
+    UniMolSignedVolumeBaseline,
     UniMolStyle3DBaseline,
 )
 from src.toolkit.ouroboros_bridge import embed_stereo_smiles, ouroboros_frames_to_universe_records
@@ -181,3 +185,66 @@ def test_enantiomer_separation_ylm_vs_invariant_baselines():
     m_y = evaluate_universe_o3(ylm, [batch], n_rotations=6, include_reflections=True)
     assert m_y["chiral_sign_acc"] >= 0.999
     assert m_y["chiral_parity_err"] < 1e-5
+
+    # Signed-volume baseline (`UniMolSignedVolumeBaseline`) can also separate `(R)` from `(S)` with exact `0o` parity
+    sv = UniMolSignedVolumeBaseline(text_dim=64, d_model=32, n_layers=2, n_heads=4)
+    assert sv.can_represent_chirality is True
+    assert UniMolStyle3DBaseline.can_represent_chirality is False
+    assert GraphMVP3DInfoMaxBaseline.can_represent_chirality is False
+    assert EquiLLMMultiTaskBaseline.can_represent_chirality is False
+    opt_sv = torch.optim.AdamW(sv.parameters(), lr=3e-3)
+    for _ in range(30):
+        opt_sv.zero_grad()
+        out_sv = sv(batch["Z"], batch["pos"], batch["atom_mask"], batch["text"], batch["text_mask"], lot_id=batch["lot_id"])
+        loss_sv = compute_universe_loss(
+            out_sv,
+            task_kind=batch["task_kind"],
+            scalar_target=batch["scalar_target"],
+            vector_target=batch["vector_target"],
+            tensor_target=batch["tensor_target"],
+            target_atom_mask=batch["target_atom_mask"],
+            lot_id=batch["lot_id"],
+        )["loss"]
+        loss_sv.backward()
+        opt_sv.step()
+    m_sv = evaluate_universe_o3(sv, [batch], n_rotations=6, include_reflections=True)
+    assert m_sv["chiral_sign_acc"] >= 0.999
+    assert m_sv["chiral_parity_err"] < 1e-5
+
+
+def test_chiral_script_multiseed_match_params_and_cannot_represent(tmp_path):
+    script_path = Path(__file__).resolve().parents[1] / "scripts" / "35_build_and_eval_chiral_benchmark.py"
+    spec = importlib.util.spec_from_file_location("chiral_bench_script", script_path)
+    mod = importlib.util.module_from_spec(spec)
+    assert spec is not None and spec.loader is not None
+    spec.loader.exec_module(mod)
+
+    out_dir = tmp_path / "chiral_out"
+    payload = mod.main([
+        "--out_dir", str(out_dir),
+        "--n_confs", "3",
+        "--tiny",
+        "--match_params",
+        "--seeds", "5", "6",
+        "--epochs", "1",
+        "--batch_size", "24",
+        "--eval_rotations", "2",
+        "--device", "cpu",
+    ])
+    assert len(payload["models"]) == 5
+    assert payload["args"]["resolved_seeds"] == [5, 6]
+    ylm_params = payload["models"][-1]["n_params"]
+    capable = [m["model"] for m in payload["models"] if m["can_represent_chirality"]]
+    incapable = [m["model"] for m in payload["models"] if not m["can_represent_chirality"]]
+    assert capable == ["Uni-Mol + Signed-Volume (0o)", "YLM-Universe FM (Ours)"]
+    assert len(incapable) == 3
+    for row in payload["models"]:
+        assert abs(row["n_params"] - ylm_params) / ylm_params < 0.10
+        assert len(row["per_seed"]) == 2
+        assert "chiral_sign_acc" in row["test_std"]
+
+    md_text = (out_dir / "benchmark_table.md").read_text(encoding="utf-8")
+    assert "cannot represent" in md_text
+    assert "Uni-Mol + Signed-Volume (0o)" in md_text
+    assert "Params" in md_text
+    assert "±" in md_text

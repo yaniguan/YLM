@@ -35,7 +35,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.fm_baselines import (  # noqa: E402
     EquiLLMMultiTaskBaseline,
     GraphMVP3DInfoMaxBaseline,
+    UniMolSignedVolumeBaseline,
     UniMolStyle3DBaseline,
+    match_baseline_d_model,
+    match_equillm_d_model,
 )
 from src.toolkit.ingest import ANGSTROM_TO_BOHR, StructureFrame, symbol_for_z  # noqa: E402
 from src.toolkit.ouroboros_bridge import load_ouroboros_forcefield_bundle  # noqa: E402
@@ -518,15 +521,22 @@ def _train_and_eval_one(
     m_zs = evaluate_universe_o3(model, zs_b, n_rotations=eval_rotations, include_reflections=True, device=device)
     achiral_abs_max = _audit_achiral_planar_zero(model, featurizer, device=device)
 
-    print(
-        f"[{label:30s}] chiral_acc={m_test['chiral_sign_acc'] * 100:5.1f}% "
+    can_chiral = bool(getattr(model, "can_represent_chirality", True))
+    chiral_msg = (
+        f"chiral_acc={m_test['chiral_sign_acc'] * 100:5.1f}% "
         f"(held={m_held['chiral_sign_acc'] * 100:5.1f}%, zero_shot={m_zs['chiral_sign_acc'] * 100:5.1f}%, "
-        f"parity_err={m_test['chiral_parity_err']:.2e}, achiral_max={achiral_abs_max:.2e}) | "
+        f"parity_err={m_test['chiral_parity_err']:.2e}, achiral_max={achiral_abs_max:.2e})"
+        if can_chiral
+        else f"chiral=cannot represent (0e only, achiral_max={achiral_abs_max:.2e})"
+    )
+    print(
+        f"[{label:30s}] {chiral_msg} | "
         f"vec_cos={m_test['vector_cos']:+.4f} | ten_cos={m_test['tensor_cos']:+.4f} ({elapsed:.1f}s)"
     )
     return {
         "model": label,
         "n_params": sum(p.numel() for p in model.parameters()),
+        "can_represent_chirality": can_chiral,
         "elapsed_sec": round(elapsed, 2),
         "achiral_planar_max_abs": achiral_abs_max,
         "test": m_test,
@@ -535,40 +545,131 @@ def _train_and_eval_one(
     }
 
 
-def _render_markdown(rows: list[dict], eval_rotations: int, split_counts: dict[str, int]) -> str:
+def _parse_seeds(seeds_arg: list[str] | None, default_seed: int) -> list[int]:
+    if not seeds_arg:
+        return [int(default_seed)]
+    out: list[int] = []
+    for item in seeds_arg:
+        for part in str(item).split(","):
+            part = part.strip()
+            if part:
+                out.append(int(part))
+    return out or [int(default_seed)]
+
+
+def _aggregate_seed_runs(label: str, seed_runs: list[dict], seeds: list[int]) -> dict:
+    def _mean_std_dict(split_key: str) -> tuple[dict[str, float], dict[str, float]]:
+        keys = seed_runs[0][split_key].keys()
+        means: dict[str, float] = {}
+        stds: dict[str, float] = {}
+        for k in keys:
+            vals = [float(r[split_key][k]) for r in seed_runs if isinstance(r[split_key].get(k), (int, float))]
+            if vals:
+                means[k] = float(np.mean(vals))
+                stds[k] = float(np.std(vals))
+        return means, stds
+
+    test_mean, test_std = _mean_std_dict("test")
+    held_mean, held_std = _mean_std_dict("test_heldout")
+    zs_mean, zs_std = _mean_std_dict("test_zero_shot_scaffold")
+    achiral_vals = [float(r["achiral_planar_max_abs"]) for r in seed_runs]
+    return {
+        "model": label,
+        "n_params": seed_runs[0]["n_params"],
+        "can_represent_chirality": bool(seed_runs[0].get("can_represent_chirality", True)),
+        "seeds": list(seeds),
+        "elapsed_sec": round(float(sum(r["elapsed_sec"] for r in seed_runs)), 2),
+        "achiral_planar_max_abs": float(np.mean(achiral_vals)),
+        "achiral_planar_max_abs_std": float(np.std(achiral_vals)),
+        "test": test_mean,
+        "test_std": test_std,
+        "test_heldout": held_mean,
+        "test_heldout_std": held_std,
+        "test_zero_shot_scaffold": zs_mean,
+        "test_zero_shot_scaffold_std": zs_std,
+        "per_seed": seed_runs,
+    }
+
+
+def _fmt_pm(mean: float, std: float, fmt: str, multi_seed: bool) -> str:
+    if not multi_seed:
+        return format(mean, fmt)
+    std_fmt = fmt.lstrip("+")
+    return f"{format(mean, fmt)} ± {format(std, std_fmt)}"
+
+
+def _fmt_pct_pm(mean_frac: float, std_frac: float, multi_seed: bool) -> str:
+    if not multi_seed:
+        return f"{mean_frac * 100:5.1f}%"
+    return f"{mean_frac * 100:.1f} ± {std_frac * 100:.1f}%"
+
+
+def _render_markdown(
+    rows: list[dict],
+    eval_rotations: int,
+    split_counts: dict[str, int],
+    seeds: list[int] | None = None,
+    match_params: bool = False,
+) -> str:
+    seeds = seeds or rows[0].get("seeds", [42])
+    multi = len(seeds) > 1
+    seed_note = f"Seeds: `{', '.join(str(s) for s in seeds)}`" + (" (`mean ± std`)" if multi else " (single seed)")
+    size_note = "size-matched (`--match_params`)" if match_params else "default widths"
     lines = [
         f"# Chiral (`0o`) + Multi-Rank (`0e + 1o + 2e`) Foundation Model Benchmark ($K={eval_rotations}$ $O(3)$ Rotations + Reflections)",
         "",
         f"Dataset splits (`ouroboros_enantiomers.extxyz` + `.manifest.jsonl`): "
         f"`train={split_counts['train']}`, `val={split_counts['val']}`, `test={split_counts['test']}`, "
-        f"`test_heldout={split_counts['test_heldout']}`, `test_zero_shot_scaffold={split_counts['test_zero_shot_scaffold']}`.",
+        f"`test_heldout={split_counts['test_heldout']}`, `test_zero_shot_scaffold={split_counts['test_zero_shot_scaffold']}`. "
+        f"{seed_note}; baseline widths: {size_note}.",
         "",
         "## Table 1: Stereochemical Chirality (`0o` Pseudoscalar) & Symmetry Audit",
         "",
-        "| Model Family | Enantiomer Acc (Test) ↑ | Held-out Wording Acc ↑ | Zero-Shot Scaffold Acc ↑ | `0o` Parity Err ↓ | Achiral Planar `|f(X)|` ↓ |",
-        "| :--- | ---: | ---: | ---: | ---: | ---: |",
+        "Models whose language readout receives only `0e` parity-even scalars (`GraphMVP`, `Uni-Mol`, `EquiLLM`) "
+        "assign identical features to `(R)` and `(S)` mirror images and are marked `cannot represent` rather than scored.",
+        "",
+        "| Model Family | Params | Enantiomer Acc (Test) ↑ | Held-out Wording Acc ↑ | Zero-Shot Scaffold Acc ↑ | `0o` Parity Err ↓ | Achiral Planar `|f(X)|` ↓ |",
+        "| :--- | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for r in rows:
         t = r["test"]
+        ts = r.get("test_std", {})
         h = r["test_heldout"]
+        hs = r.get("test_heldout_std", {})
         z = r["test_zero_shot_scaffold"]
-        lines.append(
-            f"| **{r['model']}** | {t['chiral_sign_acc'] * 100:5.1f}% | "
-            f"{h['chiral_sign_acc'] * 100:5.1f}% | {z['chiral_sign_acc'] * 100:5.1f}% | "
-            f"{t['chiral_parity_err']:.2e} | {r['achiral_planar_max_abs']:.2e} |"
-        )
+        zs = r.get("test_zero_shot_scaffold_std", {})
+        ach_str = _fmt_pm(r["achiral_planar_max_abs"], r.get("achiral_planar_max_abs_std", 0.0), ".2e", multi)
+        if not r.get("can_represent_chirality", True):
+            lines.append(
+                f"| **{r['model']}** | {r['n_params']:,} | cannot represent | "
+                f"cannot represent | cannot represent | cannot represent | {ach_str} |"
+            )
+        else:
+            lines.append(
+                f"| **{r['model']}** | {r['n_params']:,} | "
+                f"{_fmt_pct_pm(t['chiral_sign_acc'], ts.get('chiral_sign_acc', 0.0), multi)} | "
+                f"{_fmt_pct_pm(h['chiral_sign_acc'], hs.get('chiral_sign_acc', 0.0), multi)} | "
+                f"{_fmt_pct_pm(z['chiral_sign_acc'], zs.get('chiral_sign_acc', 0.0), multi)} | "
+                f"{_fmt_pm(t['chiral_parity_err'], ts.get('chiral_parity_err', 0.0), '.2e', multi)} | "
+                f"{ach_str} |"
+            )
     lines.extend([
         "",
         "## Table 2: Simultaneous Scalar (`0e`), Vector (`1o`), Tensor (`0e+2e`) & Routing Performance",
         "",
-        "| Model Family | Scalar MAE (`0e`) ↓ | Vec Cos (`1o`) ↑ | Vec $O(3)$ Eq Err ↓ | Tensor Cos (`0e+2e`) ↑ | Routing Acc ↑ |",
-        "| :--- | ---: | ---: | ---: | ---: | ---: |",
+        "| Model Family | Params | Scalar MAE (`0e`) ↓ | Vec Cos (`1o`) ↑ | Vec $O(3)$ Eq Err ↓ | Tensor Cos (`0e+2e`) ↑ | Routing Acc ↑ |",
+        "| :--- | ---: | ---: | ---: | ---: | ---: | ---: |",
     ])
     for r in rows:
         t = r["test"]
+        ts = r.get("test_std", {})
         lines.append(
-            f"| **{r['model']}** | {t['scalar_mae']:.4f} | {t['vector_cos']:+.4f} | "
-            f"{t['vector_eq_err']:.2e} | {t['tensor_cos']:+.4f} | {t['routing_acc']:.3f} |"
+            f"| **{r['model']}** | {r['n_params']:,} | "
+            f"{_fmt_pm(t['scalar_mae'], ts.get('scalar_mae', 0.0), '.4f', multi)} | "
+            f"{_fmt_pm(t['vector_cos'], ts.get('vector_cos', 0.0), '+.4f', multi)} | "
+            f"{_fmt_pm(t['vector_eq_err'], ts.get('vector_eq_err', 0.0), '.2e', multi)} | "
+            f"{_fmt_pm(t['tensor_cos'], ts.get('tensor_cos', 0.0), '+.4f', multi)} | "
+            f"{_fmt_pm(t['routing_acc'], ts.get('routing_acc', 0.0), '.3f', multi)} |"
         )
     lines.append("")
     return "\n".join(lines)
@@ -579,21 +680,26 @@ def main(argv=None) -> dict:
     parser.add_argument("--out_dir", type=str, default="runs/chiral_universe_benchmark")
     parser.add_argument("--n_confs", type=int, default=8)
     parser.add_argument("--tiny", action="store_true")
+    parser.add_argument("--match_params", action="store_true", help="Widen baselines to match YLM parameter count.")
+    parser.add_argument("--baseline_d_model", type=int, default=None, help="Explicit d_model width for baselines.")
     parser.add_argument("--epochs", type=int, default=24)
     parser.add_argument("--batch_size", type=int, default=24)
     parser.add_argument("--lr", type=float, default=2.5e-3)
     parser.add_argument("--eval_rotations", type=int, default=8)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--seeds", nargs="+", type=str, default=None, help="Seeds for mean +/- std, e.g. --seeds 42 43 44.")
     parser.add_argument("--device", type=str, default="cpu")
     args = parser.parse_args(argv)
 
+    seeds = _parse_seeds(args.seeds, args.seed)
     out_p = Path(args.out_dir)
-    splits = build_chiral_universe_benchmark(out_p, n_confs_per_enantiomer=args.n_confs, seed=args.seed)
+    splits = build_chiral_universe_benchmark(out_p, n_confs_per_enantiomer=args.n_confs, seed=seeds[0])
     split_counts = {k: len(v) for k, v in splits.items()}
     featurizer = QuestionFeaturizer(mode="fast", dim=128)
 
     d_model = 64 if args.tiny else 128
     n_layers = 2 if args.tiny else 3
+    n_vec = 16 if args.tiny else 32
     hidden_irreps = (
         "24x0e + 4x0o + 16x1o + 4x1e + 8x2e"
         if args.tiny
@@ -605,50 +711,84 @@ def main(argv=None) -> dict:
         else "32x0e + 32x1o + 8x1e + 16x2e"
     )
 
+    def _make_ylm() -> torch.nn.Module:
+        return YLMUniverseModel(
+            text_dim=featurizer.dim,
+            backbone="e3nn",
+            hidden_irreps=hidden_irreps,
+            cross_irreps=cross_irreps,
+            n_layers=n_layers,
+            n_cross_layers=2,
+            option="C",
+            c_tp_mode="channelwise",
+            d_text=d_model * 2,
+        )
+
+    if args.baseline_d_model is not None:
+        d_gmvp = d_unimol = d_sv = d_equillm = int(args.baseline_d_model)
+    elif args.match_params:
+        ylm_params = sum(p.numel() for p in _make_ylm().parameters())
+        d_gmvp = match_baseline_d_model(
+            lambda d: GraphMVP3DInfoMaxBaseline(text_dim=featurizer.dim, d_model=d, n_layers=n_layers),
+            ylm_params,
+        )
+        d_unimol = match_baseline_d_model(
+            lambda d: UniMolStyle3DBaseline(text_dim=featurizer.dim, d_model=d, n_layers=n_layers, n_heads=4),
+            ylm_params,
+        )
+        d_sv = match_baseline_d_model(
+            lambda d: UniMolSignedVolumeBaseline(text_dim=featurizer.dim, d_model=d, n_layers=n_layers, n_heads=4),
+            ylm_params,
+        )
+        d_equillm = match_equillm_d_model(
+            ylm_params,
+            text_dim=featurizer.dim,
+            hidden_irreps=hidden_irreps,
+            n_layers=n_layers,
+            n_vec=n_vec,
+        )
+    else:
+        d_gmvp = d_unimol = d_sv = d_equillm = d_model
+
     candidates = [
         (
             "GraphMVP / 3D-InfoMax",
-            GraphMVP3DInfoMaxBaseline(text_dim=featurizer.dim, d_model=d_model, n_layers=n_layers),
+            lambda: GraphMVP3DInfoMaxBaseline(text_dim=featurizer.dim, d_model=d_gmvp, n_layers=n_layers),
         ),
         (
             "Uni-Mol (3D Dist-Transformer)",
-            UniMolStyle3DBaseline(text_dim=featurizer.dim, d_model=d_model, n_layers=n_layers, n_heads=4),
+            lambda: UniMolStyle3DBaseline(text_dim=featurizer.dim, d_model=d_unimol, n_layers=n_layers, n_heads=4),
         ),
         (
             "EquiLLM (Inv-Bridge + 1o)",
-            EquiLLMMultiTaskBaseline(
+            lambda: EquiLLMMultiTaskBaseline(
                 text_dim=featurizer.dim, hidden_irreps=hidden_irreps, n_layers=n_layers,
-                d_model=d_model, n_vec=(16 if args.tiny else 32),
+                d_model=d_equillm, n_vec=n_vec,
             ),
         ),
         (
-            "YLM-Universe FM (Ours)",
-            YLMUniverseModel(
-                text_dim=featurizer.dim,
-                backbone="e3nn",
-                hidden_irreps=hidden_irreps,
-                cross_irreps=cross_irreps,
-                n_layers=n_layers,
-                n_cross_layers=2,
-                option="C",
-                c_tp_mode="channelwise",
-                d_text=d_model * 2,
-            ),
+            "Uni-Mol + Signed-Volume (0o)",
+            lambda: UniMolSignedVolumeBaseline(text_dim=featurizer.dim, d_model=d_sv, n_layers=n_layers, n_heads=4),
         ),
+        ("YLM-Universe FM (Ours)", _make_ylm),
     ]
 
-    rows = [
-        _train_and_eval_one(
-            label, mdl, splits, featurizer,
-            epochs=args.epochs, batch_size=args.batch_size, lr=args.lr,
-            eval_rotations=args.eval_rotations, seed=args.seed, device=args.device,
-        )
-        for label, mdl in candidates
-    ]
+    rows = []
+    for label, make_mdl in candidates:
+        seed_runs = []
+        for s in seeds:
+            res = _train_and_eval_one(
+                label, make_mdl(), splits, featurizer,
+                epochs=args.epochs, batch_size=args.batch_size, lr=args.lr,
+                eval_rotations=args.eval_rotations, seed=s, device=args.device,
+            )
+            res["seed"] = s
+            seed_runs.append(res)
+        rows.append(_aggregate_seed_runs(label, seed_runs, seeds))
 
-    md_text = _render_markdown(rows, args.eval_rotations, split_counts)
+    md_text = _render_markdown(rows, args.eval_rotations, split_counts, seeds=seeds, match_params=args.match_params)
     (out_p / "benchmark_table.md").write_text(md_text, encoding="utf-8")
-    payload = {"args": vars(args), "split_counts": split_counts, "models": rows}
+    payload = {"args": {**vars(args), "resolved_seeds": seeds}, "split_counts": split_counts, "models": rows}
     (out_p / "benchmark_results.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print("\n" + md_text)
     return payload
