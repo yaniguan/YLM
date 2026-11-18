@@ -1,0 +1,634 @@
+{
+ "$defs": {
+  "artifact": {
+   "properties": {
+    "filename_orig": {
+     "type": "string"
+    },
+    "media_type": {
+     "minLength": 1,
+     "type": "string"
+    },
+    "role": {
+     "enum": [
+      "derived",
+      "raw",
+      "thumbnail"
+     ]
+    },
+    "sha256": {
+     "pattern": "^[0-9a-f]{64}$",
+     "type": "string"
+    },
+    "size_bytes": {
+     "minimum": 0,
+     "type": "integer"
+    },
+    "uri": {
+     "minLength": 1,
+     "type": "string"
+    }
+   },
+   "required": [
+    "sha256",
+    "size_bytes",
+    "media_type",
+    "uri",
+    "role"
+   ],
+   "type": "object"
+  },
+  "campaign": {
+   "properties": {
+    "hypothesis": {
+     "minLength": 1,
+     "type": "string"
+    },
+    "title": {
+     "minLength": 1,
+     "type": "string"
+    }
+   },
+   "required": [
+    "title",
+    "hypothesis"
+   ],
+   "type": "object"
+  },
+  "experiment": {
+   "properties": {
+    "ended_utc": {
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$",
+     "type": "string"
+    },
+    "protocol_id": {
+     "minLength": 1,
+     "type": "string"
+    },
+    "started_utc": {
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$",
+     "type": "string"
+    },
+    "status": {
+     "enum": [
+      "aborted",
+      "completed",
+      "failed",
+      "planned",
+      "running"
+     ]
+    },
+    "title": {
+     "minLength": 1,
+     "type": "string"
+    }
+   },
+   "required": [
+    "title",
+    "protocol_id",
+    "status",
+    "started_utc"
+   ],
+   "type": "object"
+  },
+  "observation": {
+   "properties": {
+    "detail": {
+     "type": "object"
+    },
+    "failure_tags": {
+     "items": {
+      "enum": [
+       "acoustic_anomaly",
+       "calibration_expired",
+       "checker_fail",
+       "contamination",
+       "instrument_fault",
+       "operator_error",
+       "other",
+       "out_of_range",
+       "pipetting_error",
+       "sample_lost",
+       "sim_disagreement",
+       "timeout",
+       "volume_mismatch"
+      ]
+     },
+     "type": "array"
+    },
+    "instrument_id": {
+     "minLength": 1,
+     "type": "string"
+    },
+    "modality": {
+     "enum": [
+      "audio",
+      "geom",
+      "image",
+      "reading",
+      "series",
+      "sim",
+      "spectrum",
+      "text"
+     ]
+    },
+    "quantities": {
+     "additionalProperties": {
+      "$ref": "#/$defs/quantity"
+     },
+     "type": "object"
+    },
+    "t_end_utc": {
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$",
+     "type": "string"
+    },
+    "t_utc": {
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$",
+     "type": "string"
+    },
+    "text": {
+     "minLength": 1,
+     "type": "string"
+    }
+   },
+   "required": [
+    "modality",
+    "t_utc"
+   ],
+   "type": "object"
+  },
+  "project": {
+   "properties": {
+    "goal": {
+     "minLength": 1,
+     "type": "string"
+    },
+    "title": {
+     "minLength": 1,
+     "type": "string"
+    }
+   },
+   "required": [
+    "title",
+    "goal"
+   ],
+   "type": "object"
+  },
+  "quantity": {
+   "properties": {
+    "uncertainty": {
+     "properties": {
+      "high": {
+       "type": "number"
+      },
+      "kind": {
+       "enum": [
+        "interval",
+        "none",
+        "spec",
+        "std"
+       ]
+      },
+      "low": {
+       "type": "number"
+      },
+      "method": {
+       "minLength": 1,
+       "type": "string"
+      },
+      "value": {
+       "minimum": 0,
+       "type": "number"
+      }
+     },
+     "required": [
+      "kind",
+      "method"
+     ],
+     "type": "object"
+    },
+    "unit": {
+     "enum": [
+      "%",
+      "1",
+      "Angstrom",
+      "Cel",
+      "Hz",
+      "K",
+      "L",
+      "M",
+      "Pa",
+      "V",
+      "bar",
+      "bohr",
+      "cm",
+      "cm-1",
+      "dB",
+      "eV",
+      "g",
+      "h",
+      "kHz",
+      "kJ/mol",
+      "kPa",
+      "kcal/mol",
+      "kg",
+      "m/z",
+      "mA",
+      "mL",
+      "mM",
+      "mS/cm",
+      "mg",
+      "min",
+      "mm",
+      "mol",
+      "nL",
+      "nM",
+      "nm",
+      "pH",
+      "ppm",
+      "rpm",
+      "s",
+      "uL",
+      "uM",
+      "um",
+      "x g",
+      "{RFU}",
+      "{absorbance}"
+     ]
+    },
+    "value": {
+     "type": [
+      "number",
+      "null"
+     ]
+    }
+   },
+   "required": [
+    "value",
+    "unit"
+   ],
+   "type": "object"
+  },
+  "step": {
+   "properties": {
+    "action": {
+     "minLength": 1,
+     "type": "string"
+    },
+    "deviation": {
+     "minLength": 1,
+     "type": "string"
+    },
+    "ended_utc": {
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$",
+     "type": "string"
+    },
+    "failure_tags": {
+     "items": {
+      "enum": [
+       "acoustic_anomaly",
+       "calibration_expired",
+       "checker_fail",
+       "contamination",
+       "instrument_fault",
+       "operator_error",
+       "other",
+       "out_of_range",
+       "pipetting_error",
+       "sample_lost",
+       "sim_disagreement",
+       "timeout",
+       "volume_mismatch"
+      ]
+     },
+     "type": "array"
+    },
+    "index": {
+     "minimum": 1,
+     "type": "integer"
+    },
+    "instrument_id": {
+     "minLength": 1,
+     "type": "string"
+    },
+    "params": {
+     "additionalProperties": {
+      "$ref": "#/$defs/quantity"
+     },
+     "type": "object"
+    },
+    "started_utc": {
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$",
+     "type": "string"
+    },
+    "status": {
+     "enum": [
+      "deviated",
+      "failed",
+      "ok",
+      "planned",
+      "skipped"
+     ]
+    }
+   },
+   "required": [
+    "index",
+    "action",
+    "status"
+   ],
+   "type": "object"
+  }
+ },
+ "$id": "https://github.com/yaniguan/YLM/labledger/schema/labledger.v1.schema.json",
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "allOf": [
+  {
+   "if": {
+    "properties": {
+     "op": {
+      "const": "supersede"
+     }
+    }
+   },
+   "then": {
+    "required": [
+     "supersedes",
+     "reason"
+    ]
+   }
+  },
+  {
+   "if": {
+    "properties": {
+     "op": {
+      "const": "retract"
+     }
+    }
+   },
+   "then": {
+    "required": [
+     "reason"
+    ]
+   }
+  },
+  {
+   "if": {
+    "properties": {
+     "level": {
+      "const": "project"
+     },
+     "op": {
+      "enum": [
+       "add",
+       "supersede"
+      ]
+     }
+    }
+   },
+   "then": {
+    "properties": {
+     "body": {
+      "$ref": "#/$defs/project"
+     }
+    }
+   }
+  },
+  {
+   "if": {
+    "properties": {
+     "level": {
+      "const": "campaign"
+     },
+     "op": {
+      "enum": [
+       "add",
+       "supersede"
+      ]
+     }
+    }
+   },
+   "then": {
+    "properties": {
+     "body": {
+      "$ref": "#/$defs/campaign"
+     }
+    }
+   }
+  },
+  {
+   "if": {
+    "properties": {
+     "level": {
+      "const": "experiment"
+     },
+     "op": {
+      "enum": [
+       "add",
+       "supersede"
+      ]
+     }
+    }
+   },
+   "then": {
+    "properties": {
+     "body": {
+      "$ref": "#/$defs/experiment"
+     }
+    }
+   }
+  },
+  {
+   "if": {
+    "properties": {
+     "level": {
+      "const": "step"
+     },
+     "op": {
+      "enum": [
+       "add",
+       "supersede"
+      ]
+     }
+    }
+   },
+   "then": {
+    "properties": {
+     "body": {
+      "$ref": "#/$defs/step"
+     }
+    }
+   }
+  },
+  {
+   "if": {
+    "properties": {
+     "level": {
+      "const": "observation"
+     },
+     "op": {
+      "enum": [
+       "add",
+       "supersede"
+      ]
+     }
+    }
+   },
+   "then": {
+    "properties": {
+     "body": {
+      "$ref": "#/$defs/observation"
+     }
+    }
+   }
+  },
+  {
+   "if": {
+    "properties": {
+     "level": {
+      "const": "artifact"
+     },
+     "op": {
+      "enum": [
+       "add",
+       "supersede"
+      ]
+     }
+    }
+   },
+   "then": {
+    "properties": {
+     "body": {
+      "$ref": "#/$defs/artifact"
+     }
+    }
+   }
+  }
+ ],
+ "properties": {
+  "body": {
+   "type": [
+    "object",
+    "null"
+   ]
+  },
+  "event_hash": {
+   "pattern": "^[0-9a-f]{64}$",
+   "type": "string"
+  },
+  "level": {
+   "enum": [
+    "project",
+    "campaign",
+    "experiment",
+    "step",
+    "observation",
+    "artifact"
+   ]
+  },
+  "license": {
+   "minLength": 1,
+   "type": "string"
+  },
+  "op": {
+   "enum": [
+    "add",
+    "retract",
+    "supersede"
+   ]
+  },
+  "origin": {
+   "enum": [
+    "model_generated",
+    "real",
+    "simulated",
+    "synthetic_demo"
+   ]
+  },
+  "parent_id": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "prev_hash": {
+   "pattern": "^[0-9a-f]{64}$",
+   "type": "string"
+  },
+  "provenance": {
+   "properties": {
+    "agent": {
+     "properties": {
+      "id": {
+       "minLength": 1,
+       "type": "string"
+      },
+      "type": {
+       "enum": [
+        "human",
+        "instrument",
+        "model",
+        "robot",
+        "software"
+       ]
+      }
+     },
+     "required": [
+      "type",
+      "id"
+     ],
+     "type": "object"
+    },
+    "derived_from": {
+     "type": "array"
+    },
+    "software": {
+     "type": "array"
+    }
+   },
+   "required": [
+    "agent"
+   ],
+   "type": "object"
+  },
+  "reason": {
+   "minLength": 1,
+   "type": "string"
+  },
+  "record_id": {
+   "pattern": "^[a-z]+:[A-Za-z0-9._-]+$",
+   "type": "string"
+  },
+  "recorded_utc": {
+   "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$",
+   "type": "string"
+  },
+  "schema": {
+   "const": "labledger/v1"
+  },
+  "seq": {
+   "minimum": 0,
+   "type": "integer"
+  },
+  "supersedes": {
+   "minimum": 0,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "schema",
+  "seq",
+  "op",
+  "level",
+  "record_id",
+  "parent_id",
+  "recorded_utc",
+  "origin",
+  "license",
+  "provenance",
+  "body",
+  "prev_hash",
+  "event_hash"
+ ],
+ "title": "labledger/v1 event",
+ "type": "object"
+}
