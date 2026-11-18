@@ -286,11 +286,15 @@ def provenance(rec, domain, seed, round_i, checker_versions):
 
 
 def run_factory(seed=0, rounds=6, per_round=200, sql_per_round=50, lablean_dir=None,
-                open_at=0.7, p_blind=0.5, learn=True, checker_versions=None):
-    """The gated loop. Returns (kept, rejected, stats)."""
+                open_at=0.7, p_blind=0.5, learn=True, checker_versions=None, seen=None):
+    """The gated loop. Returns (kept, rejected, stats).
+
+    `seen` is the set of kept text hashes; pass the same set to every seed so that a record
+    already kept by an earlier seed is rejected as "dedup" (it is updated in place)."""
     rng = random.Random(seed)
     agent = Agent(rng, p_blind, learn)
-    frontier, seen = 1, set()
+    frontier = 1
+    seen = set() if seen is None else seen
     kept, rejected, rounds_log = [], [], []
     used_lean = None
     for k in range(rounds):

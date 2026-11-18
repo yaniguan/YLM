@@ -3,7 +3,7 @@
 Same four layers as the SQL gate in github.com/yaniguan/lab-verify (demo/sql_gate.py), but
 built only on the standard library (sqlite3), so YLM needs no new dependency:
   1 parse      sqlite can compile the text
-  2 read-only  one statement, and the sqlite authorizer sees only SELECT / READ / FUNCTION
+  2 read-only  one statement (checked before sqlite sees it), and the sqlite authorizer sees only SELECT / READ / FUNCTION
   3 schema     every table and column exists (sqlite reports "no such table/column")
   4 execution  the result multiset equals the gold query's result on the main database
                AND on a second database with other rows (a wrong query can match gold
@@ -50,10 +50,20 @@ def run(con, sql):
     return Counter(tuple(round(v, 6) if isinstance(v, float) else v for v in r) for r in rows)
 
 
+def more_than_one_statement(sql):
+    """True if text follows the first complete statement (a ';' outside quotes and comments)."""
+    for i, ch in enumerate(sql):
+        if ch == ";" and sqlite3.complete_statement(sql[:i + 1]):
+            return sql[i + 1:].strip() != ""
+    return False
+
+
 def gate(con, sql, gold_sql, extra_cons=()):
     """Return (index of first failed layer or None, reason, result Counter on `con` or None)."""
     if not sqlite3.complete_statement(sql.strip().rstrip(";") + ";"):
         return 0, "incomplete statement", None
+    if more_than_one_statement(sql):
+        return 1, "more than one statement", None
     bad = []
 
     def auth(action, *_):
@@ -65,8 +75,8 @@ def gate(con, sql, gold_sql, extra_cons=()):
     con.set_authorizer(auth)
     try:
         con.execute("EXPLAIN " + sql)
-    except sqlite3.ProgrammingError as e:          # more than one statement
-        return 1, str(e), None
+    except (sqlite3.ProgrammingError, sqlite3.Warning) as e:   # more than one statement
+        return 1, str(e), None                                # (Python 3.10/3.11 raise Warning)
     except sqlite3.DatabaseError as e:
         msg = str(e)
         if bad or "not authorized" in msg:
@@ -92,6 +102,24 @@ def gate(con, sql, gold_sql, extra_cons=()):
         if run(other, sql) != run(other, gold_sql):
             return 3, "differs from gold on a second database", got
     return None, "match", got
+
+
+def lucky_pass_counts(seeds):
+    """How many wrong candidate queries pass the gate with one database, and with two.
+
+    Every wrong variant of every question is gated on build_db(seed), and again with
+    build_db(seed + 7919) as the second database (the same pairing the factory uses)."""
+    wrong = one_db = two_db = 0
+    for seed in seeds:
+        con, other = build_db(seed), build_db(seed + 7919)
+        for _q, gold, wrongs in questions():
+            for _label, sql in wrongs:
+                wrong += 1
+                if gate(con, sql, gold)[0] is None:
+                    one_db += 1
+                    if gate(con, sql, gold, [other])[0] is None:
+                        two_db += 1
+    return {"wrong_queries": wrong, "pass_one_db": one_db, "pass_two_db": two_db}
 
 
 # ---------- questions with gold SQL (the agent picks one and writes its own SQL) ----------
