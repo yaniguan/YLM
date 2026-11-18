@@ -1,0 +1,44 @@
+{
+ "web@250000": {
+  "docs": 143,
+  "chars": 250000,
+  "sha256": "a3c467290d9576c24c2f8e69b4c1ccec8de42f538489e60007a7235bc39750ce",
+  "share_of_records_with_a_wrong_claim": null
+ },
+ "web@1000000": {
+  "docs": 584,
+  "chars": 1000000,
+  "sha256": "872893d26cd0c7bcd30c41ad81c74129e2b3e02b0273b02c1368a690bcfbb321",
+  "share_of_records_with_a_wrong_claim": null
+ },
+ "agent@250000": {
+  "docs": 573,
+  "chars": 250000,
+  "sha256": "083d93faf6f0157aacbe0418fa312c061a8a41d9e65778297dae0cdc5970a268",
+  "share_of_records_with_a_wrong_claim": 0.4293193717277487
+ },
+ "agent@1000000": {
+  "docs": 2303,
+  "chars": 1000000,
+  "sha256": "904c68500b323cb47781aa244db1fcee41d7d0179f3187c42ceea380fb16154e",
+  "share_of_records_with_a_wrong_claim": 0.42683456361267913
+ },
+ "verified@250000": {
+  "docs": 630,
+  "chars": 250000,
+  "sha256": "a81380752c216a4f69ab1559cff0daf1073437d930fc0ebdbe7ff3d476c07e53",
+  "share_of_records_with_a_wrong_claim": 0.0
+ },
+ "verified@1000000": {
+  "docs": 2528,
+  "chars": 1000000,
+  "sha256": "86dfe1f11feec33322621e2446efadbcdb59b6f6903ca9c4543c17664b9259ca",
+  "share_of_records_with_a_wrong_claim": 0.0
+ },
+ "oracle@1000000": {
+  "docs": 2617,
+  "chars": 1000000,
+  "sha256": "9e6a9323c9bfce5fa87246b48001888bb7857b83b7f4cd28b4f68672910c79b9",
+  "share_of_records_with_a_wrong_claim": null
+ }
+}
