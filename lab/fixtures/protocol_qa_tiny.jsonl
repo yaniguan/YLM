@@ -1,0 +1,4 @@
+{"id": "toy-mcq-1", "task": "mcq", "question": "A protocol says to dissolve NaCl in water before adding ethanol to precipitate DNA. The DNA pellet is not visible. Which change is most likely to help?", "choices": ["Skip the NaCl", "Chill the sample after adding ethanol", "Use water instead of ethanol", "Heat the sample to 95 C"], "answer": "B", "molecules": ["[Na+].[Cl-]", "CCO"]}
+{"id": "toy-mcq-2", "task": "mcq", "question": "Which solvent in the list is the most polar?", "choices": ["Hexane", "Toluene", "Water", "Diethyl ether"], "answer": "Water", "molecules": ["CCCCCC", "Cc1ccccc1", "O", "CCOCC"]}
+{"id": "toy-exact-1", "task": "exact", "question": "A step adds 2 mL of a 1 M stock to make 20 mL total. What is the final concentration in M?", "answer": "0.1"}
+{"id": "toy-order-1", "task": "order", "question": "Put the steps in order: s1 = weigh solid, s2 = dissolve in solvent, s3 = filter, s4 = dry the filtrate under vacuum.", "answer": ["s1", "s2", "s3", "s4"]}
