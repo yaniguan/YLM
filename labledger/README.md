@@ -54,11 +54,15 @@ Raw files go into `blobs/<sha256>` once and are never changed. Artifacts point t
   - `image`: optional `smiles` and `ocsr_flag` (from the structure reader)
   - `audio`: the `lab-ears/audio-event/v1` record (detector, score, threshold, mic, ...);
     a score above threshold must carry the `acoustic_anomaly` tag; raw audio with the speech
-    band is refused
+    band is refused (`raw_audio_kept: true` needs `speech_band_dropped: true`)
   - `spectrum`, `series`: `x_unit`, `y_unit`, `n_points`; the data itself is an artifact
   - `sim`: `engine`, `system`, `values`
   - `geom`: `Z`, `pos` (N x 3), `unit` (bohr or angstrom)
-- **artifact**: `sha256`, `size_bytes`, `media_type`, `uri`, `role` (raw/derived/thumbnail)
+- **artifact**: `sha256`, `size_bytes`, `media_type`, `uri`, `role` (raw/derived/thumbnail).
+  `uri` is a relative path inside the ledger directory (no absolute path, no `..`); a `raw`
+  artifact must use `blobs/<sha256>`
+
+Times are UTC with `Z`. An end time (`ended_utc`, `t_end_utc`) may not be before its start.
 
 **Quantity**: `{value, unit, uncertainty?}`. Units come from a fixed list (`uL`, `Cel`, `x g`,
 `nm`, `{absorbance}`, ...). Uncertainty is `std`, `spec`, `interval` or `none`, and always says
@@ -85,13 +89,16 @@ L.add("artifact", "art:A1", art, parent_id="obs:A1", origin="real", license="own
 
 ```bash
 python -m labledger verify runs/plate-7          # schema, chain, tree, raw file checksums
+python -m labledger verify runs/plate-7 --head HASH   # also: HASH (saved earlier) is still in the chain
 python -m labledger export runs/plate-7 train.jsonl [--sealed sealed_ids.txt]
 ```
 
 ## Training export
 
-`export` writes `coscientist.v1` records, the format of the post-training recipe
-(`recipes/coscientist_posttrain`, PR #86). Each finished experiment gives:
+`export` writes `coscientist.v1` records, meant for the post-training recipe
+(`recipes/coscientist_posttrain`, PR #86). That recipe is not on `main` yet, so compatibility
+with it is **unchecked**: `test_compatible_with_recipe_schema` is skipped until the recipe lands.
+Each finished experiment gives:
 
 1. a failure question: the whole record as text, then "which steps failed and with which tags";
    the answer comes from the records, and the verifier is `exact`;
@@ -106,10 +113,17 @@ Placeholders point into arrays, with indices 0..n-1:
 | `<sim:i>` | `sims` | WignerFlow argon results (other sims become plain text) |
 | `<audio:i>` | `audios` | lab-ears audio events; `export.audio_text` gives a text form |
 
+Each `sims` entry has a `tag` from the observation's own origin: `real` → `MEASURED`,
+`simulated` → `SIMULATED`, `model_generated` → `MODEL_GENERATED`, `synthetic_demo` → `EXAMPLE`.
+
 Gates: the ledger must verify clean; only live versions are used (superseded values and
-retracted records never appear); `synthetic_demo` is blocked unless `allow_synthetic=True`;
-sealed ids are never exported; `commercial_ok` follows the license. Every example keeps
-`ledger.record_ids` and the head hash, so it can be traced back to its raw files.
+retracted records never appear); an experiment is blocked if any record in it (steps,
+observations, artifacts) is `synthetic_demo`, unless `allow_synthetic=True`; an experiment is
+skipped if it, any record under it, or any ancestor (campaign, project) is sealed. `source`
+lists every origin and license used (`origins`, `licenses`; `origin`/`license` are `mixed` if
+there is more than one), and `commercial_ok` is true only if every license is in
+`export.COMMERCIAL_OK`. Every example keeps `ledger.record_ids` and the head hash, so it can be
+traced back to its raw files.
 
 ## Synthetic example
 
@@ -120,23 +134,18 @@ uncertainty, spectrum file, temperature stream, one corrected value), a run that
 noisy centrifuge (audio anomaly, operator note, one retracted duplicate, a skipped step), and an
 argon simulation reference run.
 
-## Measured on a laptop-class CPU (synthetic demo)
-
-Intel Xeon (8 cores), Python 3.11+, single process:
-
-| what | result |
-|---|---|
-| demo build (29 events, 24 live records, 3 blobs) | 2.2 to 2.6 ms (5 runs) |
-| demo verify | 0.8 ms |
-| training examples from the demo | 5 |
-| append 10,000 reading events | 0.67 s |
-| reload and verify 10,000 events | 0.38 s |
+The demo has 29 events, 24 live records and 3 blobs, and gives 5 training examples (checked
+by the tests). No timing benchmark is committed; `python -m labledger.demo` prints build and
+verify times for the machine it runs on.
 
 ## Limits
 
 - One writer per ledger directory; no locking.
-- The hash chain shows tampering inside the file, not a rewrite of the whole file. Copy the
-  head hash somewhere else (a git commit, a signed note) to anchor it.
+- The hash chain shows edits and deletions *inside* the file. It does **not** show that the
+  last events were deleted, or that the whole file was rewritten: a cut-off file is still a
+  valid chain. To detect this, copy the head hash (printed by `verify`) somewhere else (a git
+  commit, a signed note) and later run `verify --head HASH`. Events deleted after the last
+  saved head cannot be detected.
 - `children()` scans all records, so export is slow on very large ledgers. Fine for one lab.
 - No real instrument parsers yet. The unit list is short on purpose; add units as needed.
 - Deleting personal data conflicts with append-only storage. Keep personal data out of events.

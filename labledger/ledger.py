@@ -7,9 +7,10 @@ withdrawal is a `retract` event. `current()` gives the latest live version of ea
 import hashlib
 import json
 import os
+import tempfile
 from datetime import datetime, timezone
 
-from .schema import LEVELS, SCHEMA, SchemaError, validate_event
+from .schema import LEVELS, SCHEMA, SchemaError, safe_uri, validate_event
 
 GENESIS = "0" * 64
 
@@ -49,18 +50,35 @@ class Ledger:
         self.path = os.path.join(root, "events.jsonl")
         self.blob_dir = os.path.join(root, "blobs")
         os.makedirs(self.blob_dir, exist_ok=True)
+        self.read_errors = []  # lines that are not JSON objects; reported by verify()
         self.events = self._read() if os.path.exists(self.path) else []
         self.latest = self._state()  # record_id -> latest event, kept up to date by append
 
     def _read(self):
+        """Parse events.jsonl. Bad lines are recorded in read_errors, not raised."""
+        events = []
         with open(self.path, encoding="utf-8") as f:
-            return [json.loads(line) for line in f if line.strip()]
+            for n, line in enumerate(f, 1):
+                if not line.strip():
+                    continue
+                try:
+                    ev = json.loads(line)
+                except ValueError as e:
+                    self.read_errors.append(f"line {n}: not valid JSON ({e})")
+                    continue
+                if not isinstance(ev, dict):
+                    self.read_errors.append(f"line {n}: event must be an object")
+                    continue
+                events.append(ev)
+        return events
 
     # ---- writing -------------------------------------------------------------------------
     def append(self, op, level, record_id, body=None, *, parent_id=None, origin, license,
                agent, software=(), derived_from=(), recorded_utc=None, supersedes=None,
                reason=None):
         """Validate, chain and append one event. Returns the stored event."""
+        if self.read_errors:
+            raise LedgerError("events.jsonl has unreadable lines; run verify before appending")
         ev = {
             "schema": SCHEMA, "seq": len(self.events), "op": op, "level": level,
             "record_id": record_id, "parent_id": parent_id,
@@ -77,29 +95,46 @@ class Ledger:
         validate_event(ev)
         self._check_context(ev, self.latest)
         ev["event_hash"] = event_hash(ev)
+        line = canonical(ev).decode("utf-8")
         with open(self.path, "a", encoding="utf-8") as f:
-            f.write(canonical(ev).decode("utf-8") + "\n")
-        self.events.append(ev)
-        self.latest[record_id] = ev
-        return ev
+            f.write(line + "\n")
+        # keep a fresh copy of what was written, so later changes by the caller to `body`,
+        # `agent` etc. cannot change the in-memory ledger
+        stored = json.loads(line)
+        self.events.append(stored)
+        self.latest[record_id] = stored
+        return stored
 
     def add(self, level, record_id, body, **kw):
         return self.append("add", level, record_id, body, **kw)
 
     def put_blob(self, data, media_type, filename):
-        """Store bytes once under their sha256. Returns an artifact body."""
+        """Store bytes once under their sha256 (temp file + rename). Returns an artifact body.
+        An existing blob is re-checked; a wrong one raises instead of being reused."""
         digest = hashlib.sha256(data).hexdigest()
         path = os.path.join(self.blob_dir, digest)
-        if not os.path.exists(path):
-            with open(path, "wb") as f:
-                f.write(data)
+        if os.path.exists(path):
+            if os.path.getsize(path) != len(data) or sha256_file(path) != digest:
+                raise LedgerError(f"blobs/{digest} exists but its content does not match its name")
+        else:
+            fd, tmp = tempfile.mkstemp(dir=self.blob_dir, prefix=".tmp-")
+            try:
+                with os.fdopen(fd, "wb") as f:
+                    f.write(data)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(tmp, path)
+            except BaseException:
+                if os.path.exists(tmp):
+                    os.remove(tmp)
+                raise
         return {"sha256": digest, "size_bytes": len(data), "media_type": media_type,
                 "uri": f"blobs/{digest}", "filename_orig": filename, "role": "raw"}
 
     # ---- reading -------------------------------------------------------------------------
     def _state(self):
         """record_id -> latest event (any op)."""
-        return {ev["record_id"]: ev for ev in self.events}
+        return {ev["record_id"]: ev for ev in self.events if isinstance(ev.get("record_id"), str)}
 
     @staticmethod
     def _check_context(ev, state):
@@ -123,7 +158,11 @@ class Ledger:
 
     def current(self):
         """record_id -> live event (latest add/supersede, retracted records dropped)."""
-        return {k: v for k, v in self.latest.items() if v["op"] != "retract"}
+        return {k: v for k, v in self.latest.items() if v.get("op") != "retract"}
+
+    def head(self):
+        """Hash of the last event. Store it outside the ledger to detect a cut-off tail."""
+        return self.events[-1].get("event_hash") if self.events else None
 
     def children(self, record_id, level=None):
         cur = self.current()
@@ -133,32 +172,45 @@ class Ledger:
                                      e["record_id"]))
 
     # ---- checking ------------------------------------------------------------------------
-    def verify(self, check_blobs=True):
+    def verify(self, check_blobs=True, expected_head=None):
         """Re-check every event, the hash chain, the tree and the blob checksums.
-        Returns a list of problems (empty = clean)."""
-        problems, prev, state = [], GENESIS, {}
+        Returns a list of problems (empty = clean).
+
+        The chain alone cannot show that the last events were deleted. Pass a head hash saved
+        elsewhere as `expected_head`: it must still be the hash of an event in the chain
+        (events appended after it are allowed)."""
+        problems, prev, state = list(self.read_errors), GENESIS, {}
         for i, ev in enumerate(self.events):
             try:
                 validate_event(ev)
                 if ev["seq"] != i:
                     raise LedgerError(f"seq {ev['seq']} at line {i}")
-                if ev["prev_hash"] != prev:
+                if ev.get("prev_hash") != prev:
                     raise LedgerError(f"seq {i}: prev_hash breaks the chain")
                 if ev.get("event_hash") != event_hash(ev):
                     raise LedgerError(f"seq {i}: event_hash does not match content")
                 self._check_context(ev, state)
             except (SchemaError, LedgerError) as e:
                 problems.append(str(e))
+            except (TypeError, ValueError, KeyError, AttributeError) as e:
+                problems.append(f"seq {i}: malformed event ({type(e).__name__}: {e})")
             prev = ev.get("event_hash", "")
-            state[ev.get("record_id")] = ev
+            if isinstance(ev.get("record_id"), str):
+                state[ev["record_id"]] = ev
+        if expected_head is not None and expected_head not in [ev.get("event_hash") for ev in self.events]:
+            problems.append(f"expected head {expected_head} is not in the chain "
+                            "(events were deleted or rewritten)")
         if check_blobs:
             for ev in self.current().values():
-                if ev["level"] != "artifact":
+                if ev.get("level") != "artifact":
                     continue
-                b = ev["body"]
+                b = ev.get("body")
+                if not isinstance(b, dict) or not safe_uri(b.get("uri")):
+                    problems.append(f"{ev.get('record_id')}: artifact uri is not a safe relative path")
+                    continue
                 path = os.path.join(self.root, b["uri"])
-                if not os.path.exists(path):
+                if not os.path.isfile(path):
                     problems.append(f"{ev['record_id']}: missing raw file {b['uri']}")
-                elif sha256_file(path) != b["sha256"] or os.path.getsize(path) != b["size_bytes"]:
+                elif sha256_file(path) != b.get("sha256") or os.path.getsize(path) != b.get("size_bytes"):
                     problems.append(f"{ev['record_id']}: checksum or size mismatch for {b['uri']}")
         return problems

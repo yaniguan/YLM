@@ -150,8 +150,142 @@ def test_export_gates(demo):
         to_training(Ledger(demo.root), allow_synthetic=True)
 
 
+def _audio_event(demo, **detail):
+    ev = _event(demo, "obs:DEMO-2.2a")
+    ev["body"]["detail"].update(detail)
+    return ev
+
+
+def test_audio_privacy(demo):
+    with pytest.raises(SchemaError):  # raw audio that still has the speech band
+        validate_event(_audio_event(demo, raw_audio_kept=True, speech_band_dropped=False))
+    validate_event(_audio_event(demo, raw_audio_kept=True, speech_band_dropped=True))
+    validate_event(_audio_event(demo, raw_audio_kept=False, speech_band_dropped=False))
+
+
+REAL = {"origin": "real", "license": "own", "agent": {"type": "human", "id": "p:1"},
+        "recorded_utc": "2026-01-01T00:00:00Z"}
+
+
+def _real_run(tmp_path, ob_kw):
+    """A real experiment with one step and one WignerFlow observation made with `ob_kw`."""
+    L = Ledger(str(tmp_path / "real"))
+    L.add("project", "prj:R", {"title": "t", "goal": "g"}, **REAL)
+    L.add("campaign", "cmp:R", {"title": "t", "hypothesis": "h"}, parent_id="prj:R", **REAL)
+    L.add("experiment", "exp:R", {"title": "t", "protocol_id": "p", "status": "completed",
+                                  "started_utc": "2026-01-01T00:00:00Z"}, parent_id="cmp:R", **REAL)
+    L.add("step", "stp:R.1", {"index": 1, "action": "run", "status": "ok"}, parent_id="exp:R", **REAL)
+    L.add("observation", "obs:R.1a", {"modality": "sim", "t_utc": "2026-01-01T00:00:00Z",
+                                      "detail": {"engine": "wignerflow", "system": "Ar",
+                                                 "values": {"T_K": 120.0}}},
+          parent_id="stp:R.1", **dict(REAL, **ob_kw))
+    return L
+
+
+def test_export_origin_and_license_cover_all_records(tmp_path):
+    L = _real_run(tmp_path, {"origin": "synthetic_demo", "license": "CC-BY-NC-4.0"})
+    assert to_training(L) == []  # a synthetic child blocks the real experiment
+    (rec,) = to_training(L, allow_synthetic=True)
+    assert rec["source"] == {"origin": "mixed", "origins": ["real", "synthetic_demo"],
+                             "license": "mixed", "licenses": ["CC-BY-NC-4.0", "own"],
+                             "commercial_ok": False}
+    assert rec["sims"][0]["tag"] == "EXAMPLE"
+
+
+def test_sim_tag_follows_observation_origin(tmp_path):
+    (rec,) = to_training(_real_run(tmp_path, {"origin": "simulated"}))
+    assert rec["sims"][0]["tag"] == "SIMULATED" and "source" not in rec["sims"][0]
+    assert rec["source"]["commercial_ok"] is True
+
+
+def test_sealed_ancestor_blocks_export(demo):
+    assert to_training(demo, allow_synthetic=True, sealed_ids=["cmp:DEMO-1"]) == []
+    assert to_training(demo, allow_synthetic=True, sealed_ids=["prj:DEMO"]) == []
+
+
+def test_cut_tail_needs_anchored_head(demo, capsys):
+    from labledger.__main__ import main
+
+    head = demo.head()
+    lines = Path(demo.path).read_text().splitlines()
+    Path(demo.path).write_text("\n".join(lines[:-3]) + "\n")
+    cut = Ledger(demo.root)
+    assert cut.verify() == []  # the chain alone cannot see a cut-off tail
+    assert any("expected head" in p for p in cut.verify(expected_head=head))
+    assert main(["verify", demo.root, "--head", head]) == 1
+    assert main(["verify", demo.root, "--head", cut.head()]) == 0
+
+
+@pytest.mark.parametrize("uri,role", [("/etc/hostname", "derived"), ("../x", "derived"),
+                                      ("blobs/../../x", "raw"), ("blobs/other", "raw")])
+def test_artifact_uri_rules(demo, uri, role):
+    bad = _event(demo, "art:DEMO-1.1a")
+    bad["body"].update(uri=uri, role=role)
+    with pytest.raises(SchemaError):
+        validate_event(bad)
+
+
+def test_put_blob_rechecks_existing(tmp_path):
+    L = Ledger(str(tmp_path))
+    art = L.put_blob(b"hello", "text/plain", "h.txt")
+    assert Path(L.root, art["uri"]).read_bytes() == b"hello"
+    assert os.listdir(L.blob_dir) == [art["sha256"]]  # no temp file left
+    Path(L.root, art["uri"]).write_bytes(b"he")  # a truncated blob under the hash name
+    with pytest.raises(LedgerError):
+        L.put_blob(b"hello", "text/plain", "h.txt")
+
+
+def test_events_do_not_share_caller_objects(tmp_path):
+    L = Ledger(str(tmp_path))
+    body = {"title": "t", "goal": "g"}
+    L.add("project", "prj:A", body, **KW)
+    body["title"] = "changed"
+    assert L.verify() == [] and L.current()["prj:A"]["body"]["title"] == "t"
+
+
+def test_bad_input_is_reported_not_raised(demo):
+    with open(demo.path, "a") as f:
+        f.write("{not json\n")
+    again = Ledger(demo.root)
+    assert any("not valid JSON" in p for p in again.verify())
+    with pytest.raises(LedgerError):
+        again.add("project", "prj:B", {"title": "t", "goal": "g"}, **KW)
+    bad = _event(demo, "obs:DEMO-1.4a")
+    bad["recorded_utc"] = "2026-13-05T09:30:00Z"
+    with pytest.raises(SchemaError):
+        validate_event(bad)
+    with pytest.raises(SchemaError):
+        check_quantity({"value": 1.0, "unit": "uL", "uncertainty": "0.1"}, "q")
+    with pytest.raises(SchemaError):
+        validate_event(_audio_event(demo, score="high"))
+    del bad["record_id"]  # an event without a record_id is a problem, not a KeyError
+    with open(demo.path, "w") as f:
+        f.write(json.dumps(bad) + "\n")
+    assert Ledger(demo.root).verify()
+
+
+def test_time_order(demo):
+    ok = _event(demo, "exp:DEMO-3")
+    ok["body"].update(started_utc="2026-01-05T09:00:00Z", ended_utc="2026-01-05T09:00:00.5Z")
+    validate_event(ok)  # fractional seconds are later, not earlier
+    ok["body"].update(ended_utc="2026-01-05T08:59:59.5Z")
+    with pytest.raises(SchemaError):
+        validate_event(ok)
+    obs = _event(demo, "obs:DEMO-2.2a")
+    obs["body"]["t_end_utc"] = "2026-01-05T10:11:00Z"
+    with pytest.raises(SchemaError):
+        validate_event(obs)
+    st = _event(demo, "stp:DEMO-2.2")
+    st["body"].update(started_utc="2026-01-05T10:12:00Z", ended_utc="2026-01-05T10:11:00Z")
+    with pytest.raises(SchemaError):
+        validate_event(st)
+
+
 def test_compatible_with_recipe_schema(demo):
-    schema = pytest.importorskip("recipes.coscientist_posttrain.schema")
+    if not Path(HERE, "..", "..", "recipes", "coscientist_posttrain").is_dir():
+        pytest.skip("recipe from PR #86 is not in this repo yet; compatibility is unchecked")
+    from recipes.coscientist_posttrain import schema  # must import once the recipe exists
+
     for r in to_training(demo, allow_synthetic=True):
         schema.validate(r)
 

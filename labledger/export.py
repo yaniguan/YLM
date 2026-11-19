@@ -1,9 +1,11 @@
-"""Turn finished experiments into training JSONL (schema coscientist.v1, YLM PR #86).
+"""Turn finished experiments into training JSONL (schema coscientist.v1, meant for YLM PR #86;
+compatibility with that recipe is unchecked until the PR lands).
 
 Placeholders: <geom:i> -> `geoms`, <img:i> -> `images`, <sim:i> -> `sims`, <audio:i> -> `audios`.
 Every example keeps `ledger` links (record ids + head hash) so it can be traced back to raw data.
 Gates: the ledger must verify clean; retracted and superseded versions are never used;
-synthetic_demo data is blocked unless allow_synthetic=True; sealed ids are never exported.
+an experiment with any synthetic_demo record is blocked unless allow_synthetic=True; an
+experiment is skipped if it, any record under it, or any of its ancestors is sealed.
 """
 
 import hashlib
@@ -15,6 +17,9 @@ from .ledger import LedgerError
 BOHR_PER_ANGSTROM = 1.8897261246
 COMMERCIAL_OK = {"own", "CC0-1.0", "CC-BY-4.0", "MIT", "Apache-2.0", "BSD-3-Clause"}
 DONE = {"completed", "failed", "aborted"}
+# tag for <sim:i> values, from the observation's own origin
+TAGS = {"real": "MEASURED", "simulated": "SIMULATED", "model_generated": "MODEL_GENERATED",
+        "synthetic_demo": "EXAMPLE"}
 
 
 def _q(q):
@@ -34,9 +39,8 @@ def _qs(d):
 class _Media:
     """Collects multimodal blocks and returns their placeholders."""
 
-    def __init__(self, synthetic):
+    def __init__(self):
         self.geoms, self.images, self.sims, self.audios = [], [], [], []
-        self.tag = "EXAMPLE" if synthetic else "MEASURED"
 
     def add(self, ob, artifacts):
         b, d, rid = ob["body"], ob["body"].get("detail", {}), ob["record_id"]
@@ -52,9 +56,10 @@ class _Media:
                                 "ocsr_flag": d.get("ocsr_flag", 0.0), "record_id": rid})
             return f"<img:{len(self.images) - 1}>"
         if m == "sim" and d["engine"] == "wignerflow" and d["system"] == "Ar":
+            tag = TAGS[ob["origin"]]
             sim = {"engine": "wignerflow", "system": "Ar", "values": d["values"],
-                   "tag": self.tag, "record_id": rid}
-            if self.tag == "MEASURED":
+                   "tag": tag, "record_id": rid}
+            if tag == "MEASURED":
                 sim["source"] = uri or rid
             self.sims.append(sim)
             return f"<sim:{len(self.sims) - 1}>"
@@ -75,8 +80,8 @@ class _Media:
         return _qs(b.get("quantities", {}))
 
 
-def _render(ledger, exp, synthetic):
-    media, used, lines = _Media(synthetic), [exp["record_id"]], []
+def _render(ledger, exp):
+    media, used, lines = _Media(), [exp["record_id"]], []
     for st in ledger.children(exp["record_id"], "step"):
         b = st["body"]
         used.append(st["record_id"])
@@ -114,34 +119,48 @@ def _failure_answer(ledger, exp):
     return "; ".join(out) if out else "none"
 
 
+def _ancestors(cur, ev):
+    """The record id itself and every parent id up to the project."""
+    out, rid = set(), ev["record_id"]
+    while rid is not None and rid not in out:
+        out.add(rid)
+        rid = cur[rid]["parent_id"] if rid in cur else None
+    return out
+
+
 def to_training(ledger, allow_synthetic=False, sealed_ids=(), seed=0):
     """Return a list of coscientist.v1 records, two per finished experiment."""
     problems = ledger.verify()
     if problems:
         raise LedgerError("ledger does not verify: " + "; ".join(problems[:5]))
-    head = ledger.events[-1]["event_hash"] if ledger.events else None
+    head = ledger.head()
     sealed = set(sealed_ids)
+    cur = ledger.current()
     out = []
-    for exp in sorted(ledger.current().values(), key=lambda e: e["seq"]):
+    for exp in sorted(cur.values(), key=lambda e: e["seq"]):
         if exp["level"] != "experiment" or exp["body"]["status"] not in DONE:
             continue
-        if exp["record_id"] in sealed:
+        if sealed & _ancestors(cur, exp):
             continue
-        synthetic = exp["origin"] == "synthetic_demo"
-        if synthetic and not allow_synthetic:
-            continue
-        lines, media, used = _render(ledger, exp, synthetic)
+        lines, media, used = _render(ledger, exp)
         if not lines or sealed & set(used):
+            continue
+        # origin and license of everything that goes into the example, not only the experiment
+        origins = sorted({cur[r]["origin"] for r in used})
+        licenses = sorted({cur[r]["license"] for r in used})
+        if "synthetic_demo" in origins and not allow_synthetic:
             continue
         b = exp["body"]
         record = (f"Experiment {exp['record_id']} ({b['title']}, protocol {b['protocol_id']}, "
                   f"status {b['status']}).\n" + "\n".join(lines))
-        lic = exp["license"]
         base = {
             "schema": "coscientist.v1",
             "geoms": [], "images": [], "sims": [], "audios": [],
             "pair": None,
-            "source": {"origin": exp["origin"], "license": lic, "commercial_ok": lic in COMMERCIAL_OK},
+            "source": {"origin": origins[0] if len(origins) == 1 else "mixed", "origins": origins,
+                       "license": licenses[0] if len(licenses) == 1 else "mixed",
+                       "licenses": licenses,
+                       "commercial_ok": all(lic in COMMERCIAL_OK for lic in licenses)},
             "provenance": {"generator": "labledger.export", "verified_by": "exact", "twin_of": None},
             "ledger": {"experiment_id": exp["record_id"], "record_ids": used, "head_hash": head},
         }

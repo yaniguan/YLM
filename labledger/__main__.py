@@ -1,4 +1,4 @@
-"""python -m labledger verify DIR | python -m labledger export DIR OUT.jsonl [--allow-synthetic]"""
+"""python -m labledger verify DIR [--head HASH] | python -m labledger export DIR OUT.jsonl [--allow-synthetic]"""
 
 import argparse
 import sys
@@ -12,6 +12,8 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     v = sub.add_parser("verify", help="check events, hash chain, tree and raw file checksums")
     v.add_argument("dir")
+    v.add_argument("--head", default=None,
+                   help="head hash saved earlier; it must still be in the chain (detects a cut-off tail)")
     e = sub.add_parser("export", help="write training JSONL (coscientist.v1)")
     e.add_argument("dir")
     e.add_argument("out")
@@ -20,8 +22,9 @@ def main(argv=None):
     a = ap.parse_args(argv)
     L = Ledger(a.dir)
     if a.cmd == "verify":
-        problems = L.verify()
-        print("\n".join(problems) or f"ok: {len(L.events)} events, {len(L.current())} live records")
+        problems = L.verify(expected_head=a.head)
+        print("\n".join(problems) or f"ok: {len(L.events)} events, {len(L.current())} live records, "
+              f"head {L.head()}")
         return 1 if problems else 0
     sealed = []
     if a.sealed:
