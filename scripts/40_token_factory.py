@@ -6,7 +6,10 @@ B = a teacher LM (only with --teacher). See src/token_factory.py for the verifie
 Outputs in --out:
   kept.jsonl      accepted items with the xTB force (hartree/bohr) as force_hartree_per_bohr
   rejected.jsonl  rejected items with stage and reason (all arm C items end here)
-  stats.json      per-arm stage counts, reasons, yield, coverage, timings, input hashes
+  stats.json      per-arm stage counts, reasons, yield, coverage, timings, input hashes, official_v0
+
+--questions must be the official TensorQA-v0 file (its SHA-256 is compared to the pinned one).
+Any other file stops the run, unless --allow_unofficial is given; stats.json then has official_v0: false.
 
 Run:
   python scripts/40_token_factory.py --n_mols 2000
@@ -28,11 +31,13 @@ from rdkit import Chem, RDLogger
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.provenance import file_sha256  # noqa: E402
 from src.token_factory import (  # noqa: E402
+    OFFICIAL_V0_UNPACKED_JSON_SHA256,
     VERIFIER_VERSION,
     build_teacher_prompt,
+    file_sha256,
     mutate,
+    normalise,
     parse_teacher_output,
     propose_templates,
     run_factory,
@@ -89,14 +94,27 @@ def main():
     parser.add_argument("--teacher_n", type=int, default=200)
     parser.add_argument("--teacher_batch", type=int, default=8)
     parser.add_argument("--out", default="runs/token_factory")
+    parser.add_argument("--allow_unofficial", action="store_true",
+                        help="run on a question file that is not the official v0 file (official_v0: false)")
     args = parser.parse_args()
     rng = random.Random(args.seed)
     timings = {}
+
+    # the train split comes from --questions, so it must be the pinned official file
+    questions_sha = file_sha256(args.questions)
+    official_v0 = questions_sha == OFFICIAL_V0_UNPACKED_JSON_SHA256
+    if not official_v0:
+        msg = (f"{args.questions} is not the official TensorQA-v0 file: SHA-256 {questions_sha}, "
+               f"expected {OFFICIAL_V0_UNPACKED_JSON_SHA256}")
+        if not args.allow_unofficial:
+            sys.exit(msg + ". Pass --allow_unofficial to run anyway.")
+        print("WARNING: " + msg + " (--allow_unofficial, stats.json gets official_v0: false)")
 
     t0 = time.perf_counter()
     questions = json.load(open(args.questions))
     train_ids = sorted({q["mol"] for q in questions if q["split"] == "train"})
     existing_pairs = {(q["mol"], q["atom"]) for q in questions if q["task"] == "force"}
+    existing_questions = {(q["mol"], q["atom"], normalise(q["question"])) for q in questions if q["task"] == "force"}
     labels = pickle.load(open(args.labels, "rb"))
     supplier = Chem.SDMolSupplier(args.sdf, removeHs=False, sanitize=True)
     picked = sorted(rng.sample(train_ids, min(args.n_mols, len(train_ids))))
@@ -134,7 +152,8 @@ def main():
         timings["propose_B"] = time.perf_counter() - t0
 
     t0 = time.perf_counter()
-    kept, rejected, stats = run_factory(items_a + items_b + items_c, mols, labels, set(train_ids), existing_pairs)
+    kept, rejected, stats = run_factory(items_a + items_b + items_c, mols, labels, set(train_ids), existing_pairs,
+                                       existing_questions)
     timings["verify_total"] = time.perf_counter() - t0
 
     os.makedirs(args.out, exist_ok=True)
@@ -147,22 +166,25 @@ def main():
     stats.update(
         inputs={name: dict(path=path, sha256=file_sha256(path))
                 for name, path in (("questions", args.questions), ("labels", args.labels), ("sdf", args.sdf))},
+        official_v0=official_v0,
         seed=args.seed, n_mols=len(picked), teacher=teacher_info, verifier_version=VERIFIER_VERSION,
         versions=dict(python=platform.python_version(), rdkit=rdkit.__version__, numpy=np.__version__),
         licences=LICENCES, seconds_per_step={k: round(v, 3) for k, v in timings.items()},
     )
     json.dump(stats, open(os.path.join(args.out, "stats.json"), "w"), indent=1)
 
-    print(f"molecules: {len(picked)}  out: {args.out}")
+    print(f"molecules: {len(picked)}  out: {args.out}  official_v0: {official_v0}")
     for arm in sorted(stats["proposals"]):
         print(f"arm {arm}: proposals {stats['proposals'][arm]}  kept {stats['kept'].get(arm, 0)}  "
+              f"v0 copies removed {stats['dedup_v0_removed'].get(arm, 0)}  "
               f"yield/1k {stats['yield_per_1k'][arm]}  new pairs {stats['new_mol_atom_pairs'].get(arm, 0)}  "
               f"V2c/V2d disagree {stats['v2c_v2d_disagreements'].get(arm, 0)}")
         print("  passed after stage:", stats["passed_after_stage"][arm])
         print("  top reasons:", Counter(stats["rejection_reasons"].get(arm, {})).most_common(3))
     for kind, c in stats["mutations"].items():
         print(f"  mutation {kind:12s} {c}")
-    print("dedup removed:", stats["dedup_removed"], " constraints:", stats["constraint_histogram"])
+    print("dedup removed:", stats["dedup_removed"], " dedup_v0 removed:", stats["dedup_v0_removed"],
+          " constraints:", stats["constraint_histogram"])
     print("seconds:", stats["seconds_per_step"])
 
 

@@ -14,13 +14,19 @@ Verifiers run in order and stop at the first failure. Each returns (ok, reason):
   V1  split: mol is a loaded train molecule
   V2a vocab: the question is a train frame around a description in 02's closed grammar
   V2b exactly one "the <element> atom" phrase and at most one bonded / no-bonds clause
+      (redundant backstop: V2a's grammar already allows only one of each, so V2b can not fire
+      after V2a passes; it is kept in case V2a's grammar is loosened later)
   V2c resolve(question, mol) == atom (exact reading)
   V2d the "at least" reading picks the same single atom
   V3  label: the xTB force on the atom exists and is finite
 
+After the verifiers, an item is dropped if it repeats an earlier item of the run (stage "dedup")
+or a TensorQA-v0 question on the same (mol, atom) (stage "dedup_v0").
+
 The answer of a kept item is the xTB force on the atom (hartree/bohr), looked up from the labels.
-V2a accepts only 02's grammar, so the factory can not add new ways to describe atoms.
+V2a accepts only 02's grammar, letter case included, so the factory can not add new ways to describe atoms.
 """
+import hashlib
 import importlib.util
 import json
 import re
@@ -32,7 +38,11 @@ import numpy as np
 
 from src.parse_question import COUNT, ELEMENT, parse, resolve
 
-VERIFIER_VERSION = "tf-v1"
+VERIFIER_VERSION = "tf-v1.1"
+
+# same value as src.provenance.OFFICIAL_V0_UNPACKED_JSON_SHA256 (checked in tests); copied here so
+# arms A and C do not import torch / e3nn through src.provenance
+OFFICIAL_V0_UNPACKED_JSON_SHA256 = "76cf64ea621b5c5e521caeb1bbc6511bfb4b0fac7a521e79d67f5249a73630d3"
 
 # reuse the generator code of scripts/02_make_questions.py (scripts/ is not a package)
 _spec = importlib.util.spec_from_file_location(
@@ -66,7 +76,20 @@ EXPECTED_REJECT = {
     "wrong_atom": "V2c",   # the description is unique, so it resolves to the original atom
     "heldout": "V2a",      # held-out frames must never be produced
     "extra_words": "V2a",  # "next to the carbonyl" is not in the grammar
+    "uppercase": "V2a",    # "THE CARBON ATOM ...": the grammar is lowercase only
+    "reorder": "V2a",      # "one carbon and three hydrogens": resolve alone would accept
 }
+
+
+def file_sha256(path):
+    """Hex SHA-256 of the file at path, or None if path is unset or missing."""
+    if not path or not Path(path).exists():
+        return None
+    digest = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 # ---------- small text helpers ----------
@@ -85,12 +108,11 @@ def join_parts(parts, last=" and "):
 
 
 def split_frame(question, templates=FORCE_TEMPLATES):
-    """-> (template, description) on lowercased text, or (None, None) if no frame fits exactly."""
-    q = question.lower()
+    """-> (template, description), or (None, None) if no frame fits exactly. Case-sensitive."""
     for t in templates:
-        pre, post = t.lower().split("{d}")
-        if len(q) > len(pre) + len(post) and q.startswith(pre) and q.endswith(post):
-            return t, q[len(pre):len(q) - len(post)]
+        pre, post = t.split("{d}")
+        if len(question) > len(pre) + len(post) and question.startswith(pre) and question.endswith(post):
+            return t, question[len(pre):len(question) - len(post)]
     return None, None
 
 
@@ -148,12 +170,14 @@ def mutate(item, rdkit_mol, rng):
     out["heldout"] = ask(desc, rng.choice(FORCE_TEMPLATES_HELDOUT))
     out["extra_words"] = ask(desc + " next to the carbonyl")
     out["plural"] = ask(head.replace(" atom", " atoms", 1) + " " + clause)
+    out["uppercase"] = ask(desc.upper())
     if parts:
         out["negation"] = ask(f"{head} not {clause}")
         z0 = min(counts)
         out["article"] = ask(f"{head} bonded to " + join_parts([f"a {NAME[z0]}"] + parts[1:]))
         if len(parts) >= 2:
             out["or"] = ask(f"{head} bonded to " + join_parts(parts, last=" or "))
+            out["reorder"] = ask(f"{head} bonded to " + join_parts(parts[::-1]))
         else:
             other = rng.choice([z for z in NAME if z not in counts])
             out["or"] = ask(f"{head} bonded to {parts[0]} or one {NAME[other]}")
@@ -315,11 +339,15 @@ def describe_constraints(question):
     return key, bucket
 
 
-def run_factory(items, mols, labels, train_ids, existing_pairs):
+def run_factory(items, mols, labels, train_ids, existing_pairs, existing_questions=()):
     """Verify, dedup and label the items. -> (kept, rejected, stats).
+    existing_questions: (mol, atom, normalise(question)) triples of TensorQA-v0; exact copies are
+    rejected with stage "dedup_v0", so every kept item is a new string.
     Arm C items are never kept: a C item that passes every verifier is a verifier hole."""
     ctx = dict(mols=mols, labels=labels, train_ids=set(train_ids))
+    existing_questions = set(existing_questions)
     proposals, kept_per_arm, dedup_removed, disagree = Counter(), Counter(), Counter(), Counter()
+    dedup_v0_removed = Counter()
     passed = defaultdict(Counter)
     reasons = defaultdict(Counter)
     mutations = defaultdict(Counter)
@@ -367,6 +395,10 @@ def run_factory(items, mols, labels, train_ids, existing_pairs):
             rejected.append(dict(item, stage="dedup", reason="dedup: exact repeat"))
             continue
         seen.add(key)
+        if key in existing_questions:
+            dedup_v0_removed[arm] += 1
+            rejected.append(dict(item, stage="dedup_v0", reason="dedup_v0: exact copy of a TensorQA-v0 question"))
+            continue
         kept.append(dict(item, force_hartree_per_bohr=lookup_force(labels, item["mol"], item["atom"])))
         kept_per_arm[arm] += 1
         if (item["mol"], item["atom"]) not in existing_pairs:
@@ -384,7 +416,9 @@ def run_factory(items, mols, labels, train_ids, existing_pairs):
         mutations={kind: dict(c) for kind, c in sorted(mutations.items())},
         expected_reject=EXPECTED_REJECT,
         dedup_removed=dict(dedup_removed),
+        dedup_v0_removed=dict(dedup_v0_removed),
         kept=dict(kept_per_arm),
+        kept_new_strings=dict(kept_per_arm),  # equal to kept: v0 copies are removed above
         yield_per_1k={arm: round(1000 * kept_per_arm[arm] / proposals[arm], 1) for arm in proposals},
         new_mol_atom_pairs={arm: len(s) for arm, s in new_pairs.items()},
         new_mol_atom_pairs_total=len(set().union(*new_pairs.values())) if new_pairs else 0,
