@@ -141,12 +141,12 @@ def test_v3_failure_paths(data):
 
     forces = np.array(labels[0]["forces"], dtype=float)
     forces[c, 1] = np.nan
-    bad = dict(labels, **{0: dict(labels[0], forces=forces)})
+    bad = {**labels, 0: dict(labels[0], forces=forces)}
     assert check(good, data, labels=bad) == "V3"
     forces[c, 1] = np.inf
     assert check(good, data, labels=bad) == "V3"
 
-    swapped = dict(labels, **{0: dict(labels[0], numbers=labels[0]["numbers"][::-1])})
+    swapped = {**labels, 0: dict(labels[0], numbers=labels[0]["numbers"][::-1])}
     assert check(good, data, labels=swapped) == "V3"
 
     # V2c catches a bad index before V3 in the full chain, so call V3 directly
