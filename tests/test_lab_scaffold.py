@@ -183,3 +183,62 @@ def test_bad_config_returns_error_code(tmp_path):
     p = tmp_path / "c.json"
     p.write_text(json.dumps(cfg))
     assert distill.main(["--config", str(p), "--dry-run"]) == 1
+
+
+# ---------- commercial-safe protocol dataset (#68) ----------
+
+def test_commercial_dataset_and_config_pass_strict_gate(capsys):
+    comm_cfg = ROOT / "lab" / "configs" / "distill_commercial.json"
+    comm_data = ROOT / "lab" / "data" / "commercial_protocols_v1.jsonl"
+    comm_card = ROOT / "lab" / "data" / "DATA_CARD.md"
+    assert comm_card.exists() and "CC-BY-NC-4.0" in comm_card.read_text(encoding="utf-8")
+
+    items = pqa.load_jsonl(comm_data)
+    assert len(items) >= 20
+    tasks_seen = {it["task"] for it in items}
+    assert tasks_seen == {"mcq", "exact", "order"}
+    for it in items:
+        pqa.validate_item(it)
+        assert it.get("license") == "MIT"
+        assert it.get("commercial_ok") is True
+
+    preds = [{"id": it["id"], "pred": it["answer"]} for it in items]
+    scored = pqa.score(items, preds)
+    assert scored["overall"]["accuracy"] == 1.0
+    assert scored["by_task"]["order"]["pairwise_order_accuracy"] == 1.0
+
+    assert distill.main(["--config", str(comm_cfg), "--dry-run", "--commercial"]) == 0
+    out = capsys.readouterr().out
+    assert "mode=commercial-safe" in out
+    assert "WARNING:" not in out
+
+
+def test_commercial_gate_rejects_non_commercial_or_unlicensed_items(tmp_path):
+    # Research config (contains BioProBench CC-BY-NC-4.0 + BioProt TBD) must fail under --commercial
+    assert distill.main(["--config", str(CFG), "--dry-run", "--commercial"]) == 1
+
+    # Local JSONL with a missing or CC-BY-NC item license must also be rejected
+    bad_jsonl = tmp_path / "bad_items.jsonl"
+    bad_jsonl.write_text(
+        json.dumps({
+            "id": "nc-1",
+            "task": "exact",
+            "question": "How many uL?",
+            "answer": "10",
+            "license": "CC-BY-NC-4.0",
+        }) + "\n",
+        encoding="utf-8",
+    )
+    comm_cfg = json.loads((ROOT / "lab" / "configs" / "distill_commercial.json").read_text(encoding="utf-8"))
+    comm_cfg["data"][0]["path"] = str(bad_jsonl)
+    with pytest.raises(distill.ConfigError, match="not commercial-safe"):
+        distill.validate(comm_cfg, commercial=True)
+
+    missing_lic = tmp_path / "missing_lic.jsonl"
+    missing_lic.write_text(
+        json.dumps({"id": "nl-1", "task": "exact", "question": "How many uL?", "answer": "10"}) + "\n",
+        encoding="utf-8",
+    )
+    comm_cfg["data"][0]["path"] = str(missing_lic)
+    with pytest.raises(distill.ConfigError, match="missing 'license'"):
+        distill.validate(comm_cfg, commercial=True)

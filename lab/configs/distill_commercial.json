@@ -1,0 +1,60 @@
+{
+  "name": "protocol_brain_commercial_v1",
+  "status": "plan only; commercial-safe data gate active",
+  "commercial": true,
+  "teacher": {
+    "model": "TBD (Apache-2.0 / MIT open-weight teacher)",
+    "use": "write step-by-step protocol answers on commercial-safe prompts; keep only checker-passing outputs"
+  },
+  "student": {
+    "model": "TBD (Apache-2.0 / MIT 1-8B student)",
+    "max_params_b": 8,
+    "min_params_b": 1,
+    "molecule_adapter": "src/ylm_lm.py IrrepsAdapter (optional, for questions with 3D structures)"
+  },
+  "data": [
+    {
+      "name": "YLM-Commercial-Protocols-v1",
+      "path": "lab/data/commercial_protocols_v1.jsonl",
+      "card": "lab/data/DATA_CARD.md",
+      "use": "train_and_eval",
+      "license": "MIT",
+      "commercial_ok": true
+    },
+    {
+      "name": "YLM-Lab-Token-Factory",
+      "url": "docs/LAB_TOKEN_FACTORY.md",
+      "use": "train_and_eval",
+      "license": "MIT",
+      "commercial_ok": true
+    },
+    {
+      "name": "Wet-Lab-Protocols",
+      "arxiv": "1805.04195",
+      "use": "train_and_eval",
+      "license": "MIT",
+      "commercial_ok": true
+    },
+    {
+      "name": "LAB-Bench",
+      "hf": "futurehouse/lab-bench",
+      "arxiv": "2407.10362",
+      "subsets": ["ProtocolQA", "CloningScenarios", "SeqQA"],
+      "use": "eval_only",
+      "license": "CC-BY-SA-4.0",
+      "commercial_ok": true
+    }
+  ],
+  "stages": [
+    {"name": "distill_sft", "method": "sft", "source": "checker-passing teacher answers on MIT/CC0/CC-BY prompts"},
+    {"name": "prefs", "method": "dpo", "source": "LabLean pass vs fail answers on commercial-safe prompts"},
+    {"name": "rl", "method": "grpo", "source": "LabLean + SQL + volume replay rewards (src/lab_token_factory.py)"}
+  ],
+  "quantize": {"bits": 4, "targets": ["jetson_orin_class", "single_24gb_gpu"]},
+  "eval": {
+    "harness": "github.com/yaniguan/labbench-posttrain (labeval/)",
+    "local_stub": "lab/protocol_qa.py",
+    "compare": ["teacher", "student_fp16", "student_4bit"]
+  },
+  "compute": {"train": "rented A100/H100 bursts with checkpointing", "cost_doc": "docs/lab_cost_setup.md"}
+}
