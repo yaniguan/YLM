@@ -1,0 +1,22 @@
+name: labledger
+on:
+  push:
+    branches: [main]
+    paths: ["labledger/**", ".github/workflows/labledger.yml"]
+  pull_request:
+    paths: ["labledger/**", ".github/workflows/labledger.yml"]
+permissions:
+  contents: read
+jobs:
+  labledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pytest jsonschema ruff
+      - run: ruff check labledger --line-length 100
+      - run: python -m labledger verify labledger/examples/demo_campaign
+      - run: python -m pytest -q labledger/tests -p no:cacheprovider --rootdir . -c /dev/null
