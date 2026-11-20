@@ -38,6 +38,7 @@ REAGENTS = [("BUF", "buffer", "roomTemp", False), ("H2O", "water", "roomTemp", F
             ("MM", "mastermix", "frozen", True), ("PRM", "primer", "frozen", True),
             ("TPL", "template", "frozen", True), ("ENZ", "enzyme", "onIce", True)]
 WELLS = [f"A{i}" for i in range(1, 9)]
+TUBE_MG, PLATE_MG = 1000, 14000      # plastic mass in mg, as in the LabLean examples
 
 
 def sha(text):
@@ -51,16 +52,17 @@ def propose_task(rng, level):
     stocks = rng.sample(REAGENTS, k=min(len(REAGENTS), level + 1))
     cs, rs = [], []
     for tid, name, state, cold in stocks:
-        cs.append(W.container(tid, 15000, rng.choice([30, 80, 200, 1000, 5000]), name))
-        rs.append({"name": name, "state": state, "keep_cold": cold})
+        cs.append(W.container(tid, 15000, rng.choice([30, 80, 200, 1000, 5000]), name, tare=TUBE_MG))
+        rs.append(W.reagent(name, state, cold, diluent=name == "water"))
     for w in WELLS:
         pre = rng.choice([0, 0, 0, 500, 1500, 1900])
         cs.append(W.container(w, 2000, pre, "water" if pre else None, plate="P1"))
         if pre and not any(r["name"] == "water" for r in rs):
-            rs.append({"name": "water", "state": "roomTemp", "keep_cold": False})
+            rs.append(W.reagent("water", diluent=True))
     target = rng.choice(WELLS)
     recipe = [(tid, rng.choice([10, 20, 25, 50, 100, 150, 200, 400])) for tid, *_ in stocks[:level]]
-    return {"state": W.make_state(cs, rs), "target": target, "recipe": recipe, "level": level}
+    return {"state": W.make_state(cs, rs, [("P1", PLATE_MG)]), "target": target, "recipe": recipe,
+            "level": level}
 
 
 def pick_pipette(v):
@@ -286,11 +288,15 @@ def provenance(rec, domain, seed, round_i, checker_versions):
 
 
 def run_factory(seed=0, rounds=6, per_round=200, sql_per_round=50, lablean_dir=None,
-                open_at=0.7, p_blind=0.5, learn=True, checker_versions=None):
-    """The gated loop. Returns (kept, rejected, stats)."""
+                open_at=0.7, p_blind=0.5, learn=True, checker_versions=None, seen=None):
+    """The gated loop. Returns (kept, rejected, stats).
+
+    `seen` is the set of kept text hashes; pass the same set to every seed so that a record
+    already kept by an earlier seed is rejected as "dedup" (it is updated in place)."""
     rng = random.Random(seed)
     agent = Agent(rng, p_blind, learn)
-    frontier, seen = 1, set()
+    frontier = 1
+    seen = set() if seen is None else seen
     kept, rejected, rounds_log = [], [], []
     used_lean = None
     for k in range(rounds):
