@@ -1,0 +1,114 @@
+{
+ "agent_pool": {
+  "records": 4500,
+  "verified": 2552,
+  "share_rejected_by_gate": 0.4328888888888889,
+  "rejected_by_reason": {
+   "V1b_mirror": 1679,
+   "V3_volumes": 269
+  },
+  "checked_by": "Python copy of LabLean"
+ },
+ "reason_names": {
+  "V0_format": "bad format",
+  "V1_lablean": "wrong verdict (LabLean)",
+  "V1b_mirror": "wrong verdict (Python copy of LabLean)",
+  "V2_mirror_agrees": "Python copy disagrees with LabLean",
+  "V3_volumes": "wrong volumes",
+  "dedup": "exact duplicate"
+ },
+ "web@250000": {
+  "docs": 143,
+  "chars": 250000,
+  "sha256": "a3c467290d9576c24c2f8e69b4c1ccec8de42f538489e60007a7235bc39750ce",
+  "share_rejected_by_gate": null,
+  "rejected_by_reason": null
+ },
+ "web@1000000": {
+  "docs": 584,
+  "chars": 1000000,
+  "sha256": "872893d26cd0c7bcd30c41ad81c74129e2b3e02b0273b02c1368a690bcfbb321",
+  "share_rejected_by_gate": null,
+  "rejected_by_reason": null
+ },
+ "agent@250000": {
+  "docs": 573,
+  "chars": 250000,
+  "sha256": "083d93faf6f0157aacbe0418fa312c061a8a41d9e65778297dae0cdc5970a268",
+  "share_rejected_by_gate": 0.4293193717277487,
+  "rejected_by_reason": {
+   "V1b_mirror": 212,
+   "V3_volumes": 34
+  }
+ },
+ "agent@1000000": {
+  "docs": 2303,
+  "chars": 1000000,
+  "sha256": "904c68500b323cb47781aa244db1fcee41d7d0179f3187c42ceea380fb16154e",
+  "share_rejected_by_gate": 0.42683456361267913,
+  "rejected_by_reason": {
+   "V1b_mirror": 845,
+   "V3_volumes": 138
+  }
+ },
+ "verified@250000": {
+  "docs": 630,
+  "chars": 250000,
+  "sha256": "a81380752c216a4f69ab1559cff0daf1073437d930fc0ebdbe7ff3d476c07e53",
+  "share_rejected_by_gate": 0.0,
+  "rejected_by_reason": {}
+ },
+ "verified@1000000": {
+  "docs": 2528,
+  "chars": 1000000,
+  "sha256": "86dfe1f11feec33322621e2446efadbcdb59b6f6903ca9c4543c17664b9259ca",
+  "share_rejected_by_gate": 0.0,
+  "rejected_by_reason": {}
+ },
+ "oracle@1000000": {
+  "docs": 2617,
+  "chars": 1000000,
+  "sha256": "9e6a9323c9bfce5fa87246b48001888bb7857b83b7f4cd28b4f68672910c79b9",
+  "share_rejected_by_gate": null,
+  "rejected_by_reason": null
+ },
+ "eval": {
+  "version": 2,
+  "items": 440,
+  "items_sha256": "0472af9982676943ea7c617f166f992cd4169173c9b27ae5655a15044fa1f4ff",
+  "by_kind": {
+   "verdict": 400,
+   "volume": 40
+  },
+  "scored_by": "Python copy of LabLean",
+  "construction": {
+   "protocols": 400,
+   "candidates_checked": 800,
+   "rejected_too_long": 342,
+   "candidates_not_in_a_full_block": 400,
+   "passing_protocols": 47,
+   "passing_without_volume_item": 7,
+   "verdict_blocks": 100,
+   "volume_blocks": 10
+  },
+  "prior_only_acc": 0.25,
+  "prior_only_by_kind": {
+   "verdict": 0.25,
+   "volume": 0.25
+  },
+  "prior_docs": "the 2617 documents of oracle@1000000"
+ },
+ "eval_v1": {
+  "items": 482,
+  "by_kind": {
+   "verdict": 400,
+   "volume": 82
+  },
+  "truncated_items": 60,
+  "prior_only_acc": 0.4170124481327801,
+  "prior_only_by_kind": {
+   "verdict": 0.38,
+   "volume": 0.5975609756097561
+  }
+ }
+}
