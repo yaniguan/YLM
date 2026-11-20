@@ -30,7 +30,7 @@ Lean is called in batches: the protocols are written to one `.lean` file that im
 
 ## Measured run (CPU only)
 
-The Lean checks use LabLean from PR #92 at commit `7c17554` (toolchain `leanprover/lean4:v4.36.0`). PR #92 must be merged first; until then `lean/` is not in this branch, the Lean test is skipped, and the Lean numbers below can only be reproduced with a separate checkout of that commit built with `lake build`. There is no CI job with Lean.
+The Lean checks use LabLean from PR #92 at commit `7c17554` (toolchain `leanprover/lean4:v4.36.0`). PR #92 must be merged first; until then `lean/` is not in this branch, the Lean test is skipped, and the Lean numbers below can only be reproduced with a separate checkout of that commit built with `lake build`. There is no CI job with Lean. PR #92 has since moved to `a30571a`, which changes the model (new error cases, rotor balance by mass, a tip that tracks each liquid, amounts times 10,000, and a checked start state). The Lean file that `src/lab_world.py` writes does not compile against `a30571a`, so these numbers are for `7c17554` only. Porting `src/lab_world.py` and its Lean bridge to `a30571a` and re-running is a follow-up.
 
 `python scripts/41_lab_token_factory.py --lablean_dir <LabLean 7c17554>/lean --seeds 0 1 2` (6 rounds, 200 protocols and 50 SQL tasks per round, 106 s on CPU). Dedup is across all seeds. The output is committed as `results/lab_token_factory/stats.json`.
 
