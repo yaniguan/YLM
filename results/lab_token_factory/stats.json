@@ -2,14 +2,14 @@
  "factory": "lab-tf-v1",
  "checkers": {
   "lablean": {
-   "git": "7c17554284a1e584c56453cae93b0a2c43e6ced7",
+   "git": "a30571a5cc0ef2bed6c0e29170202416ce595628",
    "toolchain": "leanprover/lean4:v4.36.0"
   },
-  "mirror": "lab_world-v1",
+  "mirror": "lab_world-v2",
   "sql_gate": "sql-gate-v1"
  },
  "args": {
-  "lablean_dir": "/tmp/lablean_7c17554/lean",
+  "lablean_dir": "/tmp/lablean_a30571a/lean",
   "seeds": [
    0,
    1,
@@ -20,7 +20,7 @@
   "sql_per_round": 50,
   "no_learn": false,
   "sql_lucky_seeds": 200,
-  "out": "/tmp/lab_tf_fix2"
+  "out": "/tmp/lab_tf_a30571a"
  },
  "kept": 3352,
  "rejected": 1142,
@@ -374,6 +374,6 @@
    "seed": 2
   }
  ],
- "seconds": 106.7,
+ "seconds": 98.3,
  "machine": "Linux x86_64, CPU only"
 }

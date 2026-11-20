@@ -22,7 +22,7 @@ The lab agent proposes tasks, writes protocols or SQL, and writes its own reason
 | S5_answer | SQL | the stated answer equals the executed result |
 | dedup | both | an exact copy of a record already kept (by any seed in the run) is rejected |
 
-Lean is called in batches: the protocols are written to one `.lean` file that imports LabLean and calls LabLean's own `step` function, and the file is run with `lake env lean`. About 150 protocols take 8 s.
+Lean is called in batches: the protocols are written to one `.lean` file that imports LabLean and calls LabLean's own `initChecks` (start state) and `step` functions, and the file is run with `lake env lean`. A start state error is reported as step 0. A batch of 150 protocols took 3.5 s on the machine of the run below.
 
 ## Provenance tags (every record)
 
@@ -30,9 +30,13 @@ Lean is called in batches: the protocols are written to one `.lean` file that im
 
 ## Measured run (CPU only)
 
-The Lean checks use LabLean from PR #92 at commit `7c17554` (toolchain `leanprover/lean4:v4.36.0`). PR #92 must be merged first; until then `lean/` is not in this branch, the Lean test is skipped, and the Lean numbers below can only be reproduced with a separate checkout of that commit built with `lake build`. There is no CI job with Lean. PR #92 has since moved to `a30571a`, which changes the model (new error cases, rotor balance by mass, a tip that tracks each liquid, amounts times 10,000, and a checked start state). The Lean file that `src/lab_world.py` writes does not compile against `a30571a`, so these numbers are for `7c17554` only. Porting `src/lab_world.py` and its Lean bridge to `a30571a` and re-running is a follow-up.
+The Lean checks use LabLean from PR #92 at commit `a30571a` (toolchain `leanprover/lean4:v4.36.0`). PR #92 must be merged first; until then `lean/` is not in this branch, the Lean test is skipped, and the Lean numbers below can only be reproduced with a separate checkout of that commit built with `lake build`. There is no CI job with Lean.
 
-`python scripts/41_lab_token_factory.py --lablean_dir <LabLean 7c17554>/lean --seeds 0 1 2` (6 rounds, 200 protocols and 50 SQL tasks per round, 106 s on CPU). Dedup is across all seeds. The output is committed as `results/lab_token_factory/stats.json`.
+`src/lab_world.py` (Python copy version `lab_world-v2`) and its Lean bridge follow the `a30571a` model: the start state is checked first (unique ids, declared plates with their plastic mass, declared reagents, amounts that add up to the volume); amounts inside a container are in 1e-5 uL (volume times 10,000); the tip remembers each liquid it touched and may only enter a container that holds all of those reagents at no higher concentration (diluents excepted); incubation and the rotor take only tubes or whole plates; and the rotor is balanced by mass in mg. In the factory's world, stock tubes weigh 1,000 mg, plate P1 weighs 14,000 mg (both as in the LabLean examples), and water is a diluent.
+
+The earlier run used LabLean `7c17554` with `lab_world-v1`. The `a30571a` run below gives the same counts in every row, every round and every seed; only the run time differs. On all 3,594 protocols of the run, the old and the new Python copy give the same verdict, failing step, error and per-step volumes. The factory's protocols never use the rotor and their start states pass the new checks, so the new rules do not change any verdict here. The tests check the new rules directly (start state, rotor mass, tip liquids), and compare Python with Lean on those cases when a built LabLean is present.
+
+`python scripts/41_lab_token_factory.py --lablean_dir <LabLean a30571a>/lean --seeds 0 1 2` (6 rounds, 200 protocols and 50 SQL tasks per round, 98 s on CPU). Dedup is across all seeds. The output is committed as `results/lab_token_factory/stats.json`.
 
 | | Protocol | SQL |
 |---|---|---|

@@ -1,16 +1,19 @@
-"""A small lab world that mirrors LabLean (YLM PR #92, lean/LabLean/Semantics.lean).
+"""A small lab world that mirrors LabLean (YLM PR #92, commit a30571a, lean/LabLean/Semantics.lean
+and Checker.lean).
 
 Used by the lab token factory (src/lab_token_factory.py), and by the token-quality test
 added in the stacked PR #99.
 
-* `check(state, steps)` is a Python copy of LabLean's `run`: same rules, same order of
-  checks, same integer arithmetic. It returns ("OK", final volumes) or ("FAIL", step, error).
+* `check(state, steps)` is a Python copy of LabLean's `run`: the start state is checked first
+  (`initChecks`), then every step, with the same rules, the same order of checks and the same
+  integer arithmetic. A start state error is reported at step 0.
 * `lean_check(cases, lablean_dir)` writes the same protocols as a Lean file, runs it with
   `lake env lean`, and parses LabLean's own verdicts. Lean is the authority; the Python
   copy is only a second, independent check (the two must agree).
 
-Volumes are in 0.1 uL units (LabLean `Vol.t`), so 2.5 uL is 25. Only the steps the
-generator uses are mirrored: pick_tip, drop_tip, transfer, mix, incubate, seal, thaw.
+Units are LabLean's: volumes in 0.1 uL (`Vol.t`, so 2.5 uL is 25); reagent amounts inside a
+container in 1e-5 uL (volume x AMT_SCALE); mass in mg; density in mg/mL. All steps are
+mirrored: pick_tip, drop_tip, transfer, mix, incubate, centrifuge, seal, thaw.
 """
 import copy
 import os
@@ -20,7 +23,11 @@ import subprocess
 import tempfile
 
 PIPETTES = {"P2": (2, 20), "P20": (20, 200), "P200": (200, 2000), "P1000": (1000, 10000)}
-STEP_KINDS = ("pick_tip", "drop_tip", "transfer", "mix", "incubate", "seal", "thaw")
+STEP_KINDS = ("pick_tip", "drop_tip", "transfer", "mix", "incubate", "centrifuge", "seal", "thaw")
+AMT_SCALE = 10000          # LabLean amtScale
+ROTOR_TOL = 100            # mg, LabLean rotorTol
+MAX_RPM = 15000
+CONC_TOL_PERMILLE = 1
 
 
 def fmt_vol(t):
@@ -28,16 +35,30 @@ def fmt_vol(t):
     return f"{t // 10}.{t % 10}"
 
 
+def _div(a, b):
+    """Lean `Nat` division: x / 0 = 0."""
+    return a // b if b else 0
+
+
 # ---------- state ----------
 
-def container(cid, cap, vol=0, reagent=None, plate=None):
-    return {"id": cid, "plate": plate, "cap": cap, "vol": vol,
-            "contents": [[reagent, vol]] if reagent else []}
+def container(cid, cap, vol=0, reagent=None, plate=None, tare=0):
+    """A tube (plate=None) or a well of `plate`, holding `vol` of one reagent (or empty)."""
+    return {"id": cid, "plate": plate, "cap": cap, "vol": vol, "tare": tare,
+            "contents": [[reagent, vol * AMT_SCALE]] if reagent and vol else []}
 
 
-def make_state(containers, reagents):
-    """reagents: list of dict(name, state in frozen/thawed/onIce/roomTemp, keep_cold)."""
-    return {"cs": containers, "reagents": reagents, "tip": None, "sealed": []}
+def reagent(name, state="roomTemp", keep_cold=False, diluent=False, density=1000):
+    return {"name": name, "state": state, "keep_cold": keep_cold, "diluent": diluent,
+            "density": density}
+
+
+def make_state(containers, reagents, plates=()):
+    """reagents: dicts from `reagent()` (state in frozen/thawed/onIce/roomTemp).
+    plates: (plate id, plastic mass in mg) pairs. The tip is off and nothing is sealed."""
+    rs = [{**reagent(r["name"]), **r} for r in reagents]
+    return {"cs": containers, "reagents": rs, "plates": [list(p) for p in plates],
+            "tip": None, "sealed": []}
 
 
 def find(s, cid):
@@ -51,29 +72,92 @@ def names(c):
     return [r for r, _ in c["contents"]]
 
 
-def tip_names(s):
-    return s["tip"] if isinstance(s["tip"], list) else []
+def liquid(c):
+    """LabLean `Container.liquid`: (amounts, volume), as remembered by a used tip."""
+    return (tuple((r, x) for r, x in c["contents"]), c["vol"])
 
 
-def union(a, b):
-    return a + [x for x in b if x not in a]
+def amt(amts, r):
+    for q, x in amts:
+        if q == r:
+            return x
+    return 0
+
+
+def touched(s):
+    return s["tip"] if s["tip"] is not None else []
+
+
+def plate_ids(s):
+    return [p for p, _ in s["plates"]]
 
 
 def is_sealed(s, c):
     return c["plate"] is not None and c["plate"] in s["sealed"]
 
 
-def weight(s, cid):
+def nodup(xs):
+    return len(xs) == len(set(xs))
+
+
+# ---------- mass (rotor balance) ----------
+
+def density_of(s, r):
+    for x in s["reagents"]:
+        if x["name"] == r:
+            return x["density"]
+    return 1000
+
+
+def mass_of(s, c):
+    """mg = tare + (sum of amount (1e-5 uL) * density (mg/mL)) / 1e8, rounded down once."""
+    return c["tare"] + sum(x * density_of(s, r) for r, x in c["contents"]) // 100000000
+
+
+def item_mass(s, cid):
+    """Mass of a tube, or of a plate (plastic + all its wells). None if unknown."""
     c = find(s, cid)
     if c is not None:
-        return c["vol"]
-    wells = [x for x in s["cs"] if x["plate"] == cid]
-    return sum(x["vol"] for x in wells) if wells else None
+        return mass_of(s, c)
+    for p, tare in s["plates"]:
+        if p == cid:
+            return tare + sum(mass_of(s, x) for x in s["cs"] if x["plate"] == cid)
+    return None
 
 
-# ---------- checks (same order as LabLean `checks`) ----------
+def slot_mass(s, rotor, i):
+    if i < len(rotor) and rotor[i] is not None:
+        m = item_mass(s, rotor[i])
+        return 0 if m is None else m
+    return 0
 
-def _source_checks(s, pip, cid, a, v):
+
+# ---------- checks (same order as LabLean `checks` and `initChecks`) ----------
+
+def is_diluent(s, r):
+    return any(x["name"] == r and x["diluent"] for x in s["reagents"])
+
+
+def may_enter(s, L, c):
+    """A tip that touched liquid L may enter liquid c (both are (amounts, volume))."""
+    la, lv = L
+    ca, cv = c
+    cnames = [r for r, _ in ca]
+    return all(r in cnames and (is_diluent(s, r) or
+                                1000 * amt(ca, r) * lv <= (1000 + CONC_TOL_PERMILLE) * amt(la, r) * cv)
+               for r, _ in la)
+
+
+def tip_clean(s, c):
+    return all(may_enter(s, L, liquid(c)) for L in touched(s))
+
+
+def is_item(s, x):
+    """A tube (container not on a plate) or a declared plate."""
+    return any(c["id"] == x and c["plate"] is None for c in s["cs"]) or x in plate_ids(s)
+
+
+def _enter_checks(s, pip, cid, a, v):
     lo, hi = PIPETTES[pip]
     if s["tip"] is None:
         return ("noTip",)
@@ -81,7 +165,7 @@ def _source_checks(s, pip, cid, a, v):
         return ("outOfRange", pip, v)
     if is_sealed(s, a):
         return ("sealed", cid)
-    if not all(r in names(a) for r in tip_names(s)):
+    if not tip_clean(s, a):
         return ("contaminated", cid)
     if v > a["vol"]:
         return ("notEnough", cid, a["vol"], v)
@@ -104,11 +188,11 @@ def first_error(s, st):
             return ("unknown", src)
         if b is None:
             return ("unknown", dst)
-        e = _source_checks(s, pip, src, a, v)
-        if e:
-            return e
         if src == dst:
             return ("sameContainer", src)
+        e = _enter_checks(s, pip, src, a, v)
+        if e:
+            return e
         if is_sealed(s, b):
             return ("sealed", dst)
         if b["vol"] + v > b["cap"]:
@@ -119,17 +203,38 @@ def first_error(s, st):
         a = find(s, cid)
         if a is None:
             return ("unknown", cid)
-        return _source_checks(s, pip, cid, a, v)
+        return _enter_checks(s, pip, cid, a, v)
     if k == "incubate":
         _, target, temp, _secs = st
-        if weight(s, target) is None:
-            return ("unknown", target)
+        if not is_item(s, target):
+            return ("notTubeOrPlate", target)
         if not 4 <= temp <= 98:
             return ("badTemp", temp)
         return None
+    if k == "centrifuge":
+        _, rotor, rpm, _secs = st
+        n = len(rotor)
+        items = [x for x in rotor if x is not None]
+        if not (n % 2 == 0 and n > 0):
+            return ("badRotor", n)
+        if rpm > MAX_RPM:
+            return ("tooFast", rpm)
+        if not nodup(items):
+            return ("twiceInRotor",)
+        for x in items:
+            if not is_item(s, x):
+                return ("notTubeOrPlate", x)
+        for x in items:
+            if x in plate_ids(s) and x not in s["sealed"]:
+                return ("notSealed", x)
+        for i in range(n // 2):
+            a, b = slot_mass(s, rotor, i), slot_mass(s, rotor, i + n // 2)
+            if not (a <= b + ROTOR_TOL and b <= a + ROTOR_TOL):
+                return ("unbalanced", i, i + n // 2, a, b)
+        return None
     if k == "seal":
         p = st[1]
-        if not any(c["plate"] == p for c in s["cs"]):
+        if p not in plate_ids(s):
             return ("unknown", p)
         if p in s["sealed"]:
             return ("alreadySealed", p)
@@ -141,36 +246,84 @@ def first_error(s, st):
     raise ValueError(f"unknown step {k}")
 
 
+def start_error(s):
+    """LabLean `initChecks`: the first problem with the start state, or None."""
+    cs, pids = s["cs"], plate_ids(s)
+    if not nodup([c["id"] for c in cs]):
+        return ("duplicateIds",)
+    for c in cs:
+        if c["vol"] > c["cap"]:
+            return ("overfull", c["id"])
+    for c in cs:
+        if c["id"] in pids:
+            return ("idIsPlate", c["id"])
+    for c in cs:
+        if c["plate"] is not None and c["plate"] not in pids:
+            return ("unknownPlate", c["plate"])
+    if not nodup([r["name"] for r in s["reagents"]]):
+        return ("duplicateReagents",)
+    declared = {r["name"] for r in s["reagents"]}
+    for c in cs:
+        if not all(r in declared for r in names(c)):
+            return ("undeclaredReagent", c["id"])
+    for c in cs:
+        if not (nodup(names(c)) and sum(x for _, x in c["contents"]) == c["vol"] * AMT_SCALE):
+            return ("badContents", c["id"])
+    return None
+
+
 # ---------- effects (same integer arithmetic as LabLean `apply`) ----------
+
+def _take_out(c, v):
+    old = c["vol"]
+    new = max(old - v, 0)                       # Nat subtraction
+    c["contents"] = [[r, _div(x * new, old)] for r, x in c["contents"]]
+    c["vol"] = new
+
+
+def _put_in(a, v, c):
+    """Put `v` of the liquid of `a` into `c` (LabLean `putIn`, with `addAmt`)."""
+    for r, x in a["contents"]:
+        add = _div(x * v, a["vol"])
+        for item in c["contents"]:
+            if item[0] == r:
+                item[1] += add
+                break
+        else:
+            c["contents"].append([r, add])
+    c["vol"] += v
+
+
+def _touch(s, ls):
+    acc = list(touched(s))
+    for L in ls:
+        if L not in acc:
+            acc.insert(0, L)
+    return acc
+
 
 def apply(s, st):
     s = copy.deepcopy(s)
     k = st[0]
     if k == "pick_tip":
-        s["tip"] = []          # fresh tip = used with nothing (tipNames is [] for both)
+        s["tip"] = []          # a fresh tip has touched nothing
     elif k == "drop_tip":
         s["tip"] = None
     elif k == "transfer":
         _, _pip, src, dst, v = st
-        a, b = copy.deepcopy(find(s, src)), find(s, dst)
-        touched = union(names(a), names(b))
-        sa = find(s, src)
-        old = sa["vol"]
-        sa["contents"] = [[r, x - x * v // old] for r, x in sa["contents"]]
-        sa["vol"] = old - v
-        b = find(s, dst)
-        for r, x in a["contents"]:
-            add = x * v // a["vol"]
-            for item in b["contents"]:
-                if item[0] == r:
-                    item[1] += add
-                    break
-            else:
-                b["contents"].append([r, add])
-        b["vol"] += v
-        s["tip"] = union(tip_names(s), touched)
+        a, b = find(s, src), find(s, dst)
+        if a is None or b is None:
+            return s
+        a0, b_after = copy.deepcopy(a), copy.deepcopy(b)
+        _put_in(a0, v, b_after)
+        # the tip touches the source, then the destination after the dispense
+        s["tip"] = _touch(s, [liquid(a0), liquid(b_after)])
+        _take_out(a, v)        # modifyC src first, then modifyC dst (same order as Lean)
+        _put_in(a0, v, find(s, dst))
     elif k == "mix":
-        s["tip"] = union(tip_names(s), names(find(s, st[2])))
+        a = find(s, st[2])
+        if a is not None:
+            s["tip"] = _touch(s, [liquid(a)])
     elif k == "seal":
         s["sealed"] = [st[1]] + s["sealed"]
     elif k == "thaw":
@@ -181,7 +334,11 @@ def apply(s, st):
 
 
 def check(s, steps):
-    """Python copy of LabLean `run`. Returns dict(ok, fail_step (1-based), error, volumes)."""
+    """Python copy of LabLean `run`. Returns dict(ok, fail_step (1-based; 0 = start state),
+    error, volumes)."""
+    e = start_error(s)
+    if e is not None:
+        return {"ok": False, "fail_step": 0, "error": err_tag(e), "volumes": None}
     for i, st in enumerate(steps, 1):
         e = first_error(s, st)
         if e is not None:
@@ -192,8 +349,11 @@ def check(s, steps):
 
 
 def trace(s, steps):
-    """Per-step states for record text: list of (step, error or None, changed volumes)."""
+    """Per-step states for record text: list of (step, error or None, changed volumes).
+    Empty if the start state itself is not well formed."""
     out = []
+    if start_error(s) is not None:
+        return out
     for st in steps:
         e = first_error(s, st)
         if e is not None:
@@ -205,11 +365,12 @@ def trace(s, steps):
     return out
 
 
-_VOL_ARGS = {"outOfRange": (2,), "notEnough": (2, 3), "overflow": (2, 3, 4), "unbalanced": (3, 4)}
+_VOL_ARGS = {"outOfRange": (2,), "notEnough": (2, 3), "overflow": (2, 3, 4)}
 
 
 def err_tag(e):
-    """Compact error text with volumes in uL; the Lean prelude below prints the same text."""
+    """Compact error text with volumes in uL (masses in mg); the Lean prelude below prints the
+    same text."""
     vol = _VOL_ARGS.get(e[0], ())
     return " ".join(fmt_vol(x) if i in vol else str(x) for i, x in enumerate(e))
 
@@ -224,6 +385,8 @@ def step_text(st):
         return f"mix {st[1]} {st[2]} {fmt_vol(st[3])} x{st[4]}"
     if k == "incubate":
         return f"incubate {st[1]} {st[2]}C {st[3]}s"
+    if k == "centrifuge":
+        return f"centrifuge [{' '.join(x or '-' for x in st[1])}] {st[2]}rpm {st[3]}s"
     if k in ("seal", "thaw"):
         return f"{k} {st[1]}"
     return k.replace("_", " ")
@@ -238,6 +401,7 @@ namespace TF
 def v (e : Vol) : String := s!"{e.t / 10}.{e.t % 10}"
 def tag : Error → String
   | .unknown i => s!"unknown {i}"
+  | .notTubeOrPlate i => s!"notTubeOrPlate {i}"
   | .noTip => "noTip"
   | .tipAlreadyOn => "tipAlreadyOn"
   | .outOfRange p x => s!"outOfRange {p} {v x}"
@@ -250,9 +414,17 @@ def tag : Error → String
   | .badTemp t => s!"badTemp {t.c}"
   | .badRotor n => s!"badRotor {n}"
   | .tooFast n => s!"tooFast {n}"
+  | .twiceInRotor => "twiceInRotor"
   | .notSealed p => s!"notSealed {p}"
-  | .unbalanced a b x y => s!"unbalanced {a} {b} {v x} {v y}"
+  | .unbalanced a b x y => s!"unbalanced {a} {b} {x} {y}"
   | .alreadySealed p => s!"alreadySealed {p}"
+  | .duplicateIds => "duplicateIds"
+  | .overfull i => s!"overfull {i}"
+  | .idIsPlate i => s!"idIsPlate {i}"
+  | .unknownPlate p => s!"unknownPlate {p}"
+  | .duplicateReagents => "duplicateReagents"
+  | .undeclaredReagent i => s!"undeclaredReagent {i}"
+  | .badContents i => s!"badContents {i}"
 /-- LabLean's own `step`, with the 1-based index of the failing step. -/
 def runIdx (s : LabState) : Nat → List Step → String
   | _, [] => "OK|" ++ ",".intercalate (s.cs.map fun c => s!"{c.id}={c.vol.t}")
@@ -260,6 +432,11 @@ def runIdx (s : LabState) : Nat → List Step → String
     match LabLean.step s st with
     | .error e => s!"FAIL|{i}|{tag e}"
     | .ok s' => runIdx s' (i + 1) rest
+/-- LabLean's `run`: the start state (`initChecks`, reported as step 0), then every step. -/
+def runAll (s : LabState) (l : List Step) : String :=
+  match firstErr (initChecks s) with
+  | some e => s!"FAIL|0|{tag e}"
+  | none => runIdx s 1 l
 end TF
 """
 
@@ -267,21 +444,34 @@ _STATE = {"frozen": ".frozen", "thawed": ".thawed", "onIce": ".onIce", "roomTemp
 
 
 def _lean_str(x):
-    assert re.fullmatch(r"[A-Za-z0-9_]+", x), x
+    assert re.fullmatch(r"[A-Za-z0-9_:]+", x), x
     return f'"{x}"'
+
+
+def _lean_bool(b):
+    return "true" if b else "false"
+
+
+def _lean_nat(x):
+    assert isinstance(x, int) and x >= 0, x
+    return str(x)
 
 
 def lean_state(s):
     cs = []
     for c in s["cs"]:
-        plate = f"some {_lean_str(c['plate'])}" if c["plate"] else "none"
-        contents = ", ".join(f"({_lean_str(r)}, {x})" for r, x in c["contents"])
-        cs.append(f"{{ id := {_lean_str(c['id'])}, plate := {plate}, cap := ⟨{c['cap']}⟩, "
-                  f"vol := ⟨{c['vol']}⟩, contents := [{contents}] }}")
+        plate = f"some {_lean_str(c['plate'])}" if c["plate"] is not None else "none"
+        contents = ", ".join(f"({_lean_str(r)}, {_lean_nat(x)})" for r, x in c["contents"])
+        cs.append(f"{{ id := {_lean_str(c['id'])}, plate := {plate}, cap := ⟨{_lean_nat(c['cap'])}⟩, "
+                  f"vol := ⟨{_lean_nat(c['vol'])}⟩, contents := [{contents}], "
+                  f"tare := {_lean_nat(c['tare'])} }}")
     rs = [f"{{ name := {_lean_str(r['name'])}, state := {_STATE[r['state']]}, "
-          f"keepCold := {'true' if r['keep_cold'] else 'false'} }}" for r in s["reagents"]]
+          f"keepCold := {_lean_bool(r['keep_cold'])}, diluent := {_lean_bool(r['diluent'])}, "
+          f"density := {_lean_nat(r['density'])} }}" for r in s["reagents"]]
+    ps = [f"({_lean_str(p)}, {_lean_nat(m)})" for p, m in s["plates"]]
     assert s["tip"] is None and not s["sealed"]
-    return "{ cs := [" + ", ".join(cs) + "], reagents := [" + ", ".join(rs) + "] }"
+    return ("{ cs := [" + ", ".join(cs) + "], reagents := [" + ", ".join(rs) + "], plates := ["
+            + ", ".join(ps) + "] }")
 
 
 def lean_step(st):
@@ -291,11 +481,15 @@ def lean_step(st):
     if k == "drop_tip":
         return ".dropTip"
     if k == "transfer":
-        return f".transfer {st[1]} {_lean_str(st[2])} {_lean_str(st[3])} ⟨{st[4]}⟩"
+        return f".transfer {st[1]} {_lean_str(st[2])} {_lean_str(st[3])} ⟨{_lean_nat(st[4])}⟩"
     if k == "mix":
-        return f".mix {st[1]} {_lean_str(st[2])} ⟨{st[3]}⟩ {st[4]}"
+        return f".mix {st[1]} {_lean_str(st[2])} ⟨{_lean_nat(st[3])}⟩ {_lean_nat(st[4])}"
     if k == "incubate":
-        return f".incubate {_lean_str(st[1])} ⟨{st[2]}⟩ ⟨{st[3]}⟩"
+        assert isinstance(st[2], int), st[2]
+        return f".incubate {_lean_str(st[1])} ⟨({st[2]} : Int)⟩ ⟨{_lean_nat(st[3])}⟩"
+    if k == "centrifuge":
+        rotor = ", ".join("none" if x is None else f"some {_lean_str(x)}" for x in st[1])
+        return f".centrifuge [{rotor}] {_lean_nat(st[2])} ⟨{_lean_nat(st[3])}⟩"
     if k == "seal":
         return f".seal {_lean_str(st[1])}"
     if k == "thaw":
@@ -309,7 +503,7 @@ def lean_source(cases):
     for i, (s, steps) in enumerate(cases):
         parts.append(f"def s{i} : LabState := {lean_state(s)}")
         parts.append(f"def p{i} : List Step := [{', '.join(lean_step(x) for x in steps)}]")
-        parts.append(f'#eval IO.println ("C{i}|" ++ TF.runIdx s{i} 1 p{i})')
+        parts.append(f'#eval IO.println ("C{i}|" ++ TF.runAll s{i} p{i})')
     return "\n".join(parts) + "\n"
 
 

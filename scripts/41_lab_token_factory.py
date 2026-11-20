@@ -49,7 +49,7 @@ def main():
     ap.add_argument("--out", default="runs/lab_tf")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
-    versions = {"lablean": lablean_version(a.lablean_dir), "mirror": "lab_world-v1",
+    versions = {"lablean": lablean_version(a.lablean_dir), "mirror": "lab_world-v2",
                 "sql_gate": SQL_GATE_VERSION}
     t0 = time.time()
     kept, rejected, per_seed = [], [], []
