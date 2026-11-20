@@ -1,0 +1,31 @@
+{
+  "name": "colab",
+  "gpu": "one Colab GPU: A100 40/80 GB or L4 24 GB",
+  "note": "First real run: small model, LoRA, short rows. A100 and L4 have no FP8 path in this recipe; use BF16.",
+  "base_model": "<set me>",
+  "base_model_note": "Pick a small (about 0.5-1.5B) decoder whose license allows training on its outputs. No checkpoint has been tested with this recipe yet.",
+  "profile_default": "lora_small",
+  "profiles": {
+    "lora_small": {"tag": "TARGET", "params_b": 1.5, "method": "lora", "lora_rank": 16, "lora_alpha": 32,
+                   "precision": "bf16", "fp8_linears": false, "activation_checkpointing": "on",
+                   "row_tokens": 4096, "vllm_gpu_memory_utilization": 0.3}
+  },
+  "rollout": {"tag": "TARGET", "engine": "vllm", "max_num_seqs": 64, "kv_cache_dtype": "auto",
+              "prefix_caching": true, "cuda_graphs": true, "max_new_tokens": 512, "sleep_mode": true},
+  "train": {"tag": "TARGET", "tokens_per_step": 32768, "prompts_per_step": 8, "samples_per_prompt": 4,
+            "attention": "sdpa (FlashAttention-2 if installed)", "fused_kernels": "liger if installed", "cuda_graphs": false},
+  "targets": {"tag": "TARGET", "train_mfu": [0.25, 0.45], "prefill_mfu": [0.3, 0.5], "decode_mbu": [0.4, 0.6],
+              "verifier_idle_frac_max": 0.05, "sync_wake_frac_max": 0.05},
+  "profile": {
+    "tag": "EXAMPLE",
+    "note": "Proxy GPT-2 built from config, not the base model. Peaks for A100/L4 are in profile.py.",
+    "workloads": ["sft_step", "prefill_step", "decode_step"],
+    "dtype": "bf16", "warmup": 3, "steps": 20, "profile_steps": 3,
+    "model": {"n_layer": 12, "n_embd": 768, "n_head": 12, "n_positions": 2048},
+    "sizes": {
+      "sft_step": {"seqs": 4, "seq_len": 1024},
+      "prefill_step": {"seqs": 16, "seq_len": 1024},
+      "decode_step": {"batch": 64, "ctx": 1024}
+    }
+  }
+}

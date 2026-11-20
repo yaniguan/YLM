@@ -1,0 +1,35 @@
+{
+  "name": "b200",
+  "gpu": "one B200 (180 GB HBM3e, 7.7 TB/s)",
+  "note": "Training and rollouts share the GPU and take turns (sleep/wake). Every number is a TARGET until measured.",
+  "base_model": "<set me>",
+  "base_model_note": "Default: a <= 4B decoder, full fine-tune. Alternate: 7-8B with LoRA. The license must allow training on its outputs. No checkpoint has been tested with this recipe yet.",
+  "profile_default": "full_ft_4b",
+  "profiles": {
+    "full_ft_4b": {"tag": "TARGET", "params_b": 4, "method": "full", "precision": "bf16", "fp8_linears": true,
+                   "activation_checkpointing": "off", "row_tokens": 32768, "vllm_gpu_memory_utilization": 0.3},
+    "lora_8b": {"tag": "TARGET", "params_b": 8, "method": "lora", "lora_rank": 64, "lora_alpha": 128,
+                "precision": "bf16", "fp8_linears": false, "activation_checkpointing": "on",
+                "row_tokens": 32768, "vllm_gpu_memory_utilization": 0.35}
+  },
+  "rollout": {"tag": "TARGET", "engine": "vllm", "max_num_seqs": 256, "kv_cache_dtype": "fp8",
+              "prefix_caching": true, "cuda_graphs": true, "max_new_tokens": 1536, "sleep_mode": true},
+  "train": {"tag": "TARGET", "tokens_per_step": 400000, "prompts_per_step": 32, "samples_per_prompt": 8,
+            "attention": "FlashAttention varlen (Blackwell build)", "fused_kernels": "liger", "cuda_graphs": false,
+            "torch_compile": "only with bucketed shapes"},
+  "targets": {"tag": "TARGET", "decode_mbu": [0.5, 0.7], "decode_mfu": [0.05, 0.2], "prefill_mfu": [0.4, 0.6],
+              "scoring_mfu": [0.4, 0.55], "train_mfu": [0.35, 0.5], "fp8_train_mfu_of_fp8_peak": [0.25, 0.4], "fp4_note": "FP4 (NVFP4/MXFP4) for token-factory and eval rollouts only, not GRPO",
+              "verifier_idle_frac_max": 0.05, "sync_wake_frac_max": 0.03, "grpo_useful_mfu": [0.15, 0.3]},
+  "profile": {
+    "tag": "EXAMPLE",
+    "note": "Proxy GPT-2 (about 1.3B) built from config, not the base model.",
+    "workloads": ["sft_step", "prefill_step", "decode_step"],
+    "dtype": "bf16", "warmup": 5, "steps": 50, "profile_steps": 5,
+    "model": {"n_layer": 24, "n_embd": 2048, "n_head": 16, "n_positions": 4096},
+    "sizes": {
+      "sft_step": {"seqs": 8, "seq_len": 4096},
+      "prefill_step": {"seqs": 32, "seq_len": 2048},
+      "decode_step": {"batch": 256, "ctx": 2048}
+    }
+  }
+}

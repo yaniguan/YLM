@@ -1,0 +1,19 @@
+{
+  "name": "cpu_smoke",
+  "note": "Tiny sizes so the whole path runs on a CPU in seconds. Toy values (EXAMPLE), not targets.",
+  "base_model": "tiny GPT-2 built from config (no download)",
+  "model": {"tag": "EXAMPLE", "n_layer": 2, "n_embd": 64, "n_head": 4, "n_positions": 512},
+  "geometry": {"tag": "EXAMPLE", "k": 8},
+  "collate": {"tag": "EXAMPLE", "max_tokens": 512},
+  "profile": {
+    "tag": "EXAMPLE",
+    "workloads": ["sft_step", "prefill_step", "decode_step", "geom_sft_step"],
+    "dtype": "fp32", "warmup": 2, "steps": 10, "profile_steps": 3,
+    "sizes": {
+      "sft_step": {"seqs": 4, "seq_len": 64},
+      "prefill_step": {"seqs": 4, "seq_len": 64},
+      "decode_step": {"batch": 8, "ctx": 128},
+      "geom_sft_step": {"k": 8, "max_tokens": 512}
+    }
+  }
+}

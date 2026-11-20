@@ -1,0 +1,67 @@
+{
+  "note": "Stage settings, gates and command templates. The planned_command lines are the planned full-scale interface for labbench-posttrain and vLLM; those flags do not exist yet (next step: YLM issue #66), so launch.sh only prints them. smoke_command uses the flags that labbench-posttrain accepts today. Nothing here has been run on a GPU.",
+  "data": {
+    "tag": "TARGET",
+    "max_ocsr_flag": 0.5,
+    "eval_overlap_ngram": 13,
+    "kept_records_pass_verifier": 1.0,
+    "license_field_required": true,
+    "commercial_only": false
+  },
+  "stages": {
+    "sft": {
+      "tag": "TARGET",
+      "lr": 1e-05,
+      "epochs": 2,
+      "loss": "assistant tokens only",
+      "packing": true,
+      "gate": {
+        "format_valid_min": 0.95,
+        "pass_at_1": "above base model",
+        "general_heldout_max_drop_pts": 2
+      },
+      "planned_command": "python -m posttrain.sft --model {base_model} --data {data}/sft.jsonl --max-tokens {row_tokens} --lr {lr} --epochs {epochs} --out {out}/sft",
+      "smoke_command": "python -m posttrain.sft --smoke --steps 2"
+    },
+    "dpo": {
+      "tag": "TARGET",
+      "optional": true,
+      "beta": 0.1,
+      "lr": 5e-07,
+      "gate": {
+        "pass_at_1_gain_over_sft_min_pts": 2,
+        "otherwise": "drop DPO and start GRPO from the SFT checkpoint"
+      },
+      "planned_command": "python -m posttrain.dpo --model {out}/sft --pairs {data}/pairs.jsonl --beta {beta} --lr {lr} --out {out}/dpo",
+      "smoke_command": "python -m posttrain.dpo --smoke --beta {beta}"
+    },
+    "grpo": {
+      "tag": "TARGET",
+      "group_size": 8,
+      "kl_coef": 0.01,
+      "lr": 1e-06,
+      "max_staleness_steps": 0,
+      "gate": {
+        "pass_at_1": "up vs start checkpoint",
+        "pass_at_8": "not below SFT",
+        "kl_to_ref": "bounded",
+        "hidden_test_audit": "required",
+        "mean_length": "not exploding"
+      },
+      "planned_rollout_command": "vllm serve {base_model} --dtype bfloat16 --max-num-seqs {max_num_seqs} --gpu-memory-utilization {vllm_gpu_memory_utilization} --kv-cache-dtype {kv_cache_dtype} --max-model-len {row_tokens} --enable-prefix-caching --enable-sleep-mode",
+      "planned_command": "python -m posttrain.grpo --model {out}/sft --prompts {data}/rl.jsonl --group-size {group_size} --kl-coef {kl_coef} --lr {lr} --max-new-tokens {max_new_tokens} --out {out}/grpo",
+      "smoke_command": "python -m posttrain.grpo --smoke --kl-coef {kl_coef}"
+    },
+    "opsd": {
+      "tag": "TARGET",
+      "lr": 1e-06,
+      "teacher_context": "prompt + gold answer + verifier pass/fail and detail; never the verifier spec",
+      "gate": {
+        "keep_frac_of_grpo_gain_min": 0.9,
+        "and": "fewer tokens per answer or a smaller student"
+      },
+      "planned_command": "python -m posttrain.distill_opd --student {out}/grpo --teacher {out}/grpo --data {data}/opsd.jsonl --lr {lr} --out {out}/opsd",
+      "smoke_command": "none yet: posttrain/distill_opd.py has no CLI"
+    }
+  }
+}
