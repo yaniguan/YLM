@@ -3,10 +3,12 @@
 Recipe: SFT -> DPO -> GRPO.
 
     python -m lab.distill --config lab/configs/distill_protocol.json --dry-run
+    python -m lab.distill --config lab/configs/distill_commercial.json --dry-run --commercial
 
-`--dry-run` checks the config and prints the plan. Training is not built here
-yet: the SFT/DPO/GRPO loops live in github.com/yaniguan/labbench-posttrain
-(posttrain/) and YLM's `src/toolkit/posttrain.py` (SFT/DPO for <vec> answers).
+`--dry-run` checks the config and prints the plan. When `commercial` is true in
+the config or `--commercial` is passed, non-commercial datasets (`CC-BY-NC*`,
+`commercial_ok: false`, or `TBD` licenses) and unlabeled items in local JSONL
+datasets are rejected with `ConfigError`.
 """
 from __future__ import annotations
 
@@ -16,9 +18,12 @@ import sys
 from pathlib import Path
 from typing import Optional, Sequence
 
+from lab import protocol_qa as pqa
+
 ALLOWED_METHODS = ("sft", "dpo", "grpo")   # in this order
 ALLOWED_USES = ("eval_only", "train_and_eval")
-NON_COMMERCIAL = ("CC-BY-NC",)
+NON_COMMERCIAL = ("CC-BY-NC", "AGPL")
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 class ConfigError(ValueError):
@@ -29,9 +34,40 @@ def load_config(path) -> dict:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
-def validate(cfg: dict) -> list[str]:
+def is_commercial_safe_license(lic: str) -> bool:
+    lic = str(lic or "").strip()
+    if not lic or lic.startswith("TBD"):
+        return False
+    return not any(lic.upper().startswith(p) for p in NON_COMMERCIAL)
+
+
+def validate_dataset_items_commercial(jsonl_path: Path, dataset_name: str) -> int:
+    """Verify every item in a local JSONL file has a valid schema and commercial-safe license."""
+    if not jsonl_path.exists():
+        raise ConfigError(f"data '{dataset_name}': file not found: {jsonl_path}")
+    items = pqa.load_jsonl(jsonl_path)
+    if not items:
+        raise ConfigError(f"data '{dataset_name}': JSONL file is empty: {jsonl_path}")
+    for it in items:
+        try:
+            pqa.validate_item(it)
+        except ValueError as exc:
+            raise ConfigError(f"data '{dataset_name}': {exc}") from exc
+        item_lic = str(it.get("license", "")).strip()
+        if not item_lic:
+            raise ConfigError(f"data '{dataset_name}': item '{it.get('id')}' missing 'license' field")
+        if it.get("commercial_ok") is False or not is_commercial_safe_license(item_lic):
+            raise ConfigError(
+                f"data '{dataset_name}': item '{it.get('id')}' license '{item_lic}' is not commercial-safe"
+            )
+    return len(items)
+
+
+def validate(cfg: dict, *, commercial: bool = False) -> list[str]:
     """Raise ConfigError on hard errors. Return a list of warnings."""
     warnings: list[str] = []
+    enforce_commercial = bool(commercial or cfg.get("commercial", False))
+
     for key in ("name", "teacher", "student", "data", "stages", "quantize"):
         if key not in cfg:
             raise ConfigError(f"missing '{key}'")
@@ -55,16 +91,32 @@ def validate(cfg: dict) -> list[str]:
         raise ConfigError("student min_params_b > max_params_b")
 
     for d in cfg["data"]:
+        name = str(d.get("name", ""))
         use = d.get("use")
         if use not in ALLOWED_USES:
-            raise ConfigError(f"data '{d.get('name')}': use must be one of {ALLOWED_USES}")
-        if d.get("name") == "LAB-Bench" and use != "eval_only":
+            raise ConfigError(f"data '{name}': use must be one of {ALLOWED_USES}")
+        if name == "LAB-Bench" and use != "eval_only":
             raise ConfigError("LAB-Bench is eval only; do not train on it")
         lic = str(d.get("license", ""))
-        if any(lic.startswith(p) for p in NON_COMMERCIAL) or d.get("commercial_ok") is False:
-            warnings.append(f"data '{d.get('name')}' is {lic or 'non-commercial'}: research use only, not for a product")
-        if lic.startswith("TBD"):
-            warnings.append(f"data '{d.get('name')}': license not checked yet")
+        non_comm = any(lic.upper().startswith(p) for p in NON_COMMERCIAL) or d.get("commercial_ok") is False
+        unverified = not lic.strip() or lic.startswith("TBD")
+
+        if enforce_commercial:
+            if non_comm:
+                raise ConfigError(
+                    f"data '{name}' is {lic or 'non-commercial'}: blocked in commercial product mode"
+                )
+            if unverified:
+                raise ConfigError(f"data '{name}': license must be verified before commercial run")
+            if "path" in d:
+                raw_p = Path(d["path"])
+                resolved = raw_p if raw_p.is_absolute() else (REPO_ROOT / raw_p)
+                validate_dataset_items_commercial(resolved, name)
+        else:
+            if non_comm:
+                warnings.append(f"data '{name}' is {lic or 'non-commercial'}: research use only, not for a product")
+            if lic.startswith("TBD"):
+                warnings.append(f"data '{name}': license not checked yet")
 
     q = cfg["quantize"]
     if q.get("bits") not in (4, 8, 16):
@@ -74,8 +126,9 @@ def validate(cfg: dict) -> list[str]:
 
 def plan_lines(cfg: dict, warnings: Sequence[str]) -> list[str]:
     st = cfg["student"]
+    mode = "commercial-safe" if cfg.get("commercial") else "research"
     lines = [
-        f"plan: {cfg['name']}  ({cfg.get('status', 'plan only')})",
+        f"plan: {cfg['name']}  ({cfg.get('status', 'plan only')}; mode={mode})",
         f"teacher: {cfg['teacher'].get('model', 'TBD')}",
         f"student: {st.get('model', 'TBD')}  size {st.get('min_params_b', '?')}-{st.get('max_params_b', '?')}B",
         "data:",
@@ -100,11 +153,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(description="Distillation plan (SFT -> DPO -> GRPO -> quantize)")
     ap.add_argument("--config", default=str(Path(__file__).parent / "configs" / "distill_protocol.json"))
     ap.add_argument("--dry-run", action="store_true", help="check config and print the plan")
+    ap.add_argument("--commercial", action="store_true", help="enforce commercial-safe license checks")
     args = ap.parse_args(argv)
 
     cfg = load_config(args.config)
+    if args.commercial:
+        cfg = {**cfg, "commercial": True}
     try:
-        warnings = validate(cfg)
+        warnings = validate(cfg, commercial=args.commercial)
     except ConfigError as e:
         print(f"config error: {e}", file=sys.stderr)
         return 1
