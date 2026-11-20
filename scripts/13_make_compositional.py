@@ -2,7 +2,8 @@
 
   T4 diff  "What is the difference between the force on A and the force on B?"   F_A - F_B
            Needs TWO atoms selected and combined with a sign.
-  T5 proj  "What is the part of the force on A that points toward B?"            (F_A . u) u, u = unit(r_B - r_A)
+  T5 proj  "What is the vector projection of the force on A onto the direction toward B?"   (F_A . u) u, u = unit(r_B - r_A)
+           This is the AXIS projection: signed, so it points away from B when F_A . u < 0 (not a ray component).
            Needs a direction built from two atoms (Option B/C territory); a plain weighted average of atom
            vectors cannot make it.
 
@@ -33,7 +34,7 @@ TEMPLATES = {
     "diff": ["What is the difference between the force on {a} and the force on {b}?",
              "Subtract the force on {b} from the force on {a}.",
              "Give the force on {a} minus the force on {b}."],
-    "proj": ["What is the part of the force on {a} that points toward {b}?",
+    "proj": ["What is the vector projection of the force on {a} onto the direction toward {b}?",
              "Give the component of the force on {a} along the direction to {b}.",
              "Project the force on {a} onto the line pointing to {b}."],
 }
