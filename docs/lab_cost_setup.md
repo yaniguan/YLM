@@ -39,7 +39,7 @@ Takeaway: we will not use a card 24/7 for a year soon. Rent in bursts. A card bo
 | 0. Prototype | evals, small tests, data checks | Colab Pro; rented L4 or RTX 4090 | CPU for unit tests and stubs |
 | 1. Train | teacher answers; student SFT -> DPO -> GRPO | rented A100 / H100 bursts | Use spot/community pods; checkpoint often; resume on preemption |
 | 2. Distill | teacher -> ~1-8B student (smaller if accuracy holds) | rented A100 / H100 | Same eval set for teacher and student |
-| 3. Edge | 4-bit student next to the robot | Jetson Orin-class box or one 24GB GPU (L4 / 4090) | Buy hardware only here |
+| 3. Edge | 4-bit student next to the robot | Jetson Orin-class box or one 24GB GPU (L4 / 4090) | Rent a 24GB GPU first; no hardware purchase in this plan |
 
 Rules:
 - Stop pods when idle. Keep data and checkpoints in cheap storage, not on the pod.
