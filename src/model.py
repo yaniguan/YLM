@@ -83,7 +83,7 @@ class YLM(nn.Module):
     def __init__(self, text_dim, text_mode="text", hidden_irreps="64x0e + 8x0o + 32x1o + 8x1e + 16x2e",
                  cross_irreps="32x0e + 32x1o + 8x1e + 8x2e", n_layers=3, n_tasks=2, option="A",
                  legacy_odd_scalars=False, b_score_mode="legacy", c_tp_mode="fully_connected", n_cross_layers=1,
-                 tensor_readout=False, parity=None):
+                 parity=None, tensor_readout=False):
         super().__init__()
         if n_cross_layers < 1:
             raise ValueError("n_cross_layers must be >= 1")
