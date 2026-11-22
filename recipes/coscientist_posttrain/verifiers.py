@@ -45,7 +45,7 @@ def check_numeric(spec, text):
 
 def check_sql(spec, text):
     """Run the query on an in-memory sqlite fixture (read-only after setup); compare result sets."""
-    m = re.search(r"```(?:sql)?\s*(.*?)```", text, re.S)
+    m = re.search(r"```(?:sql)?\s*(.*?)```", text, re.S | re.I)
     query = (m.group(1) if m else text).strip()
     db = sqlite3.connect(":memory:")
     db.executescript(spec["setup"])
@@ -81,7 +81,8 @@ def check_lean(spec, text):
             f.write(spec.get("header", "") + "\n" + text)
         r = subprocess.run(["lake", "env", "lean", path], cwd=spec.get("project", "lean"),
                            capture_output=True, text=True, timeout=spec.get("timeout", 60))
-    ok = r.returncode == 0 and "sorry" not in text
+    cheated = re.search(r"\b(sorry|admit|axiom|unsafe)\b|implemented_by|extern", text) is not None
+    ok = r.returncode == 0 and not cheated
     return ok, "typechecks" if ok else "lean error"
 
 
@@ -123,13 +124,15 @@ def verify(record, completion, timeout=5.0):
     return {"reward": float(ok), "passed": bool(ok), "kind": kind, "detail": detail}
 
 
-def _strings(x):
+def _strings(x, skip_keys=("field",)):
     if isinstance(x, dict):
-        for v in x.values():
-            yield from _strings(v)
+        for k, v in x.items():
+            if k in skip_keys:
+                continue
+            yield from _strings(v, skip_keys)
     elif isinstance(x, list):
         for v in x:
-            yield from _strings(v)
+            yield from _strings(v, skip_keys)
     elif isinstance(x, str):
         yield x
 
@@ -168,7 +171,8 @@ def opsd_student_record(record, teacher_completion):
     msgs = [m for m in record["messages"] if m["role"] != "assistant"]
     msgs.append({"role": "assistant", "content": teacher_completion})
     assert_no_spec_leak(record["verifier"]["spec"], msgs)
-    out = {k: record[k] for k in ("schema", "task", "geoms", "images", "sims", "source")}
+    out = {k: record.get(k, [] if k in ("geoms", "images", "sims", "audios") else None)
+           for k in ("schema", "task", "geoms", "images", "sims", "audios", "source")}
     out.update(id=record["id"] + "-opsd", messages=msgs, verifier={"kind": "none", "spec": {}}, pair=None,
                provenance={"generator": "opsd_teacher", "verified_by": "none", "twin_of": record["id"]})
     return out

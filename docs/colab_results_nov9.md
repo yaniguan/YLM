@@ -2,20 +2,10 @@
 
 Inventory date: 2026-11-09 (America/Los_Angeles)
 
-## Repository and Pull Request State
+## Repository State
 
 - Repository: `yaniguan/YLM`
-- `main` commit: `ae8b0a2453140eb748b2f09edd675c565982e752`
-- Open pull requests:
-  - PR #20
-    - Title: "Add an optional 0e+2e tensor readout"
-    - Branch: `cursor/l2-tensor-readout-1bcd`
-    - Head commit: `d6a72f3ab64fee4f37b35895781c4b8822f060ff`
-    - Status: waiting for Yani's review. Do not merge or rewrite PR #20.
-  - PR #21
-    - Title: "docs: record verified Colab Option A/B/C results under YLM_runs"
-    - Branch: `cursor/colab-results-nov9-986c`
-    - This file is the change in PR #21. Leave PR #21 open for Yani's review.
+- Reference `main` commit at inventory time: `ae8b0a2453140eb748b2f09edd675c565982e752`
 
 ## Google Drive Layout
 

@@ -33,7 +33,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install "${{ matrix.torch_spec }}" --index-url https://download.pytorch.org/whl/cpu
-          pip install "${{ matrix.e3nn_spec }}" numpy scipy rdkit "transformers==5.22.0" pandas pytest fastapi httpx
+          pip install "${{ matrix.e3nn_spec }}" numpy scipy rdkit "transformers==5.22.0" pandas pytest jsonschema fastapi httpx
+          pip install --no-deps -e .
       - name: Print versions
         run: python -c "import torch, e3nn; print('torch:', torch.__version__, 'e3nn:', e3nn.__version__)"
       - name: pytest (CPU; GPU-only tests skip themselves)

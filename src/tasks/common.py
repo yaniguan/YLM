@@ -153,9 +153,10 @@ def greedy_decode(model: YLMCausalLM, tok, prompts: list, max_new: int = 12, bat
     was_training = model.training
     model.eval()
     outs = []
+    n_pref = model.cfg.n_prefix if model.cfg.mode == "prefix" else 0
     for start in range(0, len(prompts), batch_size):
         chunk = prompts[start:start + batch_size]
-        enc = [encode_example(tok, ex, max_len - max_new, add_eos=False)[0] for ex in chunk]
+        enc = [encode_example(tok, ex, max(1, max_len - max_new - n_pref), add_eos=False)[0] for ex in chunk]
         B, L = len(enc), max(len(e) for e in enc)
         ids = torch.full((B, L), tok.pad_id, dtype=torch.long)
         attn = torch.zeros(B, L, dtype=torch.long)
@@ -198,9 +199,10 @@ def decode_with_vectors(model: YLMCausalLM, tok, prompts: list, max_new: int = 1
     was_training = model.training
     model.eval()
     outs = []
+    n_pref = model.cfg.n_prefix if model.cfg.mode == "prefix" else 0
     for start in range(0, len(prompts), batch_size):
         chunk = prompts[start:start + batch_size]
-        enc = [encode_example(tok, ex, max_len - max_new, add_eos=False)[0] for ex in chunk]
+        enc = [encode_example(tok, ex, max(1, max_len - max_new - n_pref), add_eos=False)[0] for ex in chunk]
         B, L = len(enc), max(len(e) for e in enc)
         ids = torch.full((B, L), tok.pad_id, dtype=torch.long)
         attn = torch.zeros(B, L, dtype=torch.long)
@@ -479,12 +481,15 @@ def save_run_model(out_dir: str, model: YLMCausalLM, config: dict):
 def load_run(run_dir: str, device="cpu"):
     """-> (model, tokenizer, config) for a run written by scripts 20/21."""
     from src.tasks.tokenizer import get_tokenizer
-    config = json.load(open(os.path.join(run_dir, "config.json")))
+    config = json.load(open(os.path.join(run_dir, "config.json"), encoding="utf-8"))
     cfg = YLMConfig.from_dict(config["model_cfg"])
+    tok = get_tokenizer(cfg.lm, with_vec_token=bool(cfg.vec_readout))
     model = YLMCausalLM(cfg)
+    if cfg.lm.startswith("hf:") and cfg.vec_readout:
+        model.lm.resize_token_embeddings(tok.vocab_size)
     sd = torch.load(os.path.join(run_dir, "model.pt"), map_location="cpu", weights_only=True)
     model.load_state_dict(sd)
-    return model.to(device), get_tokenizer(cfg.lm), config
+    return model.to(device), tok, config
 
 
 def load_encoder_weights(model: YLMCausalLM, path: str, log=print):

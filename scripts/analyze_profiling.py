@@ -91,7 +91,7 @@ def trace_gpu_busy(path):
     for e in ev:
         if e.get('cat') == 'cuda_runtime':
             rt[e['name']] += e['dur']
-    return {'span_ms': span / 1e3, 'busy_ms': busy / 1e3, 'busy_frac': busy / span, 'n_kernels': len(k),
+    return {'span_ms': span / 1e3, 'busy_ms': busy / 1e3, 'busy_frac': (busy / span) if span > 0 else 0.0, 'n_kernels': len(k),
             'mean_kernel_us': sum(e - s for s, e, _ in k) / len(k),
             'top_kernels_ms': [[n, v / 1e3] for n, v in by.most_common(8)],
             'cuda_runtime_ms': {n: v / 1e3 for n, v in rt.most_common(5)}}
@@ -122,7 +122,8 @@ def verdict(run):
     if gpu and ka.get('top_cuda'):
         ew = sum(r['self_cuda_ms'] for r in ka['top_cuda'] if r['name'] in ELEMENTWISE)
         if ew / gpu > 0.4 and (u is None or u >= 60):
-            return 'GPU memory-bandwidth bound (elementwise ops)', ['elementwise add_/fill_/copy_/mul = %.0f%% of self CUDA time' % (100 * ew / gpu), 'mean GPU util %.0f%%' % u]
+            u_str = 'unknown' if u is None else ('%.0f%%' % u)
+            return 'GPU memory-bandwidth bound (elementwise ops)', ['elementwise add_/fill_/copy_/mul = %.0f%% of self CUDA time' % (100 * ew / gpu), 'mean GPU util %s' % u_str]
     if run.get('trace', {}) and run['trace'].get('busy_frac', 1) < 0.6:
         t = run['trace']
         return 'kernel-launch / small-kernel bound', ['GPU busy %.0f%% of trace span, %d kernels, mean %.0f us' % (100 * t['busy_frac'], t['n_kernels'], t['mean_kernel_us'])]
@@ -215,7 +216,7 @@ def plot(data, out):
     runs = [(k, v) for k, v in data.items() if v.get('key_averages', {}).get('self_cuda_total_ms')]
     fig, ax = plt.subplots(figsize=(8, 4))
     x = range(len(runs))
-    ax.bar([i - 0.2 for i in x], [v['key_averages']['self_cpu_total_ms'] / 1e3 for _, v in runs], 0.4, label='self CPU time (s)')
+    ax.bar([i - 0.2 for i in x], [(v['key_averages'].get('self_cpu_total_ms') or 0.0) / 1e3 for _, v in runs], 0.4, label='self CPU time (s)')
     ax.bar([i + 0.2 for i in x], [v['key_averages']['self_cuda_total_ms'] / 1e3 for _, v in runs], 0.4, label='self CUDA time (s)')
     ax.set_xticks(list(x)); ax.set_xticklabels([v['label'] for _, v in runs], rotation=20, ha='right', fontsize=8); ax.legend()
     ax.set_title('torch.profiler window: host (CPU) vs device (CUDA) time'); fig.tight_layout()

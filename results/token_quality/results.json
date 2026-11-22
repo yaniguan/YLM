@@ -299,8 +299,8 @@
   "scored_by": "LabLean"
  },
  "args": {
-  "lablean_dir": "/workspace/ylm_lean/lean",
-  "web_dir": "/workspace/labparts/WLP-Dataset",
+  "lablean_dir": "lean",
+  "web_dir": "external/WLP-Dataset",
   "budgets": [
    250000,
    1000000
@@ -318,7 +318,7 @@
   "agent_tasks": 4500,
   "eval_protocols": 400,
   "workers": 7,
-  "out": "/workspace/tokfac/runs/tq"
+  "out": "runs/tq"
  },
  "seconds": 4827.4,
  "machine": "Linux x86_64, CPU only, 7 worker processes"

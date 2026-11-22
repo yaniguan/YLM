@@ -31,10 +31,21 @@ VARIANTS = {
 
 
 def cpu_name():
-    for line in open("/proc/cpuinfo"):
-        if line.startswith("model name"):
-            return line.split(":", 1)[1].strip()
+    try:
+        with open("/proc/cpuinfo", encoding="utf-8") as fh:
+            for line in fh:
+                if line.startswith("model name"):
+                    return line.split(":", 1)[1].strip()
+    except OSError:
+        pass
     return platform.processor()
+
+
+def _load_avg():
+    try:
+        return os.getloadavg()
+    except (AttributeError, OSError):
+        return None
 
 
 def load_rows(folder, n, seed):
@@ -106,7 +117,7 @@ def main():
     args = ap.parse_args()
     rows = load_rows(args.data, args.n, args.seed)
     report = {"cpu": cpu_name(), "logical_cpus": os.cpu_count(), "threads": args.threads,
-              "load_avg_start": os.getloadavg(), "torch": torch.__version__, "n_requests": len(rows),
+              "load_avg_start": _load_avg(), "torch": torch.__version__, "n_requests": len(rows),
               "variants": {}}
     ref = None
     for name in args.variants:
@@ -133,7 +144,7 @@ def main():
              "accuracy": score(rows, preds, ref if ref is not preds else None)}
         report["variants"][name] = v
         print(name, json.dumps({k: v[k] for k in ("cold_ms", "warm_ms")}), flush=True)
-    report["load_avg_end"] = os.getloadavg()
+    report["load_avg_end"] = _load_avg()
     text = json.dumps(report, indent=2)
     print(text)
     if args.out:

@@ -80,7 +80,8 @@ def main():
     max_atoms = max((len(ex.geom['Z']) for examples in splits.values() for ex in examples
                      if ex.geom is not None), default=0)
     # Reserve geometry space in every arm so the question text cap remains comparable.
-    effective_len = min(args.max_len, model.cfg.n_positions - max_atoms)
+    lm_cap = min(model.cfg.n_positions, getattr(model.lm.config, 'max_position_embeddings', model.cfg.n_positions))
+    effective_len = min(args.max_len, lm_cap - max_atoms)
     if effective_len < 22:
         raise ValueError('Not enough LM context for questions and generation after reserving geometry')
     config = {'model_cfg': model.cfg.to_dict(), 'args': vars(args), 'qa_splits': manifests,

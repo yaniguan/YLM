@@ -97,6 +97,7 @@ def main() -> int:
     args = ap.parse_args()
 
     out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
     if args.extxyz:
         extxyz_p = Path(args.extxyz)
         manifest_p = Path(args.manifest) if args.manifest else None

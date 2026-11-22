@@ -44,14 +44,53 @@ VERIFIER_VERSION = "tf-v1.1"
 # arms A and C do not import torch / e3nn through src.provenance
 OFFICIAL_V0_UNPACKED_JSON_SHA256 = "76cf64ea621b5c5e521caeb1bbc6511bfb4b0fac7a521e79d67f5249a73630d3"
 
-# reuse the generator code of scripts/02_make_questions.py (scripts/ is not a package)
-_spec = importlib.util.spec_from_file_location(
-    "make_questions_02", Path(__file__).resolve().parents[1] / "scripts" / "02_make_questions.py")
-_mq = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(_mq)
-NAME, NAME_PLURAL, COUNT_WORD = _mq.NAME, _mq.NAME_PLURAL, _mq.COUNT_WORD
-FORCE_TEMPLATES, FORCE_TEMPLATES_HELDOUT = _mq.FORCE_TEMPLATES, _mq.FORCE_TEMPLATES_HELDOUT
-describe_neighbors, unique_atom_descriptions = _mq.describe_neighbors, _mq.unique_atom_descriptions
+NAME = {1: "hydrogen", 6: "carbon", 7: "nitrogen", 8: "oxygen", 9: "fluorine"}
+NAME_PLURAL = {1: "hydrogens", 6: "carbons", 7: "nitrogens", 8: "oxygens", 9: "fluorines"}
+COUNT_WORD = {1: "one", 2: "two", 3: "three", 4: "four"}
+FORCE_TEMPLATES = [
+    "What is the force on {d}?",
+    "Give the force vector acting on {d}.",
+    "Predict the force felt by {d}.",
+    "How is {d} being pushed?",
+]
+FORCE_TEMPLATES_HELDOUT = [
+    "Report the net force on {d}.",
+    "Which direction is {d} pulled, and how hard?",
+]
+
+
+def describe_neighbors(atom):
+    counts = Counter(n.GetAtomicNum() for n in atom.GetNeighbors())
+    parts = []
+    for z in sorted(counts):
+        k = counts[z]
+        word = NAME[z] if k == 1 else NAME_PLURAL[z]
+        parts.append(f"{COUNT_WORD.get(k, str(k))} {word}")
+    if not parts:
+        return "with no bonds"
+    if len(parts) == 1:
+        return "bonded to " + parts[0]
+    return "bonded to " + ", ".join(parts[:-1]) + " and " + parts[-1]
+
+
+def unique_atom_descriptions(mol):
+    atoms = list(mol.GetAtoms())
+    short = {a.GetIdx(): f"the {NAME[a.GetAtomicNum()]} atom {describe_neighbors(a)}" for a in atoms}
+    counts = Counter(short.values())
+    result = {a.GetIdx(): short[a.GetIdx()] for a in atoms if counts[short[a.GetIdx()]] == 1}
+    ring = {}
+    for a in atoms:
+        i = a.GetIdx()
+        if i in result:
+            continue
+        where = "in a ring" if a.IsInRing() else "not in a ring"
+        ring[i] = f"the {NAME[a.GetAtomicNum()]} atom {where} {describe_neighbors(a)}"
+    ring_counts = Counter(ring.values())
+    all_long = Counter(list(ring.values()) + list(result.values()))
+    for i, d in ring.items():
+        if ring_counts[d] == 1 and all_long[d] == 1:
+            result[i] = d
+    return result
 
 SYMBOL = {1: "H", 6: "C", 7: "N", 8: "O", 9: "F"}
 

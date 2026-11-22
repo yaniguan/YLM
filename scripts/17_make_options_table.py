@@ -48,6 +48,8 @@ def classify_option_run(args: dict) -> tuple[str, str, str] | None:
         return None
     if args.get("legacy_odd_scalars", False):
         return None
+    if int(args.get("n_cross_layers", 1) or 1) != 1:
+        return None
 
     opt = str(args.get("option", "A")).upper()
     text = str(args["text"])

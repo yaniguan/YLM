@@ -244,7 +244,9 @@ def run_posttrain(
     if not records:
         raise ValueError("No directional training records generated from input")
 
-    tok = CharTokenizer()
+    from src.tasks.tokenizer import get_tokenizer
+
+    tok = get_tokenizer(lm, with_vec_token=True)
     cfg = YLMConfig(
         mode=mode,
         lm=lm,
@@ -260,6 +262,8 @@ def run_posttrain(
         use_motion_1o=has_motion,
     )
     model = YLMCausalLM(cfg).to(device)
+    if lm.startswith("hf:"):
+        model.lm.resize_token_embeddings(tok.vocab_size)
     if freeze_lm:
         model.lm.requires_grad_(False)
         # Keep output head trainable only if vocabulary needs <vec> calibration, or rely on adapters + vec_head.

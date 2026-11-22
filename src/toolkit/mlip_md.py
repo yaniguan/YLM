@@ -23,6 +23,7 @@ from src.toolkit.ingest import (
     StructureFrame,
     covalent_radius,
     load_structure,
+    minimum_image_delta_bohr,
     symbol_for_z,
 )
 from src.toolkit.md_hooks import LiveReactionMonitor, OpenMMReactionReporter, ReactionEvent
@@ -302,12 +303,17 @@ class MLIPTrajectoryRunner:
             if step_idx % max(1, report_every) == 0:
                 time_fs = step_idx * dt
                 cur_pos_bohr = pos_ang * ANGSTROM_TO_BOHR
-                delta_bohr = np.zeros_like(cur_pos_bohr) if len(frames) == 0 else (cur_pos_bohr - prev_pos_bohr)
+                fr_cell_bohr = None if cell_ang is None else cell_ang * ANGSTROM_TO_BOHR
+                delta_bohr = (
+                    np.zeros_like(cur_pos_bohr)
+                    if len(frames) == 0
+                    else minimum_image_delta_bohr(cur_pos_bohr, prev_pos_bohr, fr_cell_bohr, pbc_arr)
+                )
                 prev_pos_bohr = cur_pos_bohr.copy()
                 fr = StructureFrame(
                     Z=z_arr.copy(),
                     pos_bohr=cur_pos_bohr,
-                    cell_bohr=None if cell_ang is None else cell_ang * ANGSTROM_TO_BOHR,
+                    cell_bohr=fr_cell_bohr,
                     pbc=None if pbc_arr is None else pbc_arr.copy(),
                     delta_pos_bohr=delta_bohr,
                     forces_ev_ang=forces.copy(),

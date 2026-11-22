@@ -1,12 +1,12 @@
 {
   "args": {
     "runs": [
-      "/workspace/repos/YLM/results/oct30_smoke/runs/smiles",
-      "/workspace/repos/YLM/results/oct30_smoke/runs/smiles_xyz",
-      "/workspace/repos/YLM/results/oct30_smoke/runs/prefixA",
-      "/workspace/repos/YLM/results/oct30_smoke/runs/xattnA",
-      "/workspace/repos/YLM/results/oct30_smoke/runs/xattnB",
-      "/workspace/repos/YLM/results/oct30_smoke/runs/xattnC"
+      "results/oct30_smoke/runs/smiles",
+      "results/oct30_smoke/runs/smiles_xyz",
+      "results/oct30_smoke/runs/prefixA",
+      "results/oct30_smoke/runs/xattnA",
+      "results/oct30_smoke/runs/xattnB",
+      "results/oct30_smoke/runs/xattnC"
     ],
     "tasks": [
       "calisol"
@@ -25,7 +25,7 @@
     "lr": 1e-05,
     "bootstrap": 200,
     "device": "cpu",
-    "out": "/workspace/repos/YLM/results/oct30_smoke/calisol",
+    "out": "results/oct30_smoke/calisol",
     "profile_dir": null
   },
   "records": [

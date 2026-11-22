@@ -95,9 +95,8 @@ python -m labledger export runs/plate-7 train.jsonl [--sealed sealed_ids.txt]
 
 ## Training export
 
-`export` writes `coscientist.v1` records, meant for the post-training recipe
-(`recipes/coscientist_posttrain`, PR #86). That recipe is not on `main` yet, so compatibility
-with it is **unchecked**: `test_compatible_with_recipe_schema` is skipped until the recipe lands.
+`export` writes `coscientist.v1` records validated against `recipes/coscientist_posttrain/schema.py`
+(`test_compatible_with_recipe_schema`).
 Each finished experiment gives:
 
 1. a failure question: the whole record as text, then "which steps failed and with which tags";

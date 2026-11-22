@@ -12,7 +12,7 @@
 #SBATCH --output=runs/%x.%j.out
 
 source "${CONDA_SH:-$HOME/miniconda3/etc/profile.d/conda.sh}"
-conda activate "${YLM_ENV:-$HOME/envs/ylm}"
+conda activate "${YLM_ENV:-ylm}"
 export HF_HOME="${HF_HOME:-$HOME/hf}" HF_HUB_OFFLINE=1   # download the model once on a node with internet first
 nvidia-smi --query-gpu=name,memory.total --format=csv
 python scripts/05_train_llm_baseline.py --llm Qwen/Qwen2.5-0.5B --name "$1" "${@:2}"

@@ -261,7 +261,7 @@ class YLMProbe:
         p = Path(path)
         if p.is_dir() and (p / "config.json").exists():
             return cls.from_causal_lm(p, device=device)
-        ck = torch.load(p, map_location="cpu")
+        ck = torch.load(p, map_location="cpu", weights_only=False)
         if isinstance(ck, dict) and "state_dict" in ck and "scale" in ck:
             text_name = ck.get("text", "matscibert")
             sd = ck["state_dict"]
@@ -278,6 +278,7 @@ class YLMProbe:
                 b_score_mode=cfg.get("b_score_mode", "legacy"),
                 c_tp_mode=cfg.get("c_tp_mode", "fully_connected"),
                 legacy_odd_scalars=cfg.get("legacy_odd_scalars", False),
+                n_cross_layers=int(cfg.get("n_cross_layers", 1)),
                 **tiny,
             )
             model.load_state_dict(sd, strict=True)
@@ -462,8 +463,8 @@ class YLMProbe:
             gen_text = decoded["text"]
             raw_vecs = [np.asarray(v, dtype=np.float64) for v in decoded["vectors"]]
         else:
-            from src.tasks.common import decode_greedy
-            gen_text = decode_greedy(self.model, tok, [prompt_ex], max_new=max_new, device=self.device)[0]
+            from src.tasks.common import greedy_decode
+            gen_text = greedy_decode(self.model, tok, [prompt_ex], max_new=max_new, device=self.device)[0]
             raw_vecs = []
 
         # Ensure an explicit <vec> probe readout is always available when vec_head is enabled.

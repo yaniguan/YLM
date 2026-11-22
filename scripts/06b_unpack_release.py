@@ -62,8 +62,9 @@ def unpack_v0_tarball(
                 "qm9_index": qidx,
                 "numbers": [int(z) for z in r["atomic_numbers"]],
                 "pos": r["positions_bohr"],
-                "dipole": [0.0, 0.0, 0.0],
-                "forces": [[0.0, 0.0, 0.0] for _ in range(n_at)],
+                "energy": float("nan"),
+                "dipole": [float("nan")] * 3,
+                "forces": [[float("nan")] * 3 for _ in range(n_at)],
             })
         m = mol_by_qm9[qidx]
         if r["task"] == "dipole":

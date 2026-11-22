@@ -821,7 +821,7 @@
     err_overflow:   { pip: 'P200', vol: 165, freshTip: true,  thawed: true,  balanced: true,  sealedTransfer: false, desc: 'Well A2 starts with 50 µL buffer; adding 165 µL reaches 215 µL (> 200 µL 96-well capacity).' },
     err_pipette:    { pip: 'P20',  vol: 50,  freshTip: true,  thawed: true,  balanced: true,  sealedTransfer: false, desc: 'Attempting to aspirate 50 µL with a P20 pipette (valid range 2.0–20.0 µL).' },
     err_contam:     { pip: 'P200', vol: 50,  freshTip: false, thawed: true,  balanced: true,  sealedTransfer: false, desc: 'Re-entering stock reservoir with a used tip that touched template DNA well.' },
-    err_rotor:      { pip: 'P200', vol: 50,  freshTip: true,  thawed: true,  balanced: false, sealedTransfer: false, desc: 'Opposite centrifuge rotor slots differ by 45 µL (> 5 µL tolerance).' }
+    err_rotor:      { pip: 'P200', vol: 50,  freshTip: true,  thawed: true,  balanced: false, sealedTransfer: false, desc: 'Opposite centrifuge rotor slots differ by 250 mg (> 100 mg rotorTol mass tolerance).' }
   };
 
   let activeLeanPreset = 'pcr_valid';
@@ -851,7 +851,7 @@
       { name: 'Reagents thawed before use', formula: 'storageState = liquid (4–25 °C)', ok: thawed },
       { name: 'No pipetting through plate seal', formula: 'target.sealed = false on transfer', ok: true },
       { name: 'Safe thermal incubation', formula: '4 °C ≤ T_incubate (37 °C) ≤ 98 °C', ok: true },
-      { name: 'Centrifuge rotor balance & seal', formula: '|V_slot1 − V_slot4| ≤ 5 µL, ≤ 15k rpm', ok: balanced }
+      { name: 'Centrifuge rotor balance & seal', formula: '|m_slot1 − m_slot4| ≤ 100 mg, ≤ 15k rpm', ok: balanced }
     ];
 
     const passedCount = rules.filter(r => r.ok).length;

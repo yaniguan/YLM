@@ -40,15 +40,23 @@ def _div(a, b):
     return a // b if b else 0
 
 
+def _require_nat(*vals):
+    for v in vals:
+        if not isinstance(v, int) or isinstance(v, bool) or v < 0:
+            raise ValueError(f"LabLean Nat field must be a non-negative int, got {v!r}")
+
+
 # ---------- state ----------
 
 def container(cid, cap, vol=0, reagent=None, plate=None, tare=0):
     """A tube (plate=None) or a well of `plate`, holding `vol` of one reagent (or empty)."""
+    _require_nat(cap, vol, tare)
     return {"id": cid, "plate": plate, "cap": cap, "vol": vol, "tare": tare,
             "contents": [[reagent, vol * AMT_SCALE]] if reagent and vol else []}
 
 
 def reagent(name, state="roomTemp", keep_cold=False, diluent=False, density=1000):
+    _require_nat(density)
     return {"name": name, "state": state, "keep_cold": keep_cold, "diluent": diluent,
             "density": density}
 
@@ -444,7 +452,7 @@ _STATE = {"frozen": ".frozen", "thawed": ".thawed", "onIce": ".onIce", "roomTemp
 
 
 def _lean_str(x):
-    assert re.fullmatch(r"[A-Za-z0-9_:]+", x), x
+    assert re.fullmatch(r"[A-Za-z0-9_:.-]+", x), x
     return f'"{x}"'
 
 
@@ -453,7 +461,7 @@ def _lean_bool(b):
 
 
 def _lean_nat(x):
-    assert isinstance(x, int) and x >= 0, x
+    assert isinstance(x, int) and not isinstance(x, bool) and x >= 0, x
     return str(x)
 
 
@@ -469,9 +477,11 @@ def lean_state(s):
           f"keepCold := {_lean_bool(r['keep_cold'])}, diluent := {_lean_bool(r['diluent'])}, "
           f"density := {_lean_nat(r['density'])} }}" for r in s["reagents"]]
     ps = [f"({_lean_str(p)}, {_lean_nat(m)})" for p, m in s["plates"]]
-    assert s["tip"] is None and not s["sealed"]
+    assert s["tip"] is None
+    sealed = ", ".join(_lean_str(p) for p in s.get("sealed", []))
+    extra = f", sealed := [{sealed}]" if sealed else ""
     return ("{ cs := [" + ", ".join(cs) + "], reagents := [" + ", ".join(rs) + "], plates := ["
-            + ", ".join(ps) + "] }")
+            + ", ".join(ps) + "]" + extra + " }")
 
 
 def lean_step(st):

@@ -29,10 +29,19 @@ class ByteTokenizer:
 
 
 def inline_text(kind, i, rec):
-    """Text for <img:i> (OCSR SMILES + VERDICT flag) and <sim:i> (WignerFlow summary numbers)."""
+    """Text for <img:i> (OCSR SMILES + VERDICT flag), <sim:i> (WignerFlow), and <audio:i>."""
     if kind == "img":
         im = rec["images"][i]
         return f"[image {i}: SMILES={im['smiles']}; ocsr_flag={im.get('ocsr_flag', 0.0):.2f}]"
+    if kind == "audio":
+        a = rec["audios"][i]
+        flag = "flagged" if a.get("score", 0.0) > a.get("threshold", 1.0) else "normal"
+        inst = a.get("instrument_id", "unknown")
+        mic = a.get("mic", "unknown")
+        return (
+            f"[audio {i}: {inst}, {mic} mic, {a.get('duration_s', 0.0):g} s, "
+            f"score={a.get('score', 0.0):.2f} vs threshold={a.get('threshold', 1.0):.2f}, {flag}]"
+        )
     s = rec["sims"][i]
     values = ", ".join(f"{k}={v:g}" for k, v in s["values"].items())
     return f"[sim {i}: {s['system']}, {values}]"

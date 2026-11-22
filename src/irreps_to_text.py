@@ -117,7 +117,7 @@ class IrrepsToText(nn.Module):
         scores = torch.einsum("btk,bnk->btn", q, k) / math.sqrt(self.key_dim)
         invariant_scores = scores
         if self.option == "B":
-            global_x = (x * atom_mask[..., None]).sum(1) / atom_mask.sum(1, keepdim=True)
+            global_x = (x * atom_mask[..., None]).sum(1) / atom_mask.sum(1, keepdim=True).clamp(min=1)
             gates = self.direction_query(h)
             keys = self.direction_key(x)
             channel = 0
@@ -143,8 +143,11 @@ class IrrepsToText(nn.Module):
             }
         else:
             self.last_scores = None
-        scores = scores.masked_fill(~atom_mask[:, None, :], float("-inf"))
-        attn = scores.softmax(dim=-1)                                  # (B, T, N)  invariant
+        has_atom = atom_mask.any(dim=-1)
+        safe_mask = atom_mask.clone()
+        safe_mask[~has_atom, 0] = True
+        scores = scores.masked_fill(~safe_mask[:, None, :], float("-inf"))
+        attn = scores.softmax(dim=-1) * has_atom[:, None, None].to(scores.dtype)  # (B, T, N) invariant
 
         v = self.v(x) * atom_mask[..., None]                           # (B, N, D)  equivariant
         picked = torch.einsum("btn,bnd->btd", attn, v)                 # weighted average

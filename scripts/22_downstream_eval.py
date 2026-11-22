@@ -84,9 +84,10 @@ def main():
             method_split = args.split or default_split
             # One common text cap across arms, reserving room for the longest geometry prefix.
             max_atoms = max(len(r['example'].geom['Z']) for r in rows)
-            text_limit = min([args.max_len] + [c['model_cfg']['n_positions'] - max_atoms
-                                              for _, c, _ in run_configs
-                                              if c['model_cfg']['mode'] == 'prefix'])
+            text_limit = min([args.max_len] + [
+                c['model_cfg']['n_positions'] - (max_atoms if c['model_cfg']['mode'] == 'prefix' else 0)
+                for _, c, _ in run_configs
+            ])
             if text_limit < 2:
                 raise ValueError('Geometry prefix exceeds saved LM context capacity')
             targets = sorted({k for r in rows for k in r['targets']})

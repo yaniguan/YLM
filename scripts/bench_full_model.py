@@ -64,7 +64,8 @@ def case(args, option, n, t):
             delta = model(*changed)[0] - y @ R.T
             errors[name] = dict(max_abs=delta.abs().max().item(),
                                 relative_l2=(delta.norm()/y.norm().clamp_min(1e-12)).item())
-    rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024 if resource is not None else None
+    rss_div = (1024 * 1024) if sys.platform == 'darwin' else 1024
+    rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / rss_div if resource is not None else None
     return dict(option=option, c_tp_mode=args.c_tp_mode, atoms=n, tokens=t,
                 parameters=sum(p.numel() for p in model.parameters()),
                 forward_ms=f, backward_ms=elapsed*1000/args.iterations, forward_backward_ms=fb,

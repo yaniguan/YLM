@@ -91,6 +91,8 @@ def gate(con, sql, gold_sql, extra_cons=()):
     con.set_authorizer(auth)
     try:
         got = run(con, sql)
+    except sqlite3.Error as e:
+        return 3, str(e), None
     finally:
         con.set_authorizer(None)
     gold = run(con, gold_sql)
@@ -99,7 +101,11 @@ def gate(con, sql, gold_sql, extra_cons=()):
             sum(got.values()) != 1 or sum(gold.values()) != 1 else \
             f"value {list(got)[0]} vs gold {list(gold)[0]}", got
     for other in extra_cons:
-        if run(other, sql) != run(other, gold_sql):
+        try:
+            other_got = run(other, sql)
+        except sqlite3.Error as e:
+            return 3, str(e), got
+        if other_got != run(other, gold_sql):
             return 3, "differs from gold on a second database", got
     return None, "match", got
 

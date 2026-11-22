@@ -62,8 +62,8 @@ def validate_item(item: dict) -> None:
         raise ValueError(f"item {item['id']}: unknown task '{task}'")
     if task == "mcq":
         choices = item.get("choices") or []
-        if len(choices) < 2:
-            raise ValueError(f"item {item['id']}: mcq needs >= 2 choices")
+        if not (2 <= len(choices) <= len(LETTERS)):
+            raise ValueError(f"item {item['id']}: mcq needs 2..{len(LETTERS)} choices")
         if mcq_index(item["answer"], choices) is None:
             raise ValueError(f"item {item['id']}: answer not in choices")
     if task == "order":
@@ -77,12 +77,15 @@ def mcq_index(value, choices: Sequence[str]) -> Optional[int]:
     if value is None:
         return None
     v = str(value).strip()
+    by_text = {norm(c): i for i, c in enumerate(choices)}
+    if any(len(norm(c)) == 1 for c in choices) and re.fullmatch(r"[A-Za-z]", v) and norm(v) in by_text:
+        if [c.strip().upper() for c in choices] != list(LETTERS[: len(choices)]):
+            return by_text[norm(v)]
     m = re.fullmatch(r"\(?([A-Za-z])\)?[.):]?", v)
     if m:
         idx = LETTERS.index(m.group(1).upper())
         if idx < len(choices):
             return idx
-    by_text = {norm(c): i for i, c in enumerate(choices)}
     return by_text.get(norm(v))
 
 
@@ -159,6 +162,8 @@ def build_prompt(item: dict, molecule_block: str = "", physics_lines: Sequence[s
     parts = []
     if molecule_block:
         parts.append(molecule_block.rstrip())
+    elif item.get("molecules"):
+        parts.append("Molecules: " + ", ".join(str(m) for m in item["molecules"]))
     if physics_lines:
         parts.append("\n".join(physics_lines))
     parts.append(f"Question:\n{item['question']}")

@@ -31,18 +31,36 @@ mace = [
     "mace-torch>=0.3.6",
 ]
 md = [
+    "ase",
     "matplotlib>=3.7",
+]
+api = [
+    "fastapi",
+    "uvicorn",
 ]
 test = [
     "pytest>=7.0",
+    "jsonschema",
+    "httpx",
 ]
 
 [project.scripts]
 ylm = "src.toolkit.cli:main"
 
 [tool.setuptools]
-packages = ["src", "src.tasks", "src.toolkit"]
+packages = [
+    "src",
+    "src.tasks",
+    "src.toolkit",
+    "lab",
+    "labledger",
+    "recipes",
+    "recipes.coscientist_posttrain",
+]
+
+[tool.setuptools.package-data]
+labledger = ["schema/*.json"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
-testpaths = ["tests"]
+testpaths = ["tests", "labledger/tests"]

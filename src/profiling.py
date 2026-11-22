@@ -154,9 +154,12 @@ class Profiler:
             import psutil
             rss = psutil.Process().memory_info().rss
         except ImportError:
-            import resource
-            import sys
-            rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * (1 if sys.platform == 'darwin' else 1024)
+            try:
+                import resource
+                import sys
+                rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * (1 if sys.platform == 'darwin' else 1024)
+            except ImportError:
+                rss = None
         synced = max(self.synced_steps, 1)
         summary = {'wall_seconds': elapsed, 'tokens': self.tokens, 'samples': self.samples,
                    'steps': self.steps, 'tokens_per_second': self.tokens / max(elapsed, 1e-9),

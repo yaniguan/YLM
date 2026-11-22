@@ -57,10 +57,14 @@ class CharTokenizer:
 
 
 class HFTokenizer:
-    def __init__(self, name: str):
+    def __init__(self, name: str, *, with_vec_token: bool = False):
         from transformers import AutoTokenizer
         self.name = name
         self.tok = AutoTokenizer.from_pretrained(name)
+        self.vec_id = None
+        if with_vec_token:
+            self.tok.add_special_tokens({"additional_special_tokens": [VEC_TOKEN]})
+            self.vec_id = self.tok.convert_tokens_to_ids(VEC_TOKEN)
         self.eos_id = self.tok.eos_token_id
         self.bos_id = self.tok.bos_token_id if self.tok.bos_token_id is not None else self.eos_id
         self.pad_id = self.tok.pad_token_id if self.tok.pad_token_id is not None else self.eos_id
@@ -76,6 +80,6 @@ class HFTokenizer:
         return self.tok.decode(list(ids), skip_special_tokens=True)
 
 
-def get_tokenizer(model: str):
+def get_tokenizer(model: str, *, with_vec_token: bool = False):
     """model: tiny | small | hf:<name>"""
-    return HFTokenizer(model[3:]) if model.startswith("hf:") else CharTokenizer()
+    return HFTokenizer(model[3:], with_vec_token=with_vec_token) if model.startswith("hf:") else CharTokenizer()

@@ -33,7 +33,8 @@ def keys_for(sub):
 def text_for(desc, x, sub):
     parts = [desc]
     for k in keys_for(sub)[3:]:
-        if x.get(k) is not None: parts.append(f"{k.replace('_', ' ')} {x[k]:.3g}")
+        if x.get(k) is not None:
+            parts.append(f"{NAMES.get(k, k.replace('_', ' '))} {x[k]:.3g}")
     return "; ".join(parts)
 
 class Enc:

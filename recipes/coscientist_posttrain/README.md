@@ -97,7 +97,8 @@ One JSONL record per sample (`schema: coscientist.v1`). Placeholders in message 
 | plain text | `messages` | protocols, papers, lab notes as chat turns |
 | `<geom:i>` | `geoms` | `{Z, pos, unit}` -> YLM E(3) encoder -> k soft tokens |
 | `<img:i>` | `images` | OCSR result inline as text: `[image 0: SMILES=O; ocsr_flag=0.04]` |
-| `<sim:i>` | `sims` | WignerFlow summary numbers inline as text: `[sim 0: Ar, T_K=120]` |
+| `<sim:i>` | `sims` | WignerFlow summary numbers inline as text: `[sim 0: Ar, T_K=120]` (`tag`: `MEASURED`, `SIMULATED`, `MODEL_GENERATED`, or `EXAMPLE`) |
+| `<audio:i>` | `audios` | Lab-ears acoustic event inline as text: `[audio 0: mic:1, bench mic, 2 s, score=0.92 vs threshold=0.80, flagged]` |
 
 Rules checked by `schema.py`:
 - Placeholder indices must be exactly `0..len-1` of their array.

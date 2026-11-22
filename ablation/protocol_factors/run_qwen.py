@@ -5,15 +5,16 @@ from render import facts, factorial_conditions, make_smap
 from adapters import prompt_mcq, prompt_err, permute
 import qwen_score as Q
 import reps
-from paths import CACHE
+from paths import CACHE, DATA
 
 def conds_for(names):
     c = factorial_conditions(); c.update(reps.rep_conditions())
     return {n: c[n] for n in names}
 
 def main(item_file, out_file, cond_names):
-    items = [json.loads(l) for l in open(item_file)]
-    fm = json.load(open(CACHE / "fm_pred.json")); smap = make_smap(items)
+    items = [json.loads(l) for l in open(item_file, encoding="utf-8")]
+    fm_path = (CACHE / "fm_pred.json") if (CACHE / "fm_pred.json").exists() else (DATA / "fm_pred.json")
+    fm = json.load(open(fm_path, encoding="utf-8")); smap = make_smap(items)
     done = set()
     if Path(out_file).exists():
         for l in open(out_file):

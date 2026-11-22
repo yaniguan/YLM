@@ -41,6 +41,8 @@ import json, os, sys
 stage, hw_path, d = sys.argv[1:]
 st = json.load(open(os.path.join(d, "configs", "stages.json")))["stages"][stage]
 hw = json.load(open(hw_path))
+if "profiles" not in hw:
+    sys.exit(f"{os.path.basename(hw_path)} has no stage profiles; pass --config h200.json or b200.json")
 name = os.environ.get("PROFILE") or hw["profile_default"]
 vals = {**hw["rollout"], **hw["train"], **hw["profiles"][name], **st, "base_model": hw["base_model"],
         "data": os.environ.get("DATA", "data/coscientist"), "out": os.environ.get("OUT", "runs/coscientist")}

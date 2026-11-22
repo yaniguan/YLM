@@ -110,7 +110,19 @@ def test_benchmark_twins_and_splits():
 
 
 def test_summary_numbers_match_result_files():
-    s = json.loads((ROOT / "results" / "summary.json").read_text())
-    import report
-    for row in s.get("own_acc", [])[:20]:
+    s = json.loads((ROOT / "results" / "summary.json").read_text(encoding="utf-8"))
+    assert len(s["calisol_cells"]) == 96
+    assert len(s["calisol_terms"]) == 19
+    for row in s["calisol_cells"]:
         assert 0 <= row["lo"] <= row["est"] <= row["hi"] <= 1
+
+
+def test_shuffled_condition_does_not_leak_electrolyte_solvent_table():
+    import render
+
+    item = {"molecules": [{"name": "EC", "smiles": "O=C1OCCO1"}]}
+    smap = {"O=C1OCCO1": "COC(=O)OC"}  # EC swapped with DMC
+    true_s = render.electrolyte_lines(item, "S", shuffled=False)
+    shuf_s = render.electrolyte_lines({"molecules": [{"name": "EC", "smiles": smap["O=C1OCCO1"]}]}, "S", shuffled=True)
+    assert "1.9 cP" in true_s[0]
+    assert "0.59 cP" in shuf_s[0] and "1.9 cP" not in shuf_s[0]

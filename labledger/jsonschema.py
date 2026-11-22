@@ -81,7 +81,11 @@ def json_schema():
         "allOf": [
             {"if": {"properties": {"op": {"const": "supersede"}}},
              "then": {"required": ["supersedes", "reason"]}},
-            {"if": {"properties": {"op": {"const": "retract"}}}, "then": {"required": ["reason"]}},
+            {"if": {"properties": {"op": {"const": "retract"}}},
+             "then": {"required": ["reason"], "properties": {"body": {"type": "null"}}}},
+            {"if": {"properties": {"level": {"const": "project"}}},
+             "then": {"properties": {"parent_id": {"type": "null"}}},
+             "else": {"properties": {"parent_id": {"type": "string", "pattern": S.RECORD_ID.pattern}}}},
         ] + [
             {"if": {"properties": {"level": {"const": lv}, "op": {"enum": ["add", "supersede"]}}},
              "then": {"properties": {"body": {"$ref": f"#/$defs/{lv}"}}}}
