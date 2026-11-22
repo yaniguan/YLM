@@ -7,5 +7,5 @@
 #$ -l h_rt=12:00:00,h_data=8G,gpu,V100,cuda=1
 
 source "${CONDA_SH:-$HOME/miniconda3/etc/profile.d/conda.sh}"
-conda activate "${YLM_ENV:-$HOME/envs/ylm}"
+conda activate "${YLM_ENV:-ylm}"
 python scripts/14_train_comp.py --model "$1" --name "$2" "${@:3}"

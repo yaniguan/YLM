@@ -94,9 +94,9 @@ class HFTextEncoder:
 class YLMPredictor:
     """Load once, then call predict() per request. Question embeddings are cached (LRU)."""
 
-    def __init__(self, ckpt=DEFAULT_CKPT, *, threads: int = 1, int8_text: bool = False,
+    def __init__(self, ckpt=DEFAULT_CKPT, *, threads: int | None = None, int8_text: bool = False,
                  text_encoder=None, cache_size: int = 1024):
-        if threads:
+        if threads is not None and threads > 0:
             torch.set_num_threads(threads)
         ck = torch.load(ckpt, map_location="cpu", weights_only=False)  # trusted repo checkpoint
         self.text_name = ck.get("text", "minilm")
@@ -236,8 +236,9 @@ def __getattr__(name):  # `uvicorn src.api:app` builds the app lazily
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--question", required=True)
-    ap.add_argument("--smiles")
-    ap.add_argument("--xyz", help="XYZ file (angstrom)")
+    src_group = ap.add_mutually_exclusive_group(required=True)
+    src_group.add_argument("--smiles")
+    src_group.add_argument("--xyz", help="XYZ file (angstrom)")
     ap.add_argument("--task", choices=sorted(TASKS))
     ap.add_argument("--ckpt", default=str(DEFAULT_CKPT))
     ap.add_argument("--int8-text", action="store_true", help="int8 dynamic quantization of the text encoder")
@@ -247,11 +248,14 @@ def main(argv=None):
     if args.xyz:
         from rdkit.Chem import GetPeriodicTable
 
-        lines = Path(args.xyz).read_text().split("\n")
+        lines = Path(args.xyz).read_text(encoding="utf-8").split("\n")
         rows = [ln.split() for ln in lines[2:2 + int(lines[0])]]
         table = GetPeriodicTable()
-        kwargs.update(smiles=None, atomic_numbers=[table.GetAtomicNumber(r[0]) for r in rows],
-                      positions=[[float(v) for v in r[1:4]] for r in rows])
+        kwargs.update(
+            smiles=None,
+            atomic_numbers=[int(r[0]) if r[0].isdigit() else table.GetAtomicNumber(r[0]) for r in rows],
+            positions=[[float(v) for v in r[1:4]] for r in rows],
+        )
     predictor = YLMPredictor(args.ckpt, threads=args.threads, int8_text=args.int8_text)
     try:
         print(json.dumps(predictor.predict(args.question, **kwargs), indent=2))

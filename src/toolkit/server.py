@@ -336,7 +336,10 @@ def create_studio_server(
     host: str = "127.0.0.1",
     port: int = 8765,
 ) -> ThreadingHTTPServer:
+    import threading
+
     active_probe = probe or YLMProbe.default()
+    probe_lock = threading.Lock()
 
     class StudioHandler(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):
@@ -425,56 +428,65 @@ def create_studio_server(
                     question = str(body.get("question") or "What is the dipole vector?")
                     domain = str(body.get("domain") or "general")
                     verify = bool(body.get("verify_o3", True))
-                    res = active_probe.ask(frame, question, domain=domain, verify_o3=verify)
+                    with probe_lock:
+                        res = active_probe.ask(frame, question, domain=domain, verify_o3=verify)
                     payload = res.to_dict()
                     payload["html"] = render_html_report(res)
                     self._send_json(HTTPStatus.OK, payload)
                     return
 
                 if self.path == "/api/physics_audit":
-                    audit = run_physics_compliance_audit(
-                        frame_or_source=str(body.get("structure") or "r_fec_chiral"),
-                        question=str(body.get("question") or "What is the 3D molecular dipole moment vector?"),
-                        precision=str(body.get("precision") or "float64"),
-                        n_rotations=int(body.get("n_rotations") or 8),
-                        probe=active_probe,
-                    )
+                    with probe_lock:
+                        audit = run_physics_compliance_audit(
+                            frame_or_source=str(body.get("structure") or "r_fec_chiral"),
+                            question=str(body.get("question") or "What is the 3D molecular dipole moment vector?"),
+                            precision=str(body.get("precision") or "float64"),
+                            n_rotations=int(body.get("n_rotations") or 8),
+                            probe=active_probe,
+                        )
                     self._send_json(HTTPStatus.OK, audit)
                     return
 
                 if self.path == "/api/pose_sandbox":
                     t_ang = body.get("translate_ang") or [0.0, 0.0, 0.0]
-                    sandbox = evaluate_pose_sandbox(
-                        frame_or_source=str(body.get("structure") or "r_fec_chiral"),
-                        question=str(body.get("question") or "What is the 3D molecular dipole moment vector?"),
-                        rx_deg=float(body.get("rx_deg", 35.0)),
-                        ry_deg=float(body.get("ry_deg", -48.0)),
-                        rz_deg=float(body.get("rz_deg", 72.0)),
-                        reflect=bool(body.get("reflect", False)),
-                        translate_ang=(float(t_ang[0]), float(t_ang[1]), float(t_ang[2])),
-                        permute_atoms=bool(body.get("permute_atoms", False)),
-                        precision=str(body.get("precision") or "float64"),
-                    )
+                    with probe_lock:
+                        sandbox = evaluate_pose_sandbox(
+                            frame_or_source=str(body.get("structure") or "r_fec_chiral"),
+                            question=str(body.get("question") or "What is the 3D molecular dipole moment vector?"),
+                            rx_deg=float(body.get("rx_deg", 35.0)),
+                            ry_deg=float(body.get("ry_deg", -48.0)),
+                            rz_deg=float(body.get("rz_deg", 72.0)),
+                            reflect=bool(body.get("reflect", False)),
+                            translate_ang=(float(t_ang[0]), float(t_ang[1]), float(t_ang[2])),
+                            permute_atoms=bool(body.get("permute_atoms", False)),
+                            precision=str(body.get("precision") or "float64"),
+                        )
                     self._send_json(HTTPStatus.OK, sandbox)
                     return
 
                 if self.path == "/api/run_md":
-                    self._send_json(HTTPStatus.OK, _handle_run_md(body, active_probe))
+                    with probe_lock:
+                        md_res = _handle_run_md(body, active_probe)
+                    self._send_json(HTTPStatus.OK, md_res)
                     return
 
                 if self.path == "/api/ouroboros":
-                    self._send_json(HTTPStatus.OK, _handle_ouroboros_inspect(
-                        str(body.get("smiles") or "O=C1OC[C@H](F)O1"),
-                        str(body.get("question") or "What is the 3D molecular dipole moment vector?"),
-                        active_probe,
-                    ))
+                    with probe_lock:
+                        ob_res = _handle_ouroboros_inspect(
+                            str(body.get("smiles") or "O=C1OC[C@H](F)O1"),
+                            str(body.get("question") or "What is the 3D molecular dipole moment vector?"),
+                            active_probe,
+                        )
+                    self._send_json(HTTPStatus.OK, ob_res)
                     return
 
                 if self.path == "/api/eval_benchmark":
-                    self._send_json(HTTPStatus.OK, _run_live_mini_benchmark(
-                        epochs=int(body.get("epochs", 6)),
-                        eval_rotations=int(body.get("eval_rotations", 4)),
-                    ))
+                    with probe_lock:
+                        bench_res = _run_live_mini_benchmark(
+                            epochs=int(body.get("epochs", 6)),
+                            eval_rotations=int(body.get("eval_rotations", 4)),
+                        )
+                    self._send_json(HTTPStatus.OK, bench_res)
                     return
 
                 self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found"})

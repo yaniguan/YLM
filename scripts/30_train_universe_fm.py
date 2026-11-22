@@ -55,7 +55,7 @@ def main(argv=None) -> dict:
     parser.add_argument("--data_dir", type=str, default="data/universe_smoke")
     parser.add_argument("--out_dir", type=str, default=None)
     parser.add_argument("--backbone", type=str, default="e3nn", help="'e3nn' or 'mace-mp-0-{small,medium,large}' / 'mace-off23-*'")
-    parser.add_argument("--freeze_mace", action="store_true", default=True)
+    parser.add_argument("--freeze_mace", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--unfreeze_mace_epoch", type=int, default=-1, help="Epoch to unfreeze MACE at 0.1x lr (-1 keeps frozen).")
     parser.add_argument("--option", type=str, default="C", choices=["A", "B", "C"])
     parser.add_argument("--c_tp_mode", type=str, default="channelwise", choices=["channelwise", "fully_connected"])
@@ -80,7 +80,11 @@ def main(argv=None) -> dict:
     rng = np.random.default_rng(args.seed)
 
     splits = _load_or_build_splits(args.data_dir, args.seed)
-    featurizer = QuestionFeaturizer(mode=args.text_encoder, dim=args.text_dim)
+    featurizer = QuestionFeaturizer(
+        mode=args.text_encoder,
+        dim=args.text_dim,
+        allow_download=(args.text_encoder != "fast"),
+    )
 
     hidden_irreps = (
         "24x0e + 4x0o + 16x1o + 4x1e + 8x2e"

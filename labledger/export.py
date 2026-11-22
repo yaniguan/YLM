@@ -1,5 +1,5 @@
-"""Turn finished experiments into training JSONL (schema coscientist.v1, meant for YLM PR #86;
-compatibility with that recipe is unchecked until the PR lands).
+"""Turn finished experiments into training JSONL (schema coscientist.v1, compatible with
+recipes/coscientist_posttrain).
 
 Placeholders: <geom:i> -> `geoms`, <img:i> -> `images`, <sim:i> -> `sims`, <audio:i> -> `audios`.
 Every example keeps `ledger` links (record ids + head hash) so it can be traced back to raw data.
@@ -64,7 +64,14 @@ class _Media:
             self.sims.append(sim)
             return f"<sim:{len(self.sims) - 1}>"
         if m == "audio":
-            self.audios.append(dict(d, record_id=rid, features_path=uri))
+            self.audios.append(
+                dict(
+                    d,
+                    instrument_id=d.get("instrument_id") or b.get("instrument_id", "unknown"),
+                    record_id=rid,
+                    features_path=uri,
+                )
+            )
             return f"<audio:{len(self.audios) - 1}>"
         # everything else is plain text
         if m == "text":
@@ -214,5 +221,7 @@ def check_training_record(rec):
 def audio_text(a, i):
     """Text for <audio:i>, for collators that inline it (like <img:i> and <sim:i> in PR #86)."""
     flag = "flagged" if a["score"] > a["threshold"] else "normal"
-    return (f"[audio {i}: {a['instrument_id']}, {a['mic']} mic, {a['duration_s']:g} s, "
+    inst = a.get("instrument_id", "unknown")
+    mic = a.get("mic", "unknown")
+    return (f"[audio {i}: {inst}, {mic} mic, {a['duration_s']:g} s, "
             f"score={a['score']:.2f} vs threshold={a['threshold']:.2f}, {flag}]")

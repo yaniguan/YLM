@@ -25,6 +25,8 @@ import sys
 import time
 from contextlib import contextmanager
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 # Dense (no sparsity) peak TFLOPS. Sources: nvidia.com/en-us/data-center/h200,
 # lenovopress.lenovo.com/lp1944 (H200 SXM); NVIDIA Blackwell datasheet,
 # lenovopress.lenovo.com/lp2226 (B200 HGX). Other GPUs: pass --peak-tflops.
@@ -99,7 +101,13 @@ class NVML:
         try:
             import pynvml  # provided by the nvidia-ml-py package
             pynvml.nvmlInit()
-            self._h = pynvml.nvmlDeviceGetHandleByIndex(index)
+            vis = [t.strip() for t in os.environ.get("CUDA_VISIBLE_DEVICES", "").split(",") if t.strip()]
+            tok = vis[index] if 0 <= index < len(vis) else None
+            if tok and tok.startswith(("GPU-", "MIG-")):
+                self._h = pynvml.nvmlDeviceGetHandleByUUID(tok)
+            else:
+                phys = int(tok) if (tok and tok.isdigit()) else index
+                self._h = pynvml.nvmlDeviceGetHandleByIndex(phys)
             self._nv = pynvml
             self.available = True
         except Exception as e:  # ImportError, NVMLError, ...

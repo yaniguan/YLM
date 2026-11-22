@@ -20,11 +20,12 @@ from .workloads import FACTORIES
 # Dense peak TFLOPS and HBM TB/s (vendor spec sheets; same H200/B200 rows as PR #79).
 # Other GPUs or variants (e.g. H200 NVL): pass --peak-tflops / --peak-tbps.
 PEAKS = {
-    "A100-SXM4-80GB": {"bf16": 312, "tbps": 2.039},
-    "A100": {"bf16": 312, "tbps": 1.555},
-    "L4": {"bf16": 121, "tbps": 0.3},
-    "H200": {"bf16": 989, "fp8": 1979, "tbps": 4.8},
-    "B200": {"bf16": 2250, "fp8": 4500, "fp4": 9000, "tbps": 7.7},
+    "A100-SXM4-80GB": {"bf16": 312, "fp16": 312, "tbps": 2.039},
+    "A100": {"bf16": 312, "fp16": 312, "tbps": 1.555},
+    "L4": {"bf16": 121, "fp16": 121, "tbps": 0.3},
+    "H100": {"bf16": 989, "fp16": 989, "fp8": 1979, "tbps": 3.35},
+    "H200": {"bf16": 989, "fp16": 989, "fp8": 1979, "tbps": 4.8},
+    "B200": {"bf16": 2250, "fp16": 2250, "fp8": 4500, "fp4": 9000, "tbps": 7.7},
 }
 DTYPES = {"fp32": torch.float32, "bf16": torch.bfloat16, "fp16": torch.float16}
 HERE = os.path.dirname(__file__)
@@ -96,7 +97,7 @@ def run_one(name, sizes, args, cfg, device, out):
         "mfu": ratio(flops, sec, tflops_peak, 1e12) if cuda else None,
         "mbu": ratio(nbytes, sec, tbps_peak, 1e12) if cuda else None,
         "peak_mem_gb": torch.cuda.max_memory_allocated(device) / 1e9 if cuda else None,
-        "trace": trace, "tag": "MEASURED", "time": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "trace": trace, "source": trace, "tag": "MEASURED", "time": time.strftime("%Y-%m-%dT%H:%M:%S"),
     }
 
 

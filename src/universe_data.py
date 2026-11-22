@@ -191,8 +191,7 @@ def compute_chiral_centers(frame: StructureFrame) -> list[dict]:
     z = frame.Z
     radii = np.array([covalent_radius(int(zi)) for zi in z], dtype=np.float64)
     r0 = radii[:, None] + radii[None, :]
-    rel = pos[:, None, :] - pos[None, :, :]
-    dist = np.linalg.norm(rel, axis=-1)
+    rel_ang, dist = _pairwise_mic_angstrom(frame)
     bonded = (dist > 1e-6) & (dist <= 1.28 * r0)
     degrees = bonded.sum(axis=-1)
 
@@ -216,9 +215,9 @@ def compute_chiral_centers(frame: StructureFrame) -> list[dict]:
         if len(set(nb_keys)) < 4:
             continue
         ordered = [j for _, j in sorted(zip(nb_keys, nbs), key=lambda pair: pair[0], reverse=True)]
-        v1 = pos[ordered[0]] - pos[c]
-        v2 = pos[ordered[1]] - pos[c]
-        v3 = pos[ordered[2]] - pos[c]
+        v1 = rel_ang[ordered[0], c]
+        v2 = rel_ang[ordered[1], c]
+        v3 = rel_ang[ordered[2], c]
         signed_vol = float(np.linalg.det(np.stack([v1, v2, v3], axis=1)) / 6.0)
         if abs(signed_vol) > 1e-3:
             centers.append({
@@ -907,6 +906,14 @@ class QuestionFeaturizer:
             self._hf = None
         else:
             raise ValueError(f"Unknown text featurizer mode {mode!r}; expected 'fast', 'minilm', or 'matscibert'")
+        if self._hf is not None and self._hf.using_fallback:
+            import warnings
+            warnings.warn(
+                f"QuestionFeaturizer(mode={self.mode!r}) could not load HF weights "
+                f"(allow_download={allow_download}); falling back to deterministic hash tokens.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
         self._cache: dict[str, torch.Tensor] = {}
 
     def _fast_subword_tokens(self, question: str) -> torch.Tensor:

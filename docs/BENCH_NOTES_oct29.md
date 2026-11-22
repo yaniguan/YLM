@@ -11,7 +11,6 @@ Added `collate_molecules` for variable atom/token lengths and `predict_vector` f
 ## Commands actually run
 
 ```bash
-source /workspace/venv311/bin/activate
 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python -m pytest -q
 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python scripts/bench_irreps_to_text.py --output docs/bench_oct29.json
 ```
@@ -37,7 +36,3 @@ Environment: PyTorch 2.10.0+cpu, e3nn 0.4.4. Atom/output irreps `16x0e+4x0o+8x1o
 | 64 | 32 | 0.2874299000040992 | 0.7736519000104636 | 1.4042535000044154 | 7.62939453125e-06 | 1.833676464002565e-07 |
 
 Raw measured values and configuration are also in `docs/bench_oct29.json`.
-
-## Commit limitation
-
-Attempted logical commits for compatibility/symmetry and helpers, but `git add` failed with `fatal: Unable to create '/workspace/repos/YLM/.git/index.lock': Read-only file system`. No commits were created. The managed environment explicitly mounts `.git` read-only and disables escalation. Suggested commit groups: compatibility plus symmetry tests; helpers plus tests; benchmark script plus these notes and JSON.

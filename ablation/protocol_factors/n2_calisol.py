@@ -32,14 +32,16 @@ def solvent_props(name, smi):
 
 FM = EMB = None
 
-def _fm():
+def _fm(with_emb=False):
     global FM, EMB
     if FM is None:
-        FM = json.load(open(CACHE / "fm_pred.json"))
+        fm_path = (CACHE / "fm_pred.json") if (CACHE / "fm_pred.json").exists() else (DATA / "fm_pred.json")
+        FM = json.load(open(fm_path, encoding="utf-8"))
+    if with_emb and EMB is None:
         EMB = pickle.load(open(CACHE / "fm_emb.pkl", "rb"))
     return FM, EMB
 
-def featurize(f):
+def featurize(f, with_emb=False):
     """f: formulation dict from data/calisol_*.jsonl"""
     x = {"T_C": f["T_K"] - 273.15, "conc": f["c"], "molal": 1.0 if "kg" in f["c_units"] else 0.0}
     an = [k for k in f["salt_smiles"].split(".") if "Li" not in k]
@@ -48,10 +50,11 @@ def featurize(f):
         x.update(anion_homo=d["homo_eV"], anion_lumo=d["lumo_eV"], anion_gap=d["gap_eV"], anion_vip=d["vIP_eV"],
                  anion_dGw=d.get("dGsolv_water_kcal"))
     tot = sum(s["frac"] for s in f["solvents"]); acc = {}; wk = {"e": 0, "eta": 0}
+    fm_map, emb_map = _fm(with_emb=with_emb)
     for s in f["solvents"]:
         w = s["frac"] / tot; e, eta, mp, bp = solvent_props(s["name"], s["smiles"])
         dd = (xtb(s["smiles"]) or {}).get(s["smiles"]) or next(iter((xtb(s["smiles"]) or {None: None}).values()), None)
-        rd = FE.rdkit_desc(s["smiles"]); fm = _fm()[0].get(s["smiles"], {})
+        rd = FE.rdkit_desc(s["smiles"]); fm = fm_map.get(s["smiles"], {})
         vals = {"solv_dielectric": e, "solv_viscosity": eta, "solv_mp": mp, "solv_bp": bp,
                 "solv_dipole": dd and dd["dipole_D"], "solv_gap": dd and dd["gap_eV"], "solv_homo": dd and dd["homo_eV"],
                 "solv_logS": fm.get("logS"), "solv_logD": fm.get("logD"), "solv_logP": rd["logP"], "solv_tpsa": rd["TPSA"]}
@@ -61,7 +64,11 @@ def featurize(f):
         if eta is not None: wk["eta"] += w
     for k, (s_, w_) in acc.items(): x[k] = s_ / w_ if w_ > 0 else None
     x["frac_known_dielectric"] = wk["e"]; x["frac_known_viscosity"] = wk["eta"]
-    E = _fm()[1]; emb = sum((s["frac"] / tot) * E[s["smiles"]] for s in f["solvents"]) + E[f["salt_smiles"]]
+    emb = (
+        sum((s["frac"] / tot) * emb_map[s["smiles"]] for s in f["solvents"]) + emb_map[f["salt_smiles"]]
+        if with_emb
+        else None
+    )
     return x, emb
 
 def text_of(x):
@@ -73,11 +80,11 @@ def text_of(x):
           "solv_logD": "solvent logD (mix avg)", "solv_logP": "solvent logP (mix avg)", "solv_tpsa": "solvent TPSA (mix avg)"}
     return "; ".join(f"{nm[k]} {x[k]:.3g}" for k in nm if x.get(k) is not None)
 
-def load(split):
-    rows = [json.loads(l) for l in open(DATA / f"calisol_{split}.jsonl")]
+def load(split, with_emb=False):
+    rows = [json.loads(l) for l in open(DATA / f"calisol_{split}.jsonl", encoding="utf-8")]
     out = []
     for r in rows:
-        fa, fb = r["formulations"]; xa, ea = featurize(fa); xb, eb = featurize(fb)
+        fa, fb = r["formulations"]; xa, ea = featurize(fa, with_emb=with_emb); xb, eb = featurize(fb, with_emb=with_emb)
         q = r["question"].split("\n")
         out.append({"id": r["id"], "y": r["answer_index"], "da": q[1][3:], "db": q[2][3:], "xa": xa, "xb": xb, "ea": ea, "eb": eb})
     return out
@@ -114,10 +121,13 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--arms", default="N0,N1,N2,N3,N2-shuf")
     ap.add_argument("--ntrain", type=int, default=1200); ap.add_argument("--emb", action="store_true")
     ap.add_argument("--out", default=""); a = ap.parse_args(); a.out = a.out or str(RESULTS / "n2_calisol.json")
-    tr = load("train"); te = load("test"); random.Random(0).shuffle(tr); tr = tr[: a.ntrain]
+    use_emb = bool(a.emb or (CACHE / "fm_emb.pkl").exists())
+    tr = load("train", with_emb=use_emb); te = load("test", with_emb=use_emb); random.Random(0).shuffle(tr); tr = tr[: a.ntrain]
     std = Std().fit(tr)
-    from sklearn.decomposition import PCA
-    pca = PCA(32, random_state=0).fit(np.array([r[k] for r in tr for k in ("ea", "eb")]))
+    pca = None
+    if use_emb:
+        from sklearn.decomposition import PCA
+        pca = PCA(32, random_state=0).fit(np.array([r[k] for r in tr for k in ("ea", "eb")]))
     res = json.loads(Path(a.out).read_text()) if Path(a.out).exists() else {}
     res.update({k: v for k, v in logistic_ceiling(tr, te, std, pca).items()})
     res["test_ids"] = [r["id"] for r in te]

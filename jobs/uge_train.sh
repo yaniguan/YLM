@@ -11,6 +11,6 @@
 #$ -l h_rt=8:00:00,h_data=6G,gpu,V100,cuda=1
 
 source "${CONDA_SH:-$HOME/miniconda3/etc/profile.d/conda.sh}"
-conda activate "${YLM_ENV:-$HOME/envs/ylm}"
+conda activate "${YLM_ENV:-ylm}"
 nvidia-smi --query-gpu=name,memory.total --format=csv
 python scripts/04_train.py --text "$1" --name "$2" "${@:3}"

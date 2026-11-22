@@ -6,6 +6,6 @@
 #$ -j y
 #$ -l h_rt=2:00:00,h_data=4G
 source "${CONDA_SH:-$HOME/miniconda3/etc/profile.d/conda.sh}"
-conda activate "${YLM_ENV:-$HOME/envs/ylm}"
+conda activate "${YLM_ENV:-ylm}"
 k=$((SGE_TASK_ID-1))
 python scripts/12_make_quadrupole.py --start $((k*200)) --stop $(((k+1)*200)) --out data/quad_part$SGE_TASK_ID.pkl

@@ -69,7 +69,9 @@ class ScalarCollapse(nn.Module):
         attn = scores.masked_fill(~atom_mask[:, None, :], float("-inf")).softmax(-1)
         picked = torch.einsum("btn,bnd->btd", attn, v)
         w = self.token_weight(h).squeeze(-1).masked_fill(~text_mask, float("-inf")).softmax(-1)
-        return self.head(torch.cat([torch.einsum("bt,btd->bd", w, picked), h.mean(1)], -1)), \
+        tmask_f = text_mask[..., None].to(h.dtype)
+        mean_h = (h * tmask_f).sum(1) / text_mask.sum(1, keepdim=True).clamp(min=1).to(h.dtype)
+        return self.head(torch.cat([torch.einsum("bt,btd->bd", w, picked), mean_h], -1)), \
             torch.einsum("bt,btn->bn", w, attn)
 
 

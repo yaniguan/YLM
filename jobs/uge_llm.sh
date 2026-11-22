@@ -9,7 +9,7 @@
 #$ -l h_rt=24:00:00,h_data=16G,gpu,V100,cuda=1
 
 source "${CONDA_SH:-$HOME/miniconda3/etc/profile.d/conda.sh}"
-conda activate "${YLM_ENV:-$HOME/envs/ylm}"
+conda activate "${YLM_ENV:-ylm}"
 export HF_HUB_OFFLINE=1
 nvidia-smi --query-gpu=name,memory.total --format=csv
 python scripts/05_train_llm_baseline.py --llm Qwen/Qwen2.5-0.5B --name "$1" "${@:2}"

@@ -342,7 +342,9 @@ def parse_poscar(text: str, label: str = "poscar") -> StructureFrame:
     if len(lines) < 8:
         raise ValueError("Truncated POSCAR content")
     scale = float(lines[1].split()[0])
-    lattice = np.array([[float(x) for x in lines[i].split()[:3]] for i in range(2, 5)], dtype=np.float64) * scale
+    raw_lat = np.array([[float(x) for x in lines[i].split()[:3]] for i in range(2, 5)], dtype=np.float64)
+    factor = scale if scale > 0 else (abs(scale) / max(abs(np.linalg.det(raw_lat)), 1e-12)) ** (1.0 / 3.0)
+    lattice = raw_lat * factor
     elem_tokens = lines[5].split()
     if elem_tokens[0].isdigit():
         raise ValueError("VASP4 POSCAR without element symbol line is unsupported; include element symbols on line 6")
@@ -357,7 +359,7 @@ def parse_poscar(text: str, label: str = "poscar") -> StructureFrame:
         zs.extend([z_for_symbol(sym)] * cnt)
     total = len(zs)
     raw = np.array([[float(x) for x in lines[cursor + i].split()[:3]] for i in range(total)], dtype=np.float64)
-    pos_ang = (raw % 1.0) @ lattice if coord_mode in ("d", "f") else raw * (scale if scale > 0 else 1.0)
+    pos_ang = (raw % 1.0) @ lattice if coord_mode in ("d", "f") else raw * factor
     return StructureFrame(
         Z=zs,
         pos_bohr=pos_ang * ANGSTROM_TO_BOHR,

@@ -4,7 +4,7 @@ from multiprocessing import Pool
 from pathlib import Path
 import features as FE
 from render import ctx_of
-from paths import CACHE
+from paths import CACHE, DATA
 
 def _xtb(args):
     smi, solv = args
@@ -22,7 +22,10 @@ def main(item_files):
             if m.get("smiles") and FE.Chem.MolFromSmiles(m["smiles"]):
                 jobs.add((m["smiles"], c.get("solvent_key"))); smis.add(m["smiles"])
     print(len(items), "items", len(smis), "molecules", len(jobs), "xtb jobs", flush=True)
-    fmf = CACHE / "fm_pred.json"; fm = json.loads(fmf.read_text()) if fmf.exists() else {}
+    CACHE.mkdir(parents=True, exist_ok=True)
+    fmf = CACHE / "fm_pred.json"
+    seed_fmf = fmf if fmf.exists() else (DATA / "fm_pred.json")
+    fm = json.loads(seed_fmf.read_text(encoding="utf-8")) if seed_fmf.exists() else {}
     todo = sorted(s for s in smis if s not in fm)
     if todo:
         from fm import predict

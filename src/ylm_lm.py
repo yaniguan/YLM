@@ -251,7 +251,7 @@ class _LayerHook:
             raise TypeError(f"unsupported decoder layer output type {type(output)}")
         if need_attn:
             out_h, e, attn = adapter(h_in, x, mask, has, return_side=True, return_attn=True)
-            self.owner._attn_stream.append(attn)
+            self.owner._attn_stream.append(attn * has[:, None, None].to(attn.dtype))
             self.owner._vec_stream = e if self.owner._vec_stream is None else self.owner._vec_stream + e
         elif need_side:
             out_h, e = adapter(h_in, x, mask, has, return_side=True)

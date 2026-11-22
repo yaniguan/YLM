@@ -26,9 +26,11 @@ def load_qm9(pkl_path='data/qm9_xtb.pkl', sdf_path='data/gdb9.sdf', limit=None):
         if i not in smiles:
             continue
         r = dict(row, smiles=smiles[i])
-        mu = np.asarray(r['dipole'], dtype=float)
-        if not np.isfinite(np.r_[r['energy'], mu, np.asarray(r['pos']).ravel()]).all():
+        mu = np.asarray(r.get('dipole', [np.nan, np.nan, np.nan]), dtype=float)
+        energy = float(r.get('energy', np.nan))
+        if not np.isfinite(np.r_[energy, mu, np.asarray(r['pos']).ravel()]).all():
             continue
+        r['energy'] = energy
         r['targets'] = {'energy': float(r['energy']), 'dipole_norm': float(np.linalg.norm(mu))}
         r['geom'] = single_geometry(r['numbers'], r['pos'])
         result.append(r)

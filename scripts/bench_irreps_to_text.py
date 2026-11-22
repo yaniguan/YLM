@@ -78,7 +78,8 @@ def main():
                   irreps=str(irreps), text_dim=32, key_dim=16,
                   iterations=args.iterations, warmup=args.warmup, results=rows)
     if args.output:
-        args.output.write_text(json.dumps(result, indent=2) + '\n')
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
 
 
 if __name__ == '__main__':

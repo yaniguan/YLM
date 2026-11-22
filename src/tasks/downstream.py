@@ -99,6 +99,8 @@ def extract_features(model, tok, examples, device='cpu', batch_size=8, max_len=5
         if profiler:
             from src.tasks.common import batch_tokens
             profiler.step_done(batch_tokens(batch, model), len(chunk))
+    if not examples:
+        return np.zeros((0, model.lm.config.hidden_size), dtype=np.float32)
     return np.concatenate(features)
 
 
@@ -156,7 +158,8 @@ def fine_tune(model, tok, examples, y, train, val, test, *, seed=0, epochs=3, de
     from contextlib import nullcontext
     from src.tasks.common import batch_tokens
     # Caller reloads the original checkpoint for each target and seed.
-    head = torch.nn.Linear(model.lm.config.hidden_size, 1).to(device)
+    model_dtype = next(model.parameters()).dtype
+    head = torch.nn.Linear(model.lm.config.hidden_size, 1).to(device=device, dtype=model_dtype)
     opt = torch.optim.AdamW(list(model.parameters()) + list(head.parameters()), lr=lr)
     centre, scale = float(y[train].mean()), max(float(y[train].std()), 1e-6)
     targets = torch.tensor((y - centre) / scale, dtype=torch.float32, device=device)

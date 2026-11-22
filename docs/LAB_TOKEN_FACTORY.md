@@ -30,7 +30,7 @@ Lean is called in batches: the protocols are written to one `.lean` file that im
 
 ## Measured run (CPU only)
 
-The Lean checks use LabLean from PR #92 at commit `a30571a` (toolchain `leanprover/lean4:v4.36.0`). PR #92 must be merged first; until then `lean/` is not in this branch, the Lean test is skipped, and the Lean numbers below can only be reproduced with a separate checkout of that commit built with `lake build`. There is no CI job with Lean.
+The Lean checks use LabLean (`lean/` on `main`, originally from PR #92 at commit `a30571a`, toolchain `leanprover/lean4:v4.36.0`). In CI, `.github/workflows/lean.yml` runs `lake build` and executes the Python/Lean parity tests (`tests/test_lab_token_factory.py`).
 
 `src/lab_world.py` (Python copy version `lab_world-v2`) and its Lean bridge follow the `a30571a` model: the start state is checked first (unique ids, declared plates with their plastic mass, declared reagents, amounts that add up to the volume); amounts inside a container are in 1e-5 uL (volume times 10,000); the tip remembers each liquid it touched and may only enter a container that holds all of those reagents at no higher concentration (diluents excepted); incubation and the rotor take only tubes or whole plates; and the rotor is balanced by mass in mg. In the factory's world, stock tubes weigh 1,000 mg, plate P1 weighs 14,000 mg (both as in the LabLean examples), and water is a diluent.
 
@@ -70,5 +70,5 @@ SQL gate:
 - All data is synthetic. LabLean's rules are a small model of a bench (see PR #92 for what it does not cover). A protocol that passes LabLean can still be a bad protocol.
 - "Learning" here is a memory of refuted rules, not weight updates.
 - Execution match on two databases is still not a proof that a query is right.
-- The Lean checks need PR #92's `lean/` built (`lake build`). Without it the Python copy is used alone, and the records say `V1_lablean: skipped`.
-- Python and Lean agreement is only tested where a built LabLean is present. In this branch and in CI, the Lean test is skipped.
+- The Lean checks need `lean/` built (`lake build`). Without a local `lake build`, the Python copy is used alone and records say `V1_lablean: skipped`.
+- Python and Lean agreement is tested locally when `lean/` is built and automatically in CI via `.github/workflows/lean.yml`.

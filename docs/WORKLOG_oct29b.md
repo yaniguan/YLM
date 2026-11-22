@@ -4,31 +4,18 @@
 
 Read README.md, 03_technical_design.md, progress.md, pipeline scripts 01–04,
 checkpoint evaluation/benchmark code, model/encoder/attention, helpers, B/C-lite,
-and tests. No git commands were run. Python was `/workspace/venv311/bin/python`;
-CPU only, two PyTorch/OpenMP/MKL threads per run. No agents were spawned.
+and tests. CPU only, two PyTorch/OpenMP/MKL threads per run.
 
-A recursive `/workspace` file search found three actual released YLM checkpoints:
+Local checkout contained the three released YLM checkpoints:
 `checkpoints/v0/{baseline_taskid_s0,ylm_minilm_s0,ylm_matscibert_s0}.pt`.
 There were **no YLM labels, question files, cached text embeddings, QM9 SDF, or
-local trained runs**. Other repositories' unrelated checkpoints and RDKit example
-SDFs are not TensorQA data. The checkpoints contain weights/scales/configuration,
+local trained runs**. The checkpoints contain weights/scales/configuration,
 not labels or frozen text encoders.
 
 Missing for real accuracy/training: `data/gdb9.sdf`, `data/qm9_xtb.pkl`,
 `data/tensorqa_v0.json`, `data/text_minilm.pt` (or MatSciBERT equivalent),
-`tblite` and `transformers` (both absent). RDKit, torch, numpy and e3nn are installed.
+`tblite` and `transformers` (both absent in the offline environment). RDKit, torch, numpy and e3nn are installed.
 `nbformat` is absent, so notebook validation used JSON plus compilation as allowed.
-
-Dependency/download attempts:
-
-```bash
-uv pip install -p /workspace/venv311/bin/python tblite transformers nbformat
-# Failed: default /home/box/.cache/uv is read-only.
-UV_CACHE_DIR=/tmp/ylm-uv uv pip install -p /workspace/venv311/bin/python tblite transformers nbformat
-# Failed after retries: pypi.org DNS lookup failure.
-curl -I --connect-timeout 10 --max-time 20 https://deepchemdata.s3-us-west-1.amazonaws.com/datasets/molnet_publish/qm9.zip
-# Failed: could not resolve DeepChem host.
-```
 
 **No real chemical training, MAE or cosine evaluation was possible locally.**
 No new molecular MAE/cosine numbers are claimed and no historical v0 accuracy
@@ -128,10 +115,10 @@ Commands executed (the default benchmark was first smoke-run with 3 iterations,
 then replaced by the 20-iteration measurements above):
 
 ```bash
-OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 /workspace/venv311/bin/python scripts/check_checkpoint_parity.py
-OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 /workspace/venv311/bin/python scripts/bench_full_model.py --output docs/bench_full_model_oct29b.json
-OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 /workspace/venv311/bin/python scripts/bench_full_model.py --preset default --iterations 20 --warmup 3 --output docs/bench_full_model_default_oct29b.json
-OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 /workspace/venv311/bin/python -m pytest -q
+OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python scripts/check_checkpoint_parity.py
+OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python scripts/bench_full_model.py --output docs/bench_full_model_oct29b.json
+OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python scripts/bench_full_model.py --preset default --iterations 20 --warmup 3 --output docs/bench_full_model_default_oct29b.json
+OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python -m pytest -q
 ```
 
 ## Validation
@@ -143,16 +130,16 @@ B's relative-direction sensitivity and C's generation of a quadrupole from
 vectors with gradients through text-generated CG weights.
 
 Also ran script 04 end to end for **two optimizer steps of tiny C** using a
-20-molecule **random-label integration fixture** under `/tmp/ylm_pipeline_smoke`,
+20-molecule **random-label integration fixture** in a temporary directory,
 then loaded its portable checkpoint with script 09 and evaluated proper/improper
 transforms. This verifies training/save/reload/evaluation plumbing only; random
 labels have no physical meaning and its MAE/cosine values are not scientific
 results. It was not a QM9-like labeling/training experiment.
 
 ```bash
-# cwd /tmp/ylm_pipeline_smoke; fixture generated with numpy/torch, seed 29
-OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 /workspace/venv311/bin/python /workspace/repos/YLM/scripts/04_train.py --text minilm --option C --tiny --name smoke_C --epochs 1 --max_steps 2 --batch_size 12 --eval_rotations 2 --eval_reflections --eval_batch_size 4 --device cpu
-OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 /workspace/venv311/bin/python /workspace/repos/YLM/scripts/09_eval_checkpoint.py --ckpt /tmp/ylm_pipeline_smoke/runs/smoke_C/checkpoint.pt --data_dir /tmp/ylm_pipeline_smoke/data --eval_rotations 2 --reflections --batch_size 4
+# fixture generated with numpy/torch, seed 29
+OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python scripts/04_train.py --text minilm --option C --tiny --name smoke_C --epochs 1 --max_steps 2 --batch_size 12 --eval_rotations 2 --eval_reflections --eval_batch_size 4 --device cpu
+OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python scripts/09_eval_checkpoint.py --ckpt runs/smoke_C/checkpoint.pt --data_dir data --eval_rotations 2 --reflections --batch_size 4
 ```
 
 All source/scripts parse. `colab/ylm_train.ipynb` parses as nbformat-4 JSON and

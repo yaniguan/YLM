@@ -25,12 +25,16 @@ import json
 import math
 import os
 import pickle
+import sys
 import time
 
 import numpy as np
 import torch
-from e3nn import o3
-from transformers import AutoModel, AutoTokenizer
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import src  # noqa: E402, F401
+from e3nn import o3  # noqa: E402
+from transformers import AutoModel, AutoTokenizer  # noqa: E402
 
 TASKS = {"dipole": 0, "force": 1}
 SYMBOL = {1: "H", 6: "C", 7: "N", 8: "O", 9: "F"}

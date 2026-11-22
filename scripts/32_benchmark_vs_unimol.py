@@ -270,7 +270,11 @@ def main(argv=None) -> dict:
 
     seeds = _parse_seeds(args.seeds, args.seed)
     splits = _load_splits(args.data_dir, seeds[0])
-    featurizer = QuestionFeaturizer(mode=args.text_encoder, dim=args.text_dim)
+    featurizer = QuestionFeaturizer(
+        mode=args.text_encoder,
+        dim=args.text_dim,
+        allow_download=(args.text_encoder != "fast"),
+    )
 
     d_model = 64 if args.tiny else 128
     n_layers = 2 if args.tiny else 3

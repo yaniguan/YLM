@@ -33,8 +33,9 @@ def train_heads(data_dir):
         res[key] = {"n": len(y), "cv5_rmse": float(np.sqrt(np.mean((p-y)**2))),
                     "cv5_r2": float(1-np.sum((p-y)**2)/np.sum((y-y.mean())**2))}
         heads[key] = r.fit(X, y)
-    pickle.dump(heads, open(HERE/"fm_heads.pkl", "wb"))
-    json.dump(res, open(HERE/"fm_heads_cv.json", "w"), indent=1)
+    pickle.dump(heads, open(HERE / "fm_heads.pkl", "wb"))
+    (HERE / "results").mkdir(parents=True, exist_ok=True)
+    json.dump(res, open(HERE / "results" / "fm_heads_cv.json", "w", encoding="utf-8"), indent=1)
     return res
 
 def predict(smiles):

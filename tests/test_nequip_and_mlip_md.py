@@ -210,14 +210,14 @@ def test_torchscript_deployed_nequip_file_and_ylm_integrations(tmp_path: Path):
     R = _random_improper_o3(seed=43)
     v0, a0 = ylm(Z, pos, amask, txt, tmask, task)
     vr, ar = ylm(Z, pos @ R.T, amask, txt, tmask, task)
-    assert float((vr - v0 @ R.T).norm()) < 1e-10
-    assert float((ar - a0).abs().max()) < 1e-10
+    assert float((vr - v0 @ R.T).detach().norm().item()) < 1e-10
+    assert float((ar - a0).detach().abs().max().item()) < 1e-10
 
     uni = YLMUniverseModel.from_nequip(text_dim=32, backbone=f"nequip:{ckpt_path}").double().eval()
     u0 = uni(Z, pos, amask, txt, tmask)
     ur = uni(Z, pos @ R.T, amask, txt, tmask)
-    assert float((ur["scalar"] - u0["scalar"]).abs().max()) < 1e-10
-    assert float((ur["vector"] - u0["vector"] @ R.T).norm()) < 1e-10
+    assert float((ur["scalar"] - u0["scalar"]).detach().abs().max().item()) < 1e-10
+    assert float((ur["vector"] - u0["vector"] @ R.T).detach().norm().item()) < 1e-10
     assert float((ur["tensor"] - (R @ u0["tensor"] @ R.T)).norm()) < 1e-10
 
     # YLMCausalLM with NequIP backbone

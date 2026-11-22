@@ -10,7 +10,7 @@ Keeps left/right handedness (`R`/`S`) and `cis`/`trans` double-bond geometry int
 from __future__ import annotations
 
 import csv
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 import hashlib
 import json
 from pathlib import Path
@@ -128,7 +128,7 @@ class OuroborosManifestEntry:
     accepted: bool = True
     margin: Optional[float] = None
     stereo_unassigned: int = 0
-    conformers: list[dict] = None
+    conformers: list[dict] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return asdict(self)

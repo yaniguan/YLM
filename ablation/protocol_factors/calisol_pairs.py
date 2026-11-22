@@ -47,7 +47,8 @@ def build(seed=0, n_test=300, n_train=3000, n_dev=300):
         for doi, g in d.groupby("doi"):
             g = g.reset_index(drop=True); T = g["T"].values; K = g.k.values
             desc = [describe(g.loc[i], solv_cols)[0] for i in range(len(g))]
-            rr = random.Random(hash(doi) % 10**6); cand = []
+            det_seed = int(hashlib.md5(str(doi).encode("utf-8")).hexdigest()[:8], 16) % (10**6)
+            rr = random.Random(det_seed); cand = []
             for i in range(len(g)):
                 for j in range(i + 1, len(g)):
                     if abs(T[i] - T[j]) <= 1.0 and abs(K[i] - K[j]) / max(K[i], K[j]) >= 0.10 and desc[i] != desc[j]:

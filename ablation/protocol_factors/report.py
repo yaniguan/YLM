@@ -112,7 +112,7 @@ def _expected_layer_names():
 def main():
     items = load_items()
     out = defaultdict(list)
-    for reader, pat in [("Qwen2.5-0.5B", "results/qwen_own*.jsonl"), ("Gemini 4 Carbon", "results/gem_own.jsonl")]:
+    for reader, pat in [("Qwen2.5-0.5B", "results/qwen_own*.jsonl"), ("External LLM", "results/llm_own*.jsonl")]:
         res = load_reader(pat)
         # skip a reader with almost no scored items (an interrupted run)
         n = sum(len(d) for d in res.values())

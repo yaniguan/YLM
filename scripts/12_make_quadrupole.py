@@ -6,9 +6,10 @@ Origin: centre of nuclear charge, so the label depends only on the geometry (not
 Geometry: the same displaced geometries as the xTB labels (data/qm9_xtb.pkl), positions in bohr.
 Train the opt-in 0e+2e head with scripts/16_train_quad.py. v0 training is unchanged.
 
-  python scripts/12_make_quadrupole.py --n 2000 --out data/qm9_quad.pkl [--start 0 --stop 500]  # slices for array jobs
+  python scripts/12_make_quadrupole.py --stop 2000 --out data/qm9_quad.pkl [--start 0]  # slices for array jobs
 """
 import argparse
+import os
 import pickle
 import time
 
@@ -53,5 +54,6 @@ if __name__ == "__main__":
             out[m] = q
         if (m - args.start) % 100 == 0:
             print(m, f"{time.time() - t0:.0f}s", flush=True)
+    os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     pickle.dump(out, open(args.out, "wb"))
     print("saved", len(out), args.out)

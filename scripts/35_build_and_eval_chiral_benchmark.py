@@ -347,7 +347,11 @@ def build_chiral_universe_benchmark(
                         splits["test_zero_shot_scaffold"].extend(recs)
                     continue
 
-                if c_idx == n_confs_per_enantiomer - 2:
+                if n_confs_per_enantiomer <= 1:
+                    sp = "train"
+                elif n_confs_per_enantiomer == 2:
+                    sp = "train" if c_idx == 0 else "test"
+                elif c_idx == n_confs_per_enantiomer - 2:
                     sp = "val"
                 elif c_idx == n_confs_per_enantiomer - 1:
                     sp = "test"

@@ -366,9 +366,38 @@
     }
    },
    "then": {
+    "properties": {
+     "body": {
+      "type": "null"
+     }
+    },
     "required": [
      "reason"
     ]
+   }
+  },
+  {
+   "else": {
+    "properties": {
+     "parent_id": {
+      "pattern": "^[a-z]+:[A-Za-z0-9._-]+$",
+      "type": "string"
+     }
+    }
+   },
+   "if": {
+    "properties": {
+     "level": {
+      "const": "project"
+     }
+    }
+   },
+   "then": {
+    "properties": {
+     "parent_id": {
+      "type": "null"
+     }
+    }
    }
   },
   {

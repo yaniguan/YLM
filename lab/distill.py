@@ -22,7 +22,18 @@ from lab import protocol_qa as pqa
 
 ALLOWED_METHODS = ("sft", "dpo", "grpo")   # in this order
 ALLOWED_USES = ("eval_only", "train_and_eval")
-NON_COMMERCIAL = ("CC-BY-NC", "AGPL")
+NON_COMMERCIAL = ("CC-BY-NC", "AGPL", "GPL")
+COMMERCIAL_SPDX = {
+    "MIT",
+    "CC0-1.0",
+    "APACHE-2.0",
+    "BSD-2-CLAUSE",
+    "BSD-3-CLAUSE",
+    "CC-BY-4.0",
+    "UNLICENSE",
+    "0BSD",
+    "OWN",
+}
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -34,11 +45,15 @@ def load_config(path) -> dict:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
-def is_commercial_safe_license(lic: str) -> bool:
-    lic = str(lic or "").strip()
-    if not lic or lic.startswith("TBD"):
+def is_commercial_safe_license(lic: str, *, use: str = "train_and_eval") -> bool:
+    norm_lic = str(lic or "").strip().upper()
+    if not norm_lic or norm_lic.startswith("TBD"):
         return False
-    return not any(lic.upper().startswith(p) for p in NON_COMMERCIAL)
+    if any(norm_lic.startswith(p) for p in NON_COMMERCIAL):
+        return False
+    if use == "eval_only" and norm_lic == "CC-BY-SA-4.0":
+        return True
+    return norm_lic in COMMERCIAL_SPDX
 
 
 def validate_dataset_items_commercial(jsonl_path: Path, dataset_name: str) -> int:
@@ -102,7 +117,7 @@ def validate(cfg: dict, *, commercial: bool = False) -> list[str]:
         unverified = not lic.strip() or lic.startswith("TBD")
 
         if enforce_commercial:
-            if non_comm:
+            if non_comm or not is_commercial_safe_license(lic, use=use):
                 raise ConfigError(
                     f"data '{name}' is {lic or 'non-commercial'}: blocked in commercial product mode"
                 )
@@ -124,9 +139,9 @@ def validate(cfg: dict, *, commercial: bool = False) -> list[str]:
     return warnings
 
 
-def plan_lines(cfg: dict, warnings: Sequence[str]) -> list[str]:
+def plan_lines(cfg: dict, warnings: Sequence[str], *, commercial: bool = False) -> list[str]:
     st = cfg["student"]
-    mode = "commercial-safe" if cfg.get("commercial") else "research"
+    mode = "commercial-safe" if (commercial or cfg.get("commercial")) else "research"
     lines = [
         f"plan: {cfg['name']}  ({cfg.get('status', 'plan only')}; mode={mode})",
         f"teacher: {cfg['teacher'].get('model', 'TBD')}",
@@ -164,7 +179,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     except ConfigError as e:
         print(f"config error: {e}", file=sys.stderr)
         return 1
-    print("\n".join(plan_lines(cfg, warnings)))
+    print("\n".join(plan_lines(cfg, warnings, commercial=args.commercial)))
     if not args.dry_run:
         print("training is not implemented here yet; see labbench-posttrain posttrain/", file=sys.stderr)
         return 2

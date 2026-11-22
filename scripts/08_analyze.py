@@ -56,6 +56,8 @@ def sample_efficiency(runs_dir, out_dir):
                 continue  # LLM baseline
             if a.get("model", "ylm") != "ylm" or a.get("option", "A") != "A":
                 continue
+            if int(a.get("n_cross_layers", 1) or 1) != 1:
+                continue
             if float(a.get("attn_sup", 0.0) or 0.0) > 0.0 or a.get("legacy_odd_scalars", False):
                 continue
             f = r["test"]["force"]
@@ -187,7 +189,7 @@ def breakdown(runs_dir, out_dir):
                           "| description | n | atom acc |", "|---|---|---|"]
                 lines += [f"| {d} | {n} | {a:.3f} |" for a, n, d in worst]
                 lines.append("")
-    open(f"{out_dir}/breakdown.md", "w").write("\n".join(lines) + "\n")
+    open(f"{out_dir}/breakdown.md", "w", encoding="utf-8").write("\n".join(lines) + "\n")
     print("wrote", f"{out_dir}/breakdown.md")
 
 

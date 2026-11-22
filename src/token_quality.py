@@ -426,7 +426,7 @@ class TinyGPT(nn.Module):
                 nn.init.zeros_(m.bias)
 
     def forward(self, idx):
-        x = self.tok(idx) + self.pos(torch.arange(idx.shape[1]))
+        x = self.tok(idx) + self.pos(torch.arange(idx.shape[1], device=idx.device))
         x = Fn.dropout(x, self.drop, self.training)
         for b in self.blocks:
             x = b(x)
@@ -444,11 +444,13 @@ def train(text, seed, steps=500, batch=8, lr=1e-3):
     torch.manual_seed(seed)
     model = TinyGPT()
     data = torch.tensor(encode(text), dtype=torch.long)
+    if len(data) <= CTX:
+        raise ValueError(f"text must encode to > {CTX} tokens, got {len(data)}")
     opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.1)
     g = torch.Generator().manual_seed(seed)
     losses = []
     for s in range(steps):
-        ix = torch.randint(0, len(data) - CTX - 1, (batch,), generator=g)
+        ix = torch.randint(0, len(data) - CTX, (batch,), generator=g)
         x = torch.stack([data[i:i + CTX] for i in ix])
         y = torch.stack([data[i + 1:i + CTX + 1] for i in ix])
         for group in opt.param_groups:
@@ -490,15 +492,16 @@ def option_logprob(model, prefixes, options, batch=32, truncate=False, per_char=
                 raise ValueError("need a non-empty prefix and option")
             seqs.append(encode(s))
             spans.append(len(o))
+        dev = next(model.parameters()).device
         n = max(len(s) for s in seqs)
-        x = torch.zeros(len(seqs), n - 1, dtype=torch.long)
+        x = torch.zeros(len(seqs), n - 1, dtype=torch.long, device=dev)
         for j, s in enumerate(seqs):
-            x[j, :len(s) - 1] = torch.tensor(s[:-1])
+            x[j, :len(s) - 1] = torch.tensor(s[:-1], device=dev)
         lp = Fn.log_softmax(model(x), -1)
         for j, s in enumerate(seqs):
             L, k = len(s), spans[j]
-            tgt = torch.tensor(s[L - k:])
-            v = lp[j, L - k - 1:L - 1].gather(1, tgt[:, None])[:, 0]
+            tgt = torch.tensor(s[L - k:], device=dev)
+            v = lp[j, L - k - 1:L - 1].gather(1, tgt[:, None])[:, 0].cpu()
             out.append(v.double().numpy() if per_char else v.sum().item())
     return out
 

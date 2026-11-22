@@ -4,7 +4,8 @@ import argparse
 import json
 from pathlib import Path
 import sys
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
 import src
 import torch
 from e3nn import o3
@@ -13,12 +14,13 @@ from src.model import YLM
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--output', type=Path, default=Path('docs/checkpoint_parity_oct29b.json'))
+    p.add_argument('--ckpt-dir', type=Path, default=REPO_ROOT / 'checkpoints' / 'v0')
+    p.add_argument('--output', type=Path, default=REPO_ROOT / 'docs' / 'checkpoint_parity_oct29b.json')
     args = p.parse_args()
     torch.set_num_threads(2)
     torch.manual_seed(29)
     rows = []
-    for path in sorted(Path('checkpoints/v0').glob('*.pt')):
+    for path in sorted(args.ckpt_dir.glob('*.pt')):
         ck = torch.load(path, map_location='cpu', weights_only=False)
         d = ck['state_dict']['text_proj.0.weight'].numel()
         inputs = (torch.tensor([[6, 6, 8, 7, 1, 1, 1, 1]]), torch.randn(1, 8, 3)*2,

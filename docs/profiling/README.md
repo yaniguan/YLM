@@ -1,6 +1,6 @@
 # GPU Profiling: Full Analysis (WignerFlow / ouroboros-ocsr / YLM, Colab runs)
 
-> Generated: 2026-11-03 (Pacific Time). Every number comes from the raw files on Google Drive (yaniguan2). The raw file IDs are in `data.json` / `docs/profiling/manifest.json`.
+> Generated: 2026-11-03 (Pacific Time). Every number comes from the raw Colab profiling artifacts (`data.json` / `docs/profiling/manifest.json`).
 > Data we could not find is marked **missing**. No number is made up or estimated.
 
 ## 0. One-page summary
@@ -14,7 +14,7 @@
 | YLM full_B (4 segments) | 778–1,270 samples/s | 104–114 ms | 25–33% | 1.45–1.48 GB | **CPU / kernel-launch bound**: 6.35 s vs 0.81 s (**7.8×**); 41,558 launches |
 | YLM full_C (6 segments) | 413–452 samples/s | 284–286 ms (backward about 213 ms = 75%) | 75–81% | 11.4 GB | **GPU memory-bandwidth bound (elementwise ops)**: `SliceBackward0` takes 3.27 s of 4.90 s CUDA time (67%); `aten::add_` 2.38 s (49%), `fill_` 0.79 s; `slice_backward` allocated 1,386.7 GB of zero tensors in total |
 
-Charts: `charts/` (this folder) (per repo: `*_step_breakdown.png`, `*_top_cuda.png`; ocsr A trace: `ocsr_A_probe_trace_kernels.png`; cross-repo: `cross_gpu_util.png`, `cross_cpu_vs_cuda.png`, `cross_peak_memory.png`).
+Charts: `charts/` (this folder) (per repo: `*_step_breakdown.png`, `*_top_cuda.png`; cross-repo: `cross_gpu_util.png`, `cross_cpu_vs_cuda.png`, `cross_peak_memory.png`).
 
 ---
 

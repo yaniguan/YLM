@@ -473,11 +473,11 @@ renderPanel();
 
 def render_html_report(result: ProbeResult, title: Optional[str] = None) -> str:
     safe_title = html.escape(title or f"YLM Probe · {result.frame.label if result.frame else 'Report'}")
-    payload = json.dumps([_serialize_probe_payload(result)])
+    payload = json.dumps([_serialize_probe_payload(result)]).replace("</", "<\\/")
     return _HTML_TEMPLATE.replace("__TITLE__", safe_title).replace("__PAYLOAD_JSON__", payload)
 
 
 def render_trajectory_html_report(scan_result, title: Optional[str] = None) -> str:
     safe_title = html.escape(title or f"YLM Trajectory ({len(scan_result.frame_results)} frames)")
-    payload = json.dumps([_serialize_probe_payload(r) for r in scan_result.frame_results])
+    payload = json.dumps([_serialize_probe_payload(r) for r in scan_result.frame_results]).replace("</", "<\\/")
     return _HTML_TEMPLATE.replace("__TITLE__", safe_title).replace("__PAYLOAD_JSON__", payload)

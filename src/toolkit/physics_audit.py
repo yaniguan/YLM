@@ -855,7 +855,8 @@ def run_physics_compliance_audit(
 
     # Rule 8: Crystal Repeat Box
     with torch.no_grad():
-        pbc_frame = frame if frame.cell_bohr is not None else get_builtin_presets()["lifepo4_pbc_crystal"]["frame"]
+        has_pbc = frame.cell_bohr is not None and (frame.pbc is None or bool(np.any(frame.pbc)))
+        pbc_frame = frame if has_pbc else get_builtin_presets()["lifepo4_pbc_crystal"]["frame"]
         p_in0 = _frame_to_tensors(pbc_frame, question, dtype)
         p_out0 = ylm(
             p_in0["Z"], p_in0["pos"], p_in0["atom_mask"],
@@ -863,7 +864,11 @@ def run_physics_compliance_audit(
             lot_id=p_in0["lot_id"], cell=p_in0["cell"], pbc=p_in0["pbc"],
         )
         pos_lat = p_in0["pos"].clone()
-        pos_lat[0, 0] = pos_lat[0, 0] + p_in0["cell"][0, 0] - p_in0["cell"][0, 1]
+        active_axes = [k for k in range(3) if bool(p_in0["pbc"][0, k])]
+        shift_vec = p_in0["cell"][0, active_axes[0]].clone()
+        if len(active_axes) > 1:
+            shift_vec = shift_vec - p_in0["cell"][0, active_axes[1]]
+        pos_lat[0, 0] = pos_lat[0, 0] + shift_vec
         p_out_shift = ylm(
             p_in0["Z"], pos_lat, p_in0["atom_mask"],
             p_in0["text"], p_in0["text_mask"],
