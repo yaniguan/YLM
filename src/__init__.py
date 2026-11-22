@@ -4,7 +4,10 @@ Older e3nn releases serialize Python slices in their bundled Wigner constants.
 Allow only that harmless builtin, preserving PyTorch's weights-only loader.
 Import YLM before importing e3nn directly when using those releases.
 """
-import torch
+try:
+    import torch
+except ModuleNotFoundError:
+    torch = None
 
-if hasattr(torch.serialization, "add_safe_globals"):
+if torch is not None and hasattr(torch.serialization, "add_safe_globals"):
     torch.serialization.add_safe_globals([slice])

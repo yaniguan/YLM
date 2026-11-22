@@ -32,4 +32,5 @@ jobs:
       - name: Verify Python lab_world matches LabLean
         env:
           LABLEAN_DIR: lean
+          PYTHONPATH: .
         run: python -m pytest -q tests/test_lab_token_factory.py -k lean -o testpaths=tests
