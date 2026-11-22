@@ -89,3 +89,25 @@ Also report the error in the dataset's own orientation (`mae_orig_frame`) for mo
 CC BY 4.0. QM9 is released under CC0 / open terms by its authors; please also cite:
 Ramakrishnan, Dral, Rupp, von Lilienfeld, *Quantum chemistry structures and properties of 134 kilo molecules*,
 Scientific Data 1, 140022 (2014). xTB: Bannwarth, Ehlert, Grimme, JCTC 15, 1652 (2019).
+
+
+# TensorQA-v1 and TensorQA-pol
+
+## TensorQA-v1 (`data/tensorqa_v1.json`, built by `scripts/54_make_splits.py` and `scripts/55_make_tensorqa_v1.py`)
+
+- **Molecules**: the same 20,000 QM9 molecules and GFN2-xTB forces as v0 (interface benchmark, not DFT accuracy).
+- **Tasks** (3-vectors, hartree/bohr): `force` (`F_A`); `diff` (`F_A - F_B`); `proj` (`(F_A . u) u` with `u = unit(r_B - r_A)`, the *signed axis projection*, pointing away from `B` when `F_A . u < 0`).
+- **Splits** (leak-aware):
+  - Molecules with the same canonical heavy-atom graph never cross split boundaries (v0 shared 4 canonical graphs).
+  - `scaf` holds out entire Bemis-Murcko scaffold groups (in v0, 86.1% of test molecules had a scaffold seen in train).
+  - `test_heldout` and `scaf_heldout` re-word the test questions in two held-out style families (`chatty`, `inverted`).
+  - `comb` holds out the `(task, element of A)` pairs `(proj, O)` and `(diff, N)` from train/val/test.
+  - `cf` contains counterfactual groups (antisymmetry `D(A,B) = -D(B,A)` and chain additivity `D(A,C) = D(A,B) + D(B,C)`) on test molecules.
+- **Wordings & Audit**: generated in 6 style families (`scripts/53_paraphrase_templates.py`), checked by a second pass, and audited (`scripts/57_audit_templates.py`) keeping only `ok` templates without false bond assumptions. `audit/audit_sample_200.csv` provides a 198-row stratified sheet for human review (`verdict` column left blank).
+- **Rule parser baseline**: implemented in `src/parse_question.py` (`scripts/50_parse_comp.py`) by inspecting failures on the `train` split only; accuracy on held-out style families is reported alongside model metrics (`scripts/56_train_v1.py`, `scripts/61_analyze_v1.py`).
+
+## TensorQA-pol (`data/tensorqa_pol.json`, built by `scripts/58_make_pol_data.py`)
+
+- **Source & License**: Yang, Lao, Wilkins, Grisafi, Ceriotti, DiStasio, *Quantum Mechanical Static Dipole Polarizabilities in the QM7b and AlphaML Showcase Databases*, Scientific Data 6, 152 (2019), and Wilkins et al., *Accurate molecular polarizabilities with coupled cluster theory and machine learning*, PNAS 116, 3401 (2019); Materials Cloud Archive `10.24435/materialscloud:2019.0002`, **CC BY 4.0**. Contains 7,211 QM7b molecules (`C, H, N, O, S, Cl`) with LR-CCSD / d-aug-cc-pVDZ static polarizability tensors (plus B3LYP and SCAN0 tensors used only as classical quantum-chemistry references). Raw `qm7b_coords.xyz` is downloaded directly from Materials Cloud (`scripts/58_make_pol_data.py` header) and is not redistributed in git.
+- **Tasks**: `pol_iso` (`tr(alpha)/3`, `0e` scalar), `pol_aniso` (traceless part, five `2e` coefficients), `pol_dir` (`u^T alpha u`, scalar), and `pol_ind` (`alpha u`, `1o` vector), where `u = unit(r_B - r_A)` between two word-described atoms `A` and `B`. Units: atomic units.
+- **Splits**: grouped 80/10/10 by canonical connectivity graph (distance-based RDKit bonds used only to word atom descriptions; models receive atomic numbers and 3D positions only), plus `test_heldout` in held-out style families (`scripts/59_train_pol.py`, `scripts/60_parse_pol.py`).

@@ -48,7 +48,7 @@ def invariants(x, irreps, legacy_odd_scalars=False):
 
 
 class IrrepsToText(nn.Module):
-    def __init__(self, text_dim, atom_irreps, out_irreps, key_dim=64, option="A", legacy_odd_scalars=False, b_score_mode="legacy", c_tp_mode="fully_connected"):
+    def __init__(self, text_dim, atom_irreps, out_irreps, key_dim=64, option="A", legacy_odd_scalars=False, b_score_mode="legacy", c_tp_mode="fully_connected", parity=None):
         super().__init__()
         if option not in {"A", "B", "C"}:
             raise ValueError("option must be A, B, or C")
@@ -56,12 +56,17 @@ class IrrepsToText(nn.Module):
             raise ValueError("Unknown B score mode")
         if c_tp_mode not in {"fully_connected", "channelwise"}:
             raise ValueError("Unknown C tensor-product mode")
+        if parity is not None:
+            if parity not in {"o3", "so3"}:
+                raise ValueError("parity must be 'o3' or 'so3'")
+            legacy_odd_scalars = parity == "so3"
         self.b_score_mode = b_score_mode
         self.c_tp_mode = c_tp_mode
         self.audit_enabled = False
         self.last_scores = None
         self.option = option
         self.legacy_odd_scalars = legacy_odd_scalars
+        self.parity = "so3" if legacy_odd_scalars else "o3"
         self.atom_irreps = o3.Irreps(atom_irreps)
         self.out_irreps = o3.Irreps(out_irreps)
         n_inv = self.atom_irreps.num_irreps
