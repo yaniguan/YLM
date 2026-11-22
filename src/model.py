@@ -83,10 +83,15 @@ class YLM(nn.Module):
     def __init__(self, text_dim, text_mode="text", hidden_irreps="64x0e + 8x0o + 32x1o + 8x1e + 16x2e",
                  cross_irreps="32x0e + 32x1o + 8x1e + 8x2e", n_layers=3, n_tasks=2, option="A",
                  legacy_odd_scalars=False, b_score_mode="legacy", c_tp_mode="fully_connected", n_cross_layers=1,
-                 tensor_readout=False):
+                 tensor_readout=False, parity=None):
         super().__init__()
         if n_cross_layers < 1:
             raise ValueError("n_cross_layers must be >= 1")
+        if parity is not None:
+            if parity not in {"o3", "so3"}:
+                raise ValueError("parity must be 'o3' or 'so3'")
+            legacy_odd_scalars = parity == "so3"
+        self.parity = "so3" if legacy_odd_scalars else "o3"
         self.text_mode = text_mode
         self.n_cross_layers = n_cross_layers
         self.tensor_readout = bool(tensor_readout)
@@ -171,7 +176,7 @@ class YLM(nn.Module):
         if self.text_mode == "taskid":
             text = self.task_embed(task)[:, None, :]                  # (B, 1, d)
             text_mask = torch.ones(text.shape[:2], dtype=torch.bool, device=text.device)
-        h = self.text_proj(text)                                      # (B, T, 256) invariant
+        h = self.text_proj(text.to(self.text_proj[1].weight.dtype))   # (B, T, 256) invariant
         x = (self.encoder(Z, pos, atom_mask, cell=cell, pbc=pbc)
              if cell is not None else self.encoder(Z, pos, atom_mask))  # (B, N, D)   equivariant
         e, attn = self.cross(h, x, atom_mask)                         # (B, T, D')  equivariant

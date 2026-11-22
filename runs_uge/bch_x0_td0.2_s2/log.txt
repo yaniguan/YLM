@@ -1,0 +1,45 @@
+device cuda | params 544870 | scale [0.09104429185390472, 0.04346705600619316]
+epoch 0 loss 1.0006 | diff mae 0.0656 cos 0.007 | proj mae 0.0251 cos 0.021 | 45s
+epoch 1 loss 0.9996 | diff mae 0.0657 cos -0.006 | proj mae 0.0251 cos 0.028 | 87s
+epoch 2 loss 0.9998 | diff mae 0.0657 cos -0.016 | proj mae 0.0251 cos 0.020 | 128s
+epoch 3 loss 0.9974 | diff mae 0.0662 cos 0.002 | proj mae 0.0254 cos 0.028 | 169s
+epoch 4 loss 0.9523 | diff mae 0.0646 cos 0.091 | proj mae 0.0245 cos 0.102 | 211s
+epoch 5 loss 0.8672 | diff mae 0.0605 cos 0.205 | proj mae 0.0238 cos 0.160 | 254s
+epoch 6 loss 0.8181 | diff mae 0.0590 cos 0.249 | proj mae 0.0229 cos 0.193 | 293s
+epoch 7 loss 0.7899 | diff mae 0.0575 cos 0.313 | proj mae 0.0227 cos 0.236 | 333s
+epoch 8 loss 0.7716 | diff mae 0.0579 cos 0.311 | proj mae 0.0229 cos 0.223 | 372s
+epoch 9 loss 0.7633 | diff mae 0.0573 cos 0.324 | proj mae 0.0230 cos 0.236 | 418s
+epoch 10 loss 0.7384 | diff mae 0.0561 cos 0.348 | proj mae 0.0227 cos 0.299 | 458s
+epoch 11 loss 0.7084 | diff mae 0.0539 cos 0.395 | proj mae 0.0221 cos 0.333 | 498s
+epoch 12 loss 0.6834 | diff mae 0.0531 cos 0.400 | proj mae 0.0217 cos 0.339 | 538s
+epoch 13 loss 0.6512 | diff mae 0.0532 cos 0.407 | proj mae 0.0217 cos 0.357 | 577s
+epoch 14 loss 0.6210 | diff mae 0.0506 cos 0.446 | proj mae 0.0210 cos 0.383 | 617s
+epoch 15 loss 0.5965 | diff mae 0.0503 cos 0.463 | proj mae 0.0211 cos 0.381 | 657s
+epoch 16 loss 0.5677 | diff mae 0.0485 cos 0.512 | proj mae 0.0202 cos 0.444 | 698s
+epoch 17 loss 0.5559 | diff mae 0.0470 cos 0.537 | proj mae 0.0202 cos 0.459 | 738s
+epoch 18 loss 0.5238 | diff mae 0.0467 cos 0.549 | proj mae 0.0197 cos 0.479 | 778s
+epoch 19 loss 0.5122 | diff mae 0.0454 cos 0.568 | proj mae 0.0192 cos 0.502 | 819s
+epoch 20 loss 0.4864 | diff mae 0.0447 cos 0.584 | proj mae 0.0189 cos 0.504 | 858s
+epoch 21 loss 0.4686 | diff mae 0.0433 cos 0.604 | proj mae 0.0181 cos 0.536 | 898s
+epoch 22 loss 0.4335 | diff mae 0.0413 cos 0.635 | proj mae 0.0173 cos 0.563 | 938s
+epoch 23 loss 0.4050 | diff mae 0.0400 cos 0.660 | proj mae 0.0162 cos 0.593 | 978s
+epoch 24 loss 0.3745 | diff mae 0.0378 cos 0.692 | proj mae 0.0153 cos 0.610 | 1017s
+epoch 25 loss 0.3533 | diff mae 0.0366 cos 0.706 | proj mae 0.0154 cos 0.593 | 1057s
+epoch 26 loss 0.3207 | diff mae 0.0328 cos 0.757 | proj mae 0.0145 cos 0.625 | 1098s
+epoch 27 loss 0.3031 | diff mae 0.0309 cos 0.784 | proj mae 0.0142 cos 0.634 | 1138s
+epoch 28 loss 0.2839 | diff mae 0.0300 cos 0.796 | proj mae 0.0141 cos 0.641 | 1178s
+epoch 29 loss 0.2693 | diff mae 0.0293 cos 0.797 | proj mae 0.0139 cos 0.641 | 1217s
+epoch 30 loss 0.2590 | diff mae 0.0287 cos 0.805 | proj mae 0.0137 cos 0.646 | 1257s
+epoch 31 loss 0.2537 | diff mae 0.0282 cos 0.811 | proj mae 0.0137 cos 0.649 | 1296s
+epoch 32 loss 0.2456 | diff mae 0.0277 cos 0.817 | proj mae 0.0135 cos 0.651 | 1336s
+epoch 33 loss 0.2416 | diff mae 0.0276 cos 0.817 | proj mae 0.0135 cos 0.654 | 1376s
+epoch 34 loss 0.2395 | diff mae 0.0274 cos 0.818 | proj mae 0.0135 cos 0.650 | 1415s
+epoch 35 loss 0.2374 | diff mae 0.0272 cos 0.822 | proj mae 0.0134 cos 0.655 | 1455s
+epoch 36 loss 0.2366 | diff mae 0.0272 cos 0.822 | proj mae 0.0134 cos 0.655 | 1494s
+epoch 37 loss 0.2314 | diff mae 0.0272 cos 0.822 | proj mae 0.0133 cos 0.655 | 1535s
+epoch 38 loss 0.2312 | diff mae 0.0271 cos 0.822 | proj mae 0.0133 cos 0.656 | 1575s
+epoch 39 loss 0.2321 | diff mae 0.0271 cos 0.822 | proj mae 0.0133 cos 0.656 | 1615s
+test {"diff": {"mae": 0.028101732488755877, "cosine": 0.8106199346277017, "eq_err_mean": 2.7768332284963034e-06}, "proj": {"mae": 0.01383610623643817, "cosine": 0.6565392472460154, "eq_err_mean": 4.9910105690291835e-06}}
+test diag {"diff": {"hit": [[0.18969126045703888, 0.1954474151134491], [0.18131868541240692, 0.20355834066867828]], "coef": [-0.0810844898223877, -0.0792727842926979, -0.0011171642690896988, 0.017656181007623672]}, "proj": {"hit": [[0.04971219226717949, 0.3581894338130951], [0.32993197441101074, 0.04918890818953514]], "coef": [-0.06382021307945251, -0.018977034837007523, 0.13350948691368103, -1.1742079257965088]}}
+test_heldout {"diff": {"mae": 0.080706897916276, "cosine": -0.5322028036800088, "eq_err_mean": 4.004228709859606e-06}, "proj": {"mae": 0.016549371133883887, "cosine": 0.5948735924855177, "eq_err_mean": 6.851223061096793e-06}}
+test_heldout diag {"diff": {"hit": [[0.05389848351478577, 0.3369963467121124], [0.3244374692440033, 0.054421767592430115]], "coef": [-0.3137610852718353, 0.23870445787906647, 0.21341797709465027, -0.36199676990509033]}, "proj": {"hit": [[0.04814233258366585, 0.36263737082481384], [0.331240177154541, 0.051020409911870956]], "coef": [-0.02362721413373947, 0.04659970849752426, 0.3327677249908447, -1.02985680103302]}}

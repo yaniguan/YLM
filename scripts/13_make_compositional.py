@@ -4,12 +4,12 @@
            Needs TWO atoms selected and combined with a sign.
   T5 proj  "What is the vector projection of the force on A onto the direction toward B?"   (F_A . u) u, u = unit(r_B - r_A)
            This is the AXIS projection: signed, so it points away from B when F_A . u < 0 (not a ray component).
-           Needs a direction built from two atoms (Option B/C territory); a plain weighted average of atom
-           vectors cannot make it.
+           Needs a direction built from two atoms (Option B/C territory); a single weighted average of atom
+           vectors is not designed for it (see scripts/62_convex_ceiling.py: it is not impossible either).
 
 Atoms A, B are described as in TensorQA-v0 (unique descriptions only), A != B.
 Splits follow tensorqa_v0.json (by molecule). Held-out wordings only in test_heldout.
-A plain parser needs a new grammar rule per question type; that is the point of the comparison.
+A parser needs a new grammar rule per question type; that is the point of the comparison.
 
   python scripts/13_make_compositional.py            # -> data/tensorqa_comp.json
 """
@@ -38,7 +38,21 @@ TEMPLATES = {
              "Give the component of the force on {a} along the direction to {b}.",
              "Project the force on {a} onto the line pointing to {b}."],
 }
-HELDOUT_IDX = 2  # last template of each task is only used in test_heldout
+HELDOUT_IDX = 2  # last of the three templates above is only used in test_heldout
+EXTRA = {
+    "diff": [
+        "Take the force on {a} and remove the force on {b}.",
+        "Starting from the force on {a}, subtract the force on {b}.",
+        "Take away the force on {b} from the force on {a}.",
+        "Compute the vector difference, the force on {a} less the force on {b}.",
+    ],
+    "proj": [
+        "How much of the force on {a} lies along the direction toward {b}?",
+        "Keep only the component of the force on {a} along the line to {b}.",
+        "What is the force on {a} resolved along the line towards {b}?",
+        "Of the force on {a}, give just the portion lying along the line to {b}.",
+    ],
+}
 
 
 def main():
@@ -49,12 +63,30 @@ def main():
     p.add_argument("--out", default="data/tensorqa_comp.json")
     p.add_argument("--pairs_per_task", type=int, default=2)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument(
+        "--paraphrases",
+        default=None,
+        help="data/paraphrases.json (scripts/53_paraphrase_templates.py): free-form wordings",
+    )
+    p.add_argument("--extra", type=int, default=0, help="extra training wordings per task (0-4)")
     args = p.parse_args()
     rng = random.Random(args.seed)
+    trng = random.Random(args.seed + 1)
     labels = pickle.load(open(args.labels, "rb"))
     split_of = {q["mol"]: q["split"] for q in json.load(open(args.v0)) if q["split"] != "test_heldout"}
     supplier = Chem.SDMolSupplier(args.sdf, removeHs=False, sanitize=True)
 
+    para = None
+    if args.paraphrases:
+        P = json.load(open(args.paraphrases))
+        hs = set(P["heldout_styles"])
+        para = {
+            t: dict(
+                train=[x for st, v in P["templates"][t].items() if st not in hs for x in v],
+                held=[x for st, v in P["templates"][t].items() if st in hs for x in v],
+            )
+            for t in TEMPLATES
+        }
     out = []
     for m, split in sorted(split_of.items()):
         lab = labels[m]
@@ -72,11 +104,17 @@ def main():
                     u = pos[b] - pos[a]
                     u /= np.linalg.norm(u)
                     target = (forces[a] @ u) * u
-                if np.abs(target).max() > 2 * mkq.MAX_FORCE:
+                if not np.isfinite(target).all() or np.abs(target).max() > 2 * mkq.MAX_FORCE:
                     continue
-                splits = [(split, rng.choice(templates[:HELDOUT_IDX]))]
-                if split == "test":
-                    splits.append(("test_heldout", templates[HELDOUT_IDX]))
+                if para:
+                    splits = [(split, trng.choice(para[task]["train"]))]
+                    if split == "test":
+                        splits.append(("test_heldout", trng.choice(para[task]["held"])))
+                else:
+                    train_t = templates[:HELDOUT_IDX] + EXTRA[task][: args.extra]
+                    splits = [(split, trng.choice(train_t))]
+                    if split == "test":
+                        splits.append(("test_heldout", templates[HELDOUT_IDX]))
                 for sp, t in splits:
                     out.append(dict(mol=m, split=sp, task=task, atoms=[a, b], target=target.tolist(),
                                     question=t.format(a=desc[a], b=desc[b])))

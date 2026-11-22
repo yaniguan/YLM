@@ -2,7 +2,7 @@
 
   python scripts/14_train_comp.py --model bc       --name comp_bc_s0
   python scripts/14_train_comp.py --model optA     --name comp_optA_s0
-  python scripts/14_train_comp.py --model pipeline --name comp_pipe_s0
+  python scripts/14_train_comp.py --model pipeline --name comp_pipe_s0  # needs scripts/50_parse_comp.py
 
 Same rotation protocol as scripts/04_train.py. Needs data/text_comp_<text>.pt (03_embed_text.py --out ...).
 """
@@ -16,9 +16,10 @@ import time
 
 import numpy as np
 import torch
-from e3nn import o3
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import src  # noqa: E402, F401
+from e3nn import o3  # noqa: E402
 from src.baselines import PipelineComp  # noqa: E402
 from src.model import YLM  # noqa: E402
 from src.option_bc import CompModel  # noqa: E402
@@ -156,11 +157,36 @@ def evaluate(model, kind, data, sp, scale, device, n_rot, bs=512):
     }
 
 
+@torch.no_grad()
+def diagnose(model, data, sp, device, bs=512):
+    """Pointer hit matrix and mean invariant coefficients per task for Option B/C-lite."""
+    model.eval()
+    hits = {t: torch.zeros(2, 2) for t in TASKS}
+    coef = {t: torch.zeros(4) for t in TASKS}
+    n = {t: 0 for t in TASKS}
+    for s in range(0, len(sp["mol"]), bs):
+        idx = torch.arange(s, min(s + bs, len(sp["mol"])))
+        inp, _, task = batch(data, sp, idx, device)
+        model(*inp)
+        arg = [a.argmax(-1).cpu() for a in model.last["attn"]]
+        atoms, task, c = sp["atoms"][idx], task.cpu(), model.last["c"].cpu()
+        for t, k in TASKS.items():
+            sel = task == k
+            n[t] += int(sel.sum())
+            coef[t] += c[sel].sum(0)
+            for h in range(2):
+                for j in range(2):
+                    hits[t][h, j] += (arg[h][sel] == atoms[sel][:, j]).sum()
+    model.train()
+    return {t: dict(hit=(hits[t] / max(1, n[t])).tolist(), coef=(coef[t] / max(1, n[t])).tolist()) for t in TASKS}
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--model", choices=["bc", "optA", "pipeline"], required=True)
     p.add_argument("--text", default="matscibert")
     p.add_argument("--data", default="tensorqa_comp")
+    p.add_argument("--token_dropout", type=float, default=0.0, help="bc only: drop this fraction of text tokens in training")
     p.add_argument("--name", required=True)
     p.add_argument("--epochs", type=int, default=40)
     p.add_argument("--batch_size", type=int, default=128)
@@ -194,7 +220,13 @@ def main():
     train = splits["train"]
     scale = torch.stack([train["target"][train["task"] == k].pow(2).mean().sqrt() for k in TASKS.values()])
     sd = scale.to(device)
-    model = (PipelineComp() if pipe else CompModel(data["dim"]) if args.model == "bc" else YLM(text_dim=data["dim"])).to(device)
+    model = (
+        PipelineComp()
+        if pipe
+        else CompModel(data["dim"], token_dropout=args.token_dropout)
+        if args.model == "bc"
+        else YLM(text_dim=data["dim"])
+    ).to(device)
     say("device", device, "| params", sum(q.numel() for q in model.parameters()), "| scale", scale.tolist())
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-5)
     total = args.epochs * math.ceil(len(train["mol"]) / args.batch_size)
@@ -235,6 +267,9 @@ def main():
             d = {k: v[: args.test_limit] for k, v in d.items()}
         results[sp] = evaluate(model, args.model, data, d, scale, device, args.eval_rotations)
         say(sp, json.dumps(results[sp]))
+        if args.model == "bc":
+            results[sp + "_diag"] = diagnose(model, data, d, device)
+            say(sp, "diag", json.dumps(results[sp + "_diag"]))
     json.dump(results, open(f"{out}/results.json", "w"), indent=2)
 
 

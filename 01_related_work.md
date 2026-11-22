@@ -271,3 +271,21 @@ This is the novelty-critical group.
 **EquiVLA** (above, C) — needs a close read.
 
 Nothing found (in my searches) where text tokens do cross-attention *over l>=1 irreps* and return an l>=1 answer with guaranteed equivariance, evaluated on tensor Q&A.
+
+
+## E. Additional Literature Positioning (Verified on arXiv / Proceedings)
+
+**GeoMFormer** (Chen et al., ICML 2024) — https://arxiv.org/abs/2406.16853
+- Two streams (invariant, equivariant) exchanging information via cross-attention: invariant representations query key/value pairs of the equivariant stream and vice versa. Closest mechanism to Option A (invariant weights, equivariant values), except its queries come from the molecule itself rather than natural-language questions chosen at test time.
+
+**GEM / Grounded Equivariant Manipulation** (Jia et al., arXiv 2406.15677) — https://arxiv.org/abs/2406.15677
+- Language-conditioned manipulation equivariant in planar SE(2). Closest problem framing in 2D robotics; YLM targets SO(3)/O(3) irreps (`l <= 2`) and typed scientific vector/tensor observables on 3D molecular geometry.
+
+**Large Language-Geometry Model (EquiLLM)** (Li et al., ICML 2025, PMLR 267:34054) — https://arxiv.org/abs/2502.11149
+- Equivariant encoder + LLM + equivariant adapter where the LLM processes invariant context and directional geometry stays in the encoder/adapter. YLM instead tests whether language can *select and compose* physical observables (`force`, `diff`, `proj`, polarizability contractions) across unseen wordings, scaffolds, and entity-operator pairs.
+
+**EquAct** (Zhu, Qi, Zhu, Walters, Platt; arXiv 2505.21351) — https://arxiv.org/abs/2505.21351
+- SE(3)-equivariant point-cloud U-Net with SE(3)-invariant FiLM language conditioning on RLBench manipulation tasks.
+
+**Scalars are universal** (Villar, Hogg, Storey-Fisher, Yao, Blum-Smith; NeurIPS 2021) — https://arxiv.org/abs/2106.06610
+- O(d)-equivariant functions can be expressed through scalar contractions of inputs. Consequently, "a scalar model cannot choose directions" is not a valid expressivity claim; the scientific question is which language-geometry interface *learns* to generalize out of distribution (`scripts/62_convex_ceiling.py`).
