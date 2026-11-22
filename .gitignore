@@ -10,6 +10,8 @@ runs/
 # Keep the committed protocol-factor bench files (root data/ is ignored).
 !ablation/protocol_factors/data/
 !ablation/protocol_factors/data/**
+!ablation/seq_arm/data/
+!ablation/seq_arm/data/**
 !lab/data/
 !lab/data/**
 ablation/protocol_factors/cache/

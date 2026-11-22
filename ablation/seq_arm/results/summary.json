@@ -1,0 +1,96 @@
+{
+  "n_total_items_per_split_kind": 180,
+  "n_train": 120,
+  "n_test": 60,
+  "families": [
+    "tm_anneal",
+    "restriction",
+    "pam",
+    "ext_gc",
+    "rna_struct"
+  ],
+  "chance_baseline": 0.4167,
+  "arms": {
+    "text_only": {
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "per_seed_accuracy": [
+        0.5,
+        0.4833,
+        0.5
+      ],
+      "mean_accuracy": 0.4944,
+      "std_accuracy": 0.0079
+    },
+    "kmer_4": {
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "per_seed_accuracy": [
+        0.5333,
+        0.5,
+        0.5
+      ],
+      "mean_accuracy": 0.5111,
+      "std_accuracy": 0.0157
+    },
+    "shuffled_seq": {
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "per_seed_accuracy": [
+        0.5333,
+        0.5,
+        0.5
+      ],
+      "mean_accuracy": 0.5111,
+      "std_accuracy": 0.0157
+    },
+    "text_plus_seqtools_facts": {
+      "deterministic": true,
+      "accuracy": 1.0,
+      "n_test": 60
+    },
+    "matched_text_stated_values": {
+      "deterministic": true,
+      "accuracy": 1.0,
+      "n_test": 60
+    },
+    "frozen_dna_encoder_plus_0p5b_lm": {
+      "status": "not_run",
+      "note": "Not run on CPU; requires downloading HuggingFace DNA foundation weights + Qwen2.5-0.5B."
+    }
+  },
+  "packing_waste_1nt": {
+    "n_items": 180,
+    "real_tokens": 42966,
+    "min_len": 83,
+    "median_len": 133,
+    "max_len": 766,
+    "global_pad": {
+      "allocated_tokens": 137880,
+      "waste_fraction": 0.6884
+    },
+    "dynamic_batch_pad_bs16": {
+      "allocated_tokens": 130320,
+      "waste_fraction": 0.6703
+    },
+    "length_bucketed_bs16": {
+      "allocated_tokens": 47944,
+      "waste_fraction": 0.1038
+    },
+    "ffd_packed": {
+      "bin_cap": 1024,
+      "n_bins": 44,
+      "allocated_tokens": 45056,
+      "waste_fraction": 0.0464
+    }
+  }
+}
