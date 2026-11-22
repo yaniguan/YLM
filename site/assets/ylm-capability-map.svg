@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" font-family='Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'>
+  <defs>
+    <marker id="arr-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="#0d9488"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="520" rx="14" fill="#ffffff"/>
+  <rect x="1" y="1" width="1198" height="518" rx="13" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- Top Header -->
+  <text x="36" y="42" font-size="12" font-weight="700" letter-spacing="1.6" fill="#0d9488">SYSTEM OVERVIEW · SIX INTEGRATED CAPABILITIES</text>
+  <text x="36" y="68" font-size="22" font-weight="650" fill="#0f172a">From 3D Atomic Geometry &amp; 2D Drawings to Verified Wet-Lab Protocols</text>
+
+  <!-- Column 1: Multimodal Inputs -->
+  <rect x="36" y="98" width="290" height="388" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="56" y="126" font-size="11.5" font-weight="700" letter-spacing="1.3" fill="#475569">1 · GEOMETRY &amp; TEXT INPUTS</text>
+
+  <rect x="54" y="144" width="254" height="94" rx="9" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="70" y="168" font-size="14.5" font-weight="650" fill="#0f172a">3D Molecules &amp; Crystals</text>
+  <text x="70" y="190" font-size="12.5" fill="#475569">QM9, reactive MD frames, PBC cells</text>
+  <text x="70" y="212" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="11.5" fill="#0d9488">e3nn · MACE-MP-0 · NequIP</text>
+
+  <rect x="54" y="252" width="254" height="94" rx="9" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="70" y="276" font-size="14.5" font-weight="650" fill="#0f172a">Ouroboros 2D → 3D Bridge</text>
+  <text x="70" y="298" font-size="12.5" fill="#475569">2D OCSR drawings &amp; @/@@ SMILES</text>
+  <text x="70" y="320" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="11.5" fill="#7c3aed">CIP (R)/(S) + ETKDGv3 conformer</text>
+
+  <rect x="54" y="360" width="254" height="106" rx="9" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="70" y="384" font-size="14.5" font-weight="650" fill="#0f172a">Natural Language &amp; Protocols</text>
+  <text x="70" y="406" font-size="12.5" fill="#475569">Force/dipole queries, wet-lab steps,</text>
+  <text x="70" y="424" font-size="12.5" fill="#475569">CALiSol formulations &amp; SQL</text>
+  <text x="70" y="446" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="11.5" fill="#2563eb">MatSciBERT · MiniLM · Causal LM</text>
+
+  <!-- Column 2: Equivariant Alignment Core -->
+  <rect x="380" y="98" width="384" height="388" rx="12" fill="#f0fdfa" stroke="#99f6e4" stroke-width="1.5"/>
+  <text x="402" y="126" font-size="11.5" font-weight="700" letter-spacing="1.3" fill="#0f766e">2 · O(3)-EQUIVARIANT ALIGNMENT CORE</text>
+
+  <rect x="400" y="144" width="344" height="114" rx="10" fill="#ffffff" stroke="#5eead4" stroke-width="1.4"/>
+  <text x="418" y="170" font-size="15.5" font-weight="700" fill="#0f172a">Irreps-to-Text Cross-Attention</text>
+  <text x="418" y="193" font-size="12.5" fill="#334155">Invariant routing weights α_ti × Wigner-D values</text>
+  <rect x="418" y="208" width="94" height="34" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="465" y="229" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Option A</text>
+  <rect x="523" y="208" width="94" height="34" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="570" y="229" text-anchor="middle" font-size="12" font-weight="600" fill="#1d4ed8">Option B</text>
+  <rect x="628" y="208" width="98" height="34" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="677" y="229" text-anchor="middle" font-size="12" font-weight="600" fill="#047857">Option C (CG)</text>
+
+  <rect x="400" y="274" width="344" height="112" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="418" y="298" font-size="14.5" font-weight="650" fill="#0f172a">Multi-Rank Physical Readouts</text>
+  <text x="418" y="322" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="12" fill="#475569">0e  scalar energy / gap (invariant)</text>
+  <text x="418" y="342" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="12" fill="#7c3aed">0o  chiral handedness (flips in mirror)</text>
+  <text x="418" y="362" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="12" fill="#0d9488">1o  force &amp; dipole &lt;vec&gt;  |  0e+2e  3×3 tensor</text>
+
+  <rect x="400" y="400" width="344" height="68" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="418" y="425" font-size="14" font-weight="650" fill="#0f172a">CPU Inference API &amp; Live MD Hooks</text>
+  <text x="418" y="447" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="11.5" fill="#2563eb">79 ms p50 (MatSciBERT) · 13 ms (MiniLM-int8)</text>
+
+  <!-- Column 3: Verified Lab & Post-Training Stack -->
+  <rect x="818" y="98" width="346" height="388" rx="12" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.4"/>
+  <text x="838" y="126" font-size="11.5" font-weight="700" letter-spacing="1.3" fill="#1d4ed8">3 · VERIFIED LAB &amp; TOKEN FACTORY</text>
+
+  <rect x="838" y="144" width="306" height="96" rx="9" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="854" y="168" font-size="14.5" font-weight="650" fill="#0f172a">LabLean (Lean 4 Protocol Checker)</text>
+  <text x="854" y="190" font-size="12.5" fill="#475569">9 decidable bench safety &amp; volume theorems</text>
+  <text x="854" y="212" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="11.5" fill="#1d4ed8">check_sound · run_conserves · 96-well</text>
+
+  <rect x="838" y="254" width="306" height="96" rx="9" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="854" y="278" font-size="14.5" font-weight="650" fill="#0f172a">Verifier-Gated Token Factories</text>
+  <text x="854" y="300" font-size="12.5" fill="#475569">Force V0–V3 (86.9% kept, 0% bad mutations)</text>
+  <text x="854" y="322" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="11.5" fill="#0d9488">LabLean + Dual-DB SQL Gate (88.7% kept)</text>
+
+  <rect x="838" y="364" width="306" height="104" rx="9" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="854" y="388" font-size="14.5" font-weight="650" fill="#0f172a">LabLedger &amp; Co-Scientist Recipe</text>
+  <text x="854" y="410" font-size="12.5" fill="#475569">SHA-256 append-only multimodal ledger →</text>
+  <text x="854" y="428" font-size="12.5" fill="#475569">commercial-safe SFT → DPO → GRPO</text>
+  <text x="854" y="450" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="11.5" fill="#7c3aed">labledger/v1 · &lt;geom:i&gt; soft tokens</text>
+
+  <!-- Connecting Arrows -->
+  <line x1="326" y1="191" x2="394" y2="191" stroke="#0d9488" stroke-width="2.2" marker-end="url(#arr-teal)"/>
+  <line x1="326" y1="299" x2="394" y2="322" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#arr-violet)"/>
+  <line x1="326" y1="412" x2="394" y2="232" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arr-blue)"/>
+
+  <line x1="744" y1="200" x2="832" y2="200" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arr-blue)"/>
+  <line x1="744" y1="330" x2="832" y2="305" stroke="#0d9488" stroke-width="2.2" marker-end="url(#arr-teal)"/>
+  <line x1="744" y1="432" x2="832" y2="418" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#arr-violet)"/>
+</svg>

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" font-family='Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'>
+  <rect width="1200" height="460" rx="14" fill="#ffffff"/>
+  <rect x="1" y="1" width="1198" height="458" rx="13" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <text x="36" y="42" font-size="12" font-weight="700" letter-spacing="1.6" fill="#2563eb">ROUTING MECHANISMS · OPTIONS A, B, AND C</text>
+  <text x="36" y="68" font-size="22" font-weight="650" fill="#0f172a">How Expressive Token-to-Atom Operations Unlock Compositional Vector Algebra</text>
+
+  <!-- Card A -->
+  <rect x="36" y="96" width="356" height="334" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <rect x="56" y="116" width="84" height="26" rx="6" fill="#e2e8f0"/>
+  <text x="98" y="134" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">OPTION A</text>
+  <text x="152" y="134" font-size="13" font-weight="600" fill="#64748b">Default v0 (1–2 MB)</text>
+  <text x="56" y="168" font-size="17" font-weight="700" fill="#0f172a">Invariant Keys × Linear Values</text>
+  <text x="56" y="194" font-size="13" fill="#475569">Tokens score atoms from O(3) norms only</text>
+  <text x="56" y="213" font-size="13" fill="#475569">and take a weighted linear combination:</text>
+  <rect x="56" y="230" width="316" height="64" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="214" y="256" text-anchor="middle" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="12.5" fill="#0f172a">s_ti = q_t · inv(x_i) / √d</text>
+  <text x="214" y="279" text-anchor="middle" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="12.5" fill="#0f766e">y = Linear_O3( Σ_t w_t Σ_i α_ti v_i )</text>
+  <text x="56" y="324" font-size="12.5" fill="#334155">✓ Fast, tiny, exact O(3) equivariance</text>
+  <text x="56" y="346" font-size="12.5" fill="#334155">✓ Single-atom force cos: 0.960 (MatSciBERT)</text>
+  <text x="56" y="368" font-size="12.5" fill="#b45309">△ Cannot form cross-products or projections</text>
+  <text x="56" y="404" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="12" font-weight="600" fill="#475569">F_A − F_B cos: 0.759  |  Proj cos: 0.54</text>
+
+  <!-- Card B -->
+  <rect x="422" y="96" width="356" height="334" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <rect x="442" y="116" width="84" height="26" rx="6" fill="#dbeafe"/>
+  <text x="484" y="134" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8">OPTION B</text>
+  <text x="538" y="134" font-size="13" font-weight="600" fill="#2563eb">+ Directional Inner Product</text>
+  <text x="442" y="168" font-size="17" font-weight="700" fill="#0f172a">Same-Irrep Query–Key Dot Score</text>
+  <text x="442" y="194" font-size="13" fill="#475569">Context vector builds equivariant query Q_t</text>
+  <text x="442" y="213" font-size="13" fill="#475569">to compare relative 3D alignments:</text>
+  <rect x="442" y="230" width="316" height="64" rx="8" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="600" y="256" text-anchor="middle" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="12.5" fill="#1d4ed8">s_ti = s_inv + γ tanh(β) (Q̂_t · K̂_i) / √C</text>
+  <text x="600" y="279" text-anchor="middle" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="12.5" fill="#334155">+ optional --attn_sup CE routing loss</text>
+  <text x="442" y="324" font-size="12.5" fill="#334155">✓ Normalized mode bounds score scale</text>
+  <text x="442" y="346" font-size="12.5" fill="#334155">✓ Held-out wording force cos: 0.923</text>
+  <text x="442" y="368" font-size="12.5" fill="#1d4ed8">✓ --attn_sup lifts exact atom peak accuracy</text>
+  <text x="442" y="404" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="12" font-weight="600" fill="#1d4ed8">Colab 4-rot force cos: 0.959</text>
+
+  <!-- Card C -->
+  <rect x="808" y="96" width="356" height="334" rx="12" fill="#f0fdfa" stroke="#5eead4" stroke-width="1.6"/>
+  <rect x="828" y="116" width="84" height="26" rx="6" fill="#ccfbf1"/>
+  <text x="870" y="134" text-anchor="middle" font-size="12" font-weight="700" fill="#0f766e">OPTION C</text>
+  <text x="924" y="134" font-size="13" font-weight="600" fill="#0d9488">Clebsch–Gordan Coupling</text>
+  <text x="828" y="168" font-size="17" font-weight="700" fill="#0f172a">Text-Gated Tensor Self-Product</text>
+  <text x="828" y="194" font-size="13" fill="#475569">Couples routed irreps across angular paths</text>
+  <text x="828" y="213" font-size="13" fill="#475569">(1o ⊗ 1o → 0e ⊕ 1e ⊕ 2e) per token:</text>
+  <rect x="828" y="230" width="316" height="64" rx="8" fill="#ffffff" stroke="#5eead4"/>
+  <text x="986" y="256" text-anchor="middle" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="12.5" fill="#0f766e">u_t = o3.Linear( m_t ⊗_uvu(w_t) m_t )</text>
+  <text x="986" y="279" text-anchor="middle" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="12" fill="#047857">c_tp_mode="channelwise": 13.1M → 0.85M</text>
+  <text x="828" y="324" font-size="12.5" fill="#0f172a">✓ 15× fewer parameters in channelwise mode</text>
+  <text x="828" y="346" font-size="12.5" fill="#0f172a">✓ Best single-atom force cos (0.976, acc 0.920)</text>
+  <text x="828" y="368" font-size="12.5" fill="#047857">✓ Solves two-atom axis projections &amp; diffs</text>
+  <text x="828" y="404" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="12" font-weight="700" fill="#047857">F_A − F_B cos: 0.890  |  Proj cos: 0.781</text>
+</svg>
