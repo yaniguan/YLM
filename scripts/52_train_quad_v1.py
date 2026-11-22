@@ -42,10 +42,10 @@ class ScalarQuad(nn.Module):
         return self.mlp((x * atom_mask[..., None]).sum(1))
 
 
-def load():
-    labels = pickle.load(open("data/qm9_xtb.pkl", "rb"))
-    qs = json.load(open("data/tensorqa_quad.json"))
-    cache = torch.load("data/text_quad_matscibert.pt")
+def load(labels_path="data/qm9_xtb.pkl", data_path="data/tensorqa_quad.json", text_cache_path="data/text_quad_matscibert.pt"):
+    labels = pickle.load(open(labels_path, "rb"))
+    qs = json.load(open(data_path, encoding="utf-8"))
+    cache = torch.load(text_cache_path, map_location="cpu", weights_only=False)
     strings = sorted(cache["states"])
     T = max(s.shape[0] for s in cache["states"].values())
     text = torch.zeros(len(strings), T, cache["dim"])
@@ -116,6 +116,10 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--model", choices=["quad", "scalar"], required=True)
     p.add_argument("--name", required=True)
+    p.add_argument("--labels", default="data/qm9_xtb.pkl")
+    p.add_argument("--data", default="data/tensorqa_quad.json")
+    p.add_argument("--text_cache", default="data/text_quad_matscibert.pt")
+    p.add_argument("--parity", choices=["so3", "o3"], default="o3")
     p.add_argument("--epochs", type=int, default=60)
     p.add_argument("--batch_size", type=int, default=64)
     p.add_argument("--lr", type=float, default=1e-3)
@@ -138,10 +142,10 @@ def main():
         log.write(s + "\n")
         log.flush()
 
-    data, splits = load()
+    data, splits = load(args.labels, args.data, args.text_cache)
     train = splits["train"]
     scale = train["y"].pow(2).mean().sqrt()
-    model = (QuadModel(data["dim"]) if args.model == "quad" else ScalarQuad(data["dim"])).to(device)
+    model = (QuadModel(data["dim"], parity=args.parity) if args.model == "quad" else ScalarQuad(data["dim"])).to(device)
     say("device", device, "| params", sum(q.numel() for q in model.parameters()), "| scale", scale.item(),
         "| n_train", len(train["mol"]))
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-5)
@@ -175,7 +179,7 @@ def main():
         if args.max_steps and step >= args.max_steps:
             break
     if os.path.exists(f"{out}/model.pt"):
-        model.load_state_dict(torch.load(f"{out}/model.pt", map_location=device))
+        model.load_state_dict(torch.load(f"{out}/model.pt", map_location=device, weights_only=True))
     results = {"args": vars(args), "scale": scale.item()}
     for sp in ["test", "test_heldout"]:
         d = splits[sp]

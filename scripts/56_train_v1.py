@@ -62,7 +62,9 @@ class TextEnc:
     def __call__(self, ids, att):
         L = int(att.sum(1).max())
         ids, att = ids[:, :L].to(self.device), att[:, :L].to(self.device)
-        with torch.autocast(self.device.split(":")[0], dtype=torch.float16, enabled=self.device != "cpu"):
+        dev_str = str(self.device)
+        use_amp = dev_str.startswith("cuda")
+        with torch.autocast("cuda" if use_amp else "cpu", dtype=torch.float16, enabled=use_amp):
             h = self.model(input_ids=ids, attention_mask=att).last_hidden_state
         return h.float(), att
 
@@ -363,16 +365,17 @@ def main():
                 break
         val_sp = splits["val"] if not args.test_limit else subset(splits["val"], torch.arange(min(args.test_limit, len(splits["val"]["mol"]))))
         val, _, _ = evaluate(model, args.model, data, val_sp, scale, device, 0, ops)
-        score = sum(val[t]["mae"] / scale[k].item() for t, k in TASKS.items())
+        present_tasks = [(t, k) for t, k in TASKS.items() if t in val]
+        score = sum(val[t]["mae"] / scale[k].item() for t, k in present_tasks)
         if score < best:
             best = score
             torch.save(model.state_dict(), f"{out}/model.pt")
-        say(f"epoch {ep} loss {np.mean(ls):.4f} | " + " | ".join(f"{t} mae {val[t]['mae']:.4f} cos {val[t]['cosine']:.3f}" for t in TASKS)
+        say(f"epoch {ep} loss {np.mean(ls):.4f} | " + " | ".join(f"{t} mae {val[t]['mae']:.4f} cos {val[t]['cosine']:.3f}" for t, _ in present_tasks)
             + f" | {time.time() - t0:.0f}s")
         if args.max_steps and step >= args.max_steps:
             break
     if os.path.exists(f"{out}/model.pt"):
-        model.load_state_dict(torch.load(f"{out}/model.pt", map_location=device))
+        model.load_state_dict(torch.load(f"{out}/model.pt", map_location=device, weights_only=True))
     git = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
     results = dict(args=vars(args), scale=scale.tolist(), git=git, data_sha=sha(args.data),
                    parsed_sha=sha(args.parsed) if args.model == "rule" else None, n_train=len(train["mol"]))

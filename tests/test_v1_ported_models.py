@@ -148,3 +148,55 @@ def test_convex_ceiling_projection():
     p_hull = cc62.project_hull(F, y_outside)
     p_plus = cc62.project_hull_plus_sum(F, y_outside)
     assert np.linalg.norm(p_plus - y_outside) < np.linalg.norm(p_hull - y_outside)
+
+
+def test_prog_and_pol_handle_empty_atom_mask(float64_default):
+    Z, pos, mask, text, tmask, _ = _fake_batch()
+    mask_empty = mask.clone()
+    mask_empty[1] = False
+
+    prog = ProgModel(text_dim=16)
+    for training in (True, False):
+        prog.train(training)
+        y, aux = prog(Z, pos, mask_empty, text, tmask)
+        assert torch.isfinite(y).all()
+        assert torch.all(y[1] == 0)
+        assert torch.isfinite(aux["task_logits"]).all()
+
+    pol = PolModel(text_dim=16)
+    a0, a2, tl, ptr = pol(Z, pos, mask_empty, text, tmask)
+    assert torch.isfinite(a0).all()
+    assert torch.isfinite(a2).all()
+    assert torch.isfinite(tl).all()
+    assert all(torch.isfinite(lg[1]).all() for lg in ptr)
+
+
+def test_make_anonymous_scrubs_html_js_and_notebooks(tmp_path: Path):
+    import subprocess
+    import sys
+    import zipfile
+
+    root = Path(__file__).resolve().parents[1]
+    out_zip = tmp_path / "anon.zip"
+    res = subprocess.run(
+        [
+            sys.executable,
+            str(root / "scripts" / "63_make_anonymous.py"),
+            "--repo-root",
+            str(root),
+            "--out",
+            str(out_zip),
+            "--extra-terms",
+            "yaniguan",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert "no forbidden strings found" in res.stdout
+    with zipfile.ZipFile(out_zip) as zf:
+        for check_path in ("site/index.html", "site/app.js", "colab/run_packs.ipynb"):
+            content = zf.read(check_path).decode("utf-8")
+            assert "yaniguan" not in content.lower()
+            assert "anonymous" in content.lower()
+
