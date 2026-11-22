@@ -1,190 +1,66 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" role="img" aria-labelledby="chiral-title chiral-desc">
-  <title id="chiral-title">Stereochemical Chirality (0o) and Curie Symmetry Selection</title>
-  <desc id="chiral-desc">Mirror reflection flips YLM 0o handedness sign exactly while pairwise distance matrices stay identical; planar achiral molecules evaluate to exact zero.</desc>
-  <style>
-    text { font-family: Inter, "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif; }
-    .mono { font-family: "SFMono-Regular", Consolas, ui-monospace, monospace; }
-  </style>
-  <defs>
-    <linearGradient id="panel-grad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#131d27"/>
-      <stop offset="100%" stop-color="#0d141c"/>
-    </linearGradient>
-    <linearGradient id="mirror-plane" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#91b6df" stop-opacity="0.06"/>
-      <stop offset="50%" stop-color="#b9a1de" stop-opacity="0.24"/>
-      <stop offset="100%" stop-color="#91b6df" stop-opacity="0.06"/>
-    </linearGradient>
-    <radialGradient id="sphere-c" cx="35%" cy="30%" r="65%">
-      <stop offset="0%" stop-color="#90a4b8"/>
-      <stop offset="55%" stop-color="#516171"/>
-      <stop offset="100%" stop-color="#2c3742"/>
-    </radialGradient>
-    <radialGradient id="sphere-o" cx="35%" cy="30%" r="65%">
-      <stop offset="0%" stop-color="#f5b79f"/>
-      <stop offset="55%" stop-color="#d97757"/>
-      <stop offset="100%" stop-color="#7c3d28"/>
-    </radialGradient>
-    <radialGradient id="sphere-f" cx="35%" cy="30%" r="65%">
-      <stop offset="0%" stop-color="#e5f6d0"/>
-      <stop offset="55%" stop-color="#b5d88e"/>
-      <stop offset="100%" stop-color="#58753c"/>
-    </radialGradient>
-    <radialGradient id="sphere-cl" cx="35%" cy="30%" r="65%">
-      <stop offset="0%" stop-color="#c3efec"/>
-      <stop offset="55%" stop-color="#79c2bd"/>
-      <stop offset="100%" stop-color="#356865"/>
-    </radialGradient>
-    <radialGradient id="sphere-h" cx="35%" cy="30%" r="65%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="65%" stop-color="#cfdbe6"/>
-      <stop offset="100%" stop-color="#7d8ea0"/>
-    </radialGradient>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 450" font-family='Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'>
+  <rect width="1200" height="450" rx="14" fill="#ffffff"/>
+  <rect x="1" y="1" width="1198" height="448" rx="13" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
 
-  <rect width="1920" height="1080" fill="#0a0f15"/>
+  <text x="36" y="42" font-size="12" font-weight="700" letter-spacing="1.6" fill="#7c3aed">PARITY &amp; POINT-GROUP SELECTION RULES · 64-BIT VERIFIED</text>
+  <text x="36" y="68" font-size="22" font-weight="650" fill="#0f172a">Mirror Enantiomer Sign Flip (0o) and Curie Planar Cancellation</text>
 
-  <!-- Header -->
-  <g transform="translate(88, 66)">
-    <text x="0" y="24" fill="#b5d88e" font-size="28" font-weight="700" letter-spacing="-0.6">YLM</text>
-    <text x="78" y="24" fill="#8fa1b3" font-size="18" font-weight="500">PARITY-ODD CHIRALITY (0o) &amp; CURIE SYMMETRY AUDIT</text>
-    <text x="1744" y="24" fill="#7c8e9f" font-size="15" text-anchor="end" class="mono">f(X Qᵀ) = det(Q) · f(X)</text>
-  </g>
+  <!-- Left Box: (R) vs (S) Mirror Plane -->
+  <rect x="36" y="96" width="710" height="322" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
 
-  <text x="960" y="152" fill="#edf1f7" font-size="44" font-weight="600" text-anchor="middle" letter-spacing="-1.2">
-    Same pairwise distances. Opposite 3D handedness.
-  </text>
-  <text x="960" y="194" fill="#9fb0c1" font-size="20" text-anchor="middle">
-    Distance matrices d_ij cannot separate mirror twins; YLM’s 0o pseudoscalar channel flips sign under reflection and vanishes on flat molecules.
-  </text>
+  <!-- (R)-enantiomer -->
+  <text x="195" y="130" text-anchor="middle" font-size="15" font-weight="700" fill="#0f766e">(R)-Enantiomer (X)</text>
+  <line x1="195" y1="220" x2="195" y2="158" stroke="#334155" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="195" y1="220" x2="132" y2="258" stroke="#334155" stroke-width="3.5" stroke-linecap="round"/>
+  <polygon points="195,220 252,248 242,265" fill="#0d9488"/>
+  <line x1="195" y1="220" x2="226" y2="286" stroke="#64748b" stroke-width="2.5" stroke-dasharray="4 4"/>
+  <circle cx="195" cy="220" r="18" fill="#334155"/>
+  <text x="195" y="225" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">C*</text>
+  <circle cx="195" cy="152" r="15" fill="#0d9488"/><text x="195" y="157" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">F</text>
+  <circle cx="126" cy="262" r="15" fill="#e11d48"/><text x="126" y="267" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">O</text>
+  <circle cx="256" cy="260" r="15" fill="#2563eb"/><text x="256" y="265" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">CH₂</text>
+  <circle cx="230" cy="292" r="12" fill="#94a3b8"/><text x="230" y="296" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">H</text>
 
-  <!-- LEFT PANEL: Mirror Twins Schematic -->
-  <g transform="translate(88, 248)">
-    <rect width="980" height="716" rx="16" fill="url(#panel-grad)" stroke="#2a3846" stroke-width="1.5"/>
-    <text x="36" y="46" fill="#b9a1de" font-size="13" font-weight="700" letter-spacing="1.8">01 · MIRROR ENANTIOMERS ACROSS σ (det Q = −1)</text>
+  <rect x="86" y="330" width="218" height="64" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="195" y="354" text-anchor="middle" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="14" font-weight="700" fill="#047857">YLM 0o = +0.8421</text>
+  <text x="195" y="376" text-anchor="middle" font-size="12" fill="#475569">0e Dist-Model = +0.1930</text>
 
-    <!-- Mirror Plane -->
-    <polygon points="482,86 498,74 498,446 482,458" fill="url(#mirror-plane)" stroke="#91b6df" stroke-opacity="0.45" stroke-dasharray="5 5"/>
-    <text x="490" y="486" fill="#91b6df" font-size="14" text-anchor="middle" class="mono">Mirror plane σ</text>
+  <!-- Mirror Plane sigma -->
+  <line x1="391" y1="114" x2="391" y2="398" stroke="#7c3aed" stroke-width="2.2" stroke-dasharray="7 5"/>
+  <rect x="345" y="112" width="92" height="24" rx="12" fill="#f3e8ff" stroke="#c084fc"/>
+  <text x="391" y="128" text-anchor="middle" font-size="11.5" font-weight="700" fill="#6d28d9">Mirror σ</text>
+  <text x="391" y="224" text-anchor="middle" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="11.5" fill="#6d28d9">det(Q) = −1</text>
+  <text x="391" y="244" text-anchor="middle" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="11" fill="#64748b">D(R) ≡ D(S)</text>
 
-    <!-- (R) Enantiomer -->
-    <g transform="translate(240, 260)">
-      <text x="0" y="-142" fill="#edf1f7" font-size="22" font-weight="600" text-anchor="middle">(R)-Enantiomer</text>
-      <text x="0" y="-116" fill="#8b9db0" font-size="14" text-anchor="middle" class="mono">O=C1OC[C@H](F)O1</text>
-      <line x1="0" y1="0" x2="0" y2="-76" stroke="#8597a9" stroke-width="7" stroke-linecap="round"/>
-      <line x1="0" y1="0" x2="-74" y2="42" stroke="#8597a9" stroke-width="7" stroke-linecap="round"/>
-      <line x1="0" y1="0" x2="62" y2="56" stroke="#b5d88e" stroke-width="8" stroke-linecap="round"/>
-      <line x1="0" y1="0" x2="48" y2="-22" stroke="#667788" stroke-width="5" stroke-dasharray="5 5" stroke-linecap="round"/>
-      <circle cx="48" cy="-22" r="15" fill="url(#sphere-h)"/>
-      <circle cx="0" cy="-76" r="21" fill="url(#sphere-o)"/>
-      <circle cx="-74" cy="42" r="21" fill="url(#sphere-cl)"/>
-      <circle cx="0" cy="0" r="25" fill="url(#sphere-c)"/>
-      <circle cx="62" cy="56" r="22" fill="url(#sphere-f)"/>
-      <text x="62" y="61" fill="#132012" font-size="14" font-weight="700" text-anchor="middle">F</text>
-      <rect x="-112" y="108" width="224" height="52" rx="8" fill="#131f16" stroke="#4d6d41"/>
-      <text x="0" y="140" fill="#b5d88e" font-size="19" font-weight="600" text-anchor="middle" class="mono">YLM 0o = +0.842</text>
-    </g>
+  <!-- (S)-enantiomer -->
+  <text x="586" y="130" text-anchor="middle" font-size="15" font-weight="700" fill="#6d28d9">(S)-Enantiomer (σX)</text>
+  <line x1="586" y1="220" x2="586" y2="158" stroke="#334155" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="586" y1="220" x2="649" y2="258" stroke="#334155" stroke-width="3.5" stroke-linecap="round"/>
+  <polygon points="586,220 529,248 539,265" fill="#7c3aed"/>
+  <line x1="586" y1="220" x2="555" y2="286" stroke="#64748b" stroke-width="2.5" stroke-dasharray="4 4"/>
+  <circle cx="586" cy="220" r="18" fill="#334155"/>
+  <text x="586" y="225" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">C*</text>
+  <circle cx="586" cy="152" r="15" fill="#0d9488"/><text x="586" y="157" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">F</text>
+  <circle cx="655" cy="262" r="15" fill="#e11d48"/><text x="655" y="267" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">O</text>
+  <circle cx="525" cy="260" r="15" fill="#2563eb"/><text x="525" y="265" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">CH₂</text>
+  <circle cx="551" cy="292" r="12" fill="#94a3b8"/><text x="551" y="296" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">H</text>
 
-    <!-- (S) Enantiomer (exact mirror across x) -->
-    <g transform="translate(740, 260)">
-      <text x="0" y="-142" fill="#edf1f7" font-size="22" font-weight="600" text-anchor="middle">(S)-Enantiomer</text>
-      <text x="0" y="-116" fill="#8b9db0" font-size="14" text-anchor="middle" class="mono">O=C1OC[C@@H](F)O1</text>
-      <line x1="0" y1="0" x2="0" y2="-76" stroke="#8597a9" stroke-width="7" stroke-linecap="round"/>
-      <line x1="0" y1="0" x2="74" y2="42" stroke="#8597a9" stroke-width="7" stroke-linecap="round"/>
-      <line x1="0" y1="0" x2="-62" y2="56" stroke="#b9a1de" stroke-width="8" stroke-linecap="round"/>
-      <line x1="0" y1="0" x2="-48" y2="-22" stroke="#667788" stroke-width="5" stroke-dasharray="5 5" stroke-linecap="round"/>
-      <circle cx="-48" cy="-22" r="15" fill="url(#sphere-h)"/>
-      <circle cx="0" cy="-76" r="21" fill="url(#sphere-o)"/>
-      <circle cx="74" cy="42" r="21" fill="url(#sphere-cl)"/>
-      <circle cx="0" cy="0" r="25" fill="url(#sphere-c)"/>
-      <circle cx="-62" cy="56" r="22" fill="url(#sphere-f)"/>
-      <text x="-62" y="61" fill="#132012" font-size="14" font-weight="700" text-anchor="middle">F</text>
-      <rect x="-112" y="108" width="224" height="52" rx="8" fill="#191527" stroke="#5c4b82"/>
-      <text x="0" y="140" fill="#b9a1de" font-size="19" font-weight="600" text-anchor="middle" class="mono">YLM 0o = −0.842</text>
-    </g>
+  <rect x="477" y="330" width="218" height="64" rx="8" fill="#faf5ff" stroke="#d8b4fe"/>
+  <text x="586" y="354" text-anchor="middle" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="14" font-weight="700" fill="#6d28d9">YLM 0o = −0.8421</text>
+  <text x="586" y="376" text-anchor="middle" font-size="12" fill="#e11d48">0e Dist-Model = +0.1930 (blind!)</text>
 
-    <!-- Bottom sub-strip: Curie Planar Zero -->
-    <line x1="36" y1="522" x2="944" y2="522" stroke="#263442"/>
-    <g transform="translate(36, 548)">
-      <text x="0" y="20" fill="#79c2bd" font-size="13" font-weight="700" letter-spacing="1.8">02 · CURIE SYMMETRY CANCELLATION ON PLANAR GEOMETRIES</text>
-      <text x="0" y="56" fill="#edf1f7" font-size="22" font-weight="600">Any mirror-symmetric planar molecule satisfies R₀ X = X σ → f(X) = −f(X) = 0</text>
-      <text x="0" y="88" fill="#98aab9" font-size="16">Measured in float64 on arbitrarily rotated H₂O (C₂v) and cis-1,2-difluoroethene:</text>
-      <text x="0" y="124" fill="#79c2bd" font-size="24" font-weight="600" class="mono">|YLM_0o(H₂O)| = 3.9 × 10⁻¹⁶     vs     0e-only baseline bias = 0.80 – 1.10</text>
-    </g>
-  </g>
+  <!-- Right Box: Curie Symmetry Cancellation -->
+  <rect x="774" y="96" width="390" height="322" rx="12" fill="#f0fdfa" stroke="#99f6e4" stroke-width="1.3"/>
+  <text x="798" y="128" font-size="12" font-weight="700" letter-spacing="1.2" fill="#0f766e">CURIE SYMMETRY ZEROS</text>
+  <text x="798" y="156" font-size="17" font-weight="700" fill="#0f172a">Achiral Point Groups Cancel by Algebra</text>
 
-  <!-- RIGHT PANEL: Quantitative Summary -->
-  <g transform="translate(1112, 248)">
-    <rect width="720" height="716" rx="16" fill="url(#panel-grad)" stroke="#2a3846" stroke-width="1.5"/>
-    <text x="36" y="46" fill="#b5d88e" font-size="13" font-weight="700" letter-spacing="1.8">03 · BENCHMARK COMPARISON (CHIRAL + MULTI-RANK)</text>
-    <text x="36" y="84" fill="#edf1f7" font-size="27" font-weight="600" letter-spacing="-0.5">Representational Expressivity by Symmetry</text>
+  <rect x="798" y="176" width="342" height="104" rx="9" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="816" y="201" font-size="14" font-weight="650" fill="#0f172a">Planar H₂O (C₂v mirror plane σ_xz)</text>
+  <text x="816" y="224" font-size="12.5" fill="#475569">σ_xz leaves X unchanged, so f_0o(X) = −f_0o(X):</text>
+  <text x="816" y="252" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="13" font-weight="700" fill="#047857">|f_0o(H₂O)| = 3.9 × 10⁻¹⁶  (exact zero)</text>
 
-    <!-- Table header -->
-    <g transform="translate(36, 124)">
-      <line x1="0" y1="36" x2="648" y2="36" stroke="#334353"/>
-      <text x="0" y="22" fill="#8fa1b3" font-size="14" font-weight="600">Model Family</text>
-      <text x="336" y="22" fill="#8fa1b3" font-size="14" font-weight="600" text-anchor="end">(R)/(S) Seen</text>
-      <text x="492" y="22" fill="#8fa1b3" font-size="14" font-weight="600" text-anchor="end">1o Vec Cos</text>
-      <text x="648" y="22" fill="#8fa1b3" font-size="14" font-weight="600" text-anchor="end">3×3 Ten Cos</text>
-
-      <!-- Row 1 -->
-      <g transform="translate(0, 82)">
-        <text x="0" y="0" fill="#d3dde7" font-size="18" font-weight="500">GraphMVP / 3D-InfoMax</text>
-        <text x="336" y="0" fill="#d97757" font-size="16" text-anchor="end">cannot represent</text>
-        <text x="492" y="0" fill="#9fb0c1" font-size="19" text-anchor="end" class="mono">+0.054</text>
-        <text x="648" y="0" fill="#9fb0c1" font-size="19" text-anchor="end" class="mono">+0.708</text>
-        <line x1="0" y1="26" x2="648" y2="26" stroke="#222f3c"/>
-      </g>
-
-      <!-- Row 2 -->
-      <g transform="translate(0, 146)">
-        <text x="0" y="0" fill="#d3dde7" font-size="18" font-weight="500">Uni-Mol (3D Distance)</text>
-        <text x="336" y="0" fill="#d97757" font-size="16" text-anchor="end">cannot represent</text>
-        <text x="492" y="0" fill="#9fb0c1" font-size="19" text-anchor="end" class="mono">+0.047</text>
-        <text x="648" y="0" fill="#9fb0c1" font-size="19" text-anchor="end" class="mono">+0.763</text>
-        <line x1="0" y1="26" x2="648" y2="26" stroke="#222f3c"/>
-      </g>
-
-      <!-- Row 3 -->
-      <g transform="translate(0, 210)">
-        <text x="0" y="0" fill="#d3dde7" font-size="18" font-weight="500">EquiLLM (0e Bridge + 1o)</text>
-        <text x="336" y="0" fill="#d97757" font-size="16" text-anchor="end">cannot represent</text>
-        <text x="492" y="0" fill="#91b6df" font-size="19" text-anchor="end" class="mono">+0.707</text>
-        <text x="648" y="0" fill="#91b6df" font-size="19" text-anchor="end" class="mono">+0.979</text>
-        <line x1="0" y1="26" x2="648" y2="26" stroke="#222f3c"/>
-      </g>
-
-      <!-- Row 4 -->
-      <g transform="translate(0, 274)">
-        <text x="0" y="0" fill="#d3dde7" font-size="18" font-weight="500">Uni-Mol + Signed-Vol (0o)</text>
-        <text x="336" y="0" fill="#79c2bd" font-size="19" font-weight="600" text-anchor="end" class="mono">64.9%</text>
-        <text x="492" y="0" fill="#9fb0c1" font-size="19" text-anchor="end" class="mono">+0.049</text>
-        <text x="648" y="0" fill="#9fb0c1" font-size="19" text-anchor="end" class="mono">+0.759</text>
-        <line x1="0" y1="26" x2="648" y2="26" stroke="#222f3c"/>
-      </g>
-
-      <!-- Row 5: YLM -->
-      <g transform="translate(0, 342)">
-        <rect x="-14" y="-30" width="676" height="52" rx="8" fill="#162316" stroke="#4f6f43"/>
-        <text x="0" y="3" fill="#b5d88e" font-size="19" font-weight="700">YLM-Universe (Ours)</text>
-        <text x="336" y="3" fill="#b5d88e" font-size="21" font-weight="700" text-anchor="end" class="mono">100.0%</text>
-        <text x="492" y="3" fill="#b5d88e" font-size="21" font-weight="700" text-anchor="end" class="mono">+0.720</text>
-        <text x="648" y="3" fill="#b5d88e" font-size="21" font-weight="700" text-anchor="end" class="mono">+0.997</text>
-      </g>
-    </g>
-
-    <!-- Scientific qualification box -->
-    <g transform="translate(36, 534)">
-      <rect width="648" height="142" rx="10" fill="#0b1118" stroke="#2c3b49"/>
-      <text x="22" y="34" fill="#91b6df" font-size="13" font-weight="700" letter-spacing="1.5">SCIENTIFIC SCOPE &amp; TRADE-OFFS</text>
-      <text x="22" y="64" fill="#b4c2d0" font-size="14.5">• Size-matched 3-seed CPU smoke benchmark (~638k–665k params, seeds 42–44).</text>
-      <text x="22" y="90" fill="#b4c2d0" font-size="14.5">• On invariant scalar energy (0e MAE), YLM (0.098) trails EquiLLM (0.087) &amp; GraphMVP (0.091).</text>
-      <text x="22" y="116" fill="#b4c2d0" font-size="14.5">• Gains concentrate on 1o vectors, 0e+2e matrices, and parity-locked 0o handedness.</text>
-    </g>
-  </g>
-
-  <text x="88" y="1024" fill="#77899b" font-size="15">
-    Source: scripts/35_build_and_eval_chiral_benchmark.py &amp; src/toolkit/physics_audit.py · Evaluated over K = 8 random O(3) rotations and improper reflections.
-  </text>
+  <rect x="798" y="294" width="342" height="104" rx="9" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="816" y="319" font-size="14" font-weight="650" fill="#0f172a">Centrosymmetric trans-C₂H₂F₂ (C₂h)</text>
+  <text x="816" y="342" font-size="12.5" fill="#475569">Inversion P = −I maps X → −X, cancelling dipoles:</text>
+  <text x="816" y="370" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="13" font-weight="700" fill="#2563eb">||μ_1o|| = 1.7 × 10⁻¹²  (exact zero)</text>
 </svg>

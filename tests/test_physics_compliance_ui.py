@@ -133,7 +133,10 @@ def test_studio_five_tab_http_endpoints_and_audit_cli(tmp_path) -> None:
             html = idx_resp.read().decode("utf-8")
         assert "YLM Directional Chemistry Studio" in html
         assert "pane-physics" in html
+        assert "pane-options" in html
         assert "pane-ouroboros" in html
+        assert "pane-lablean" in html
+        assert "pane-factory" in html
         assert "pane-benchmark" in html
 
         for asset_path in (
@@ -142,6 +145,9 @@ def test_studio_five_tab_http_endpoints_and_audit_cli(tmp_path) -> None:
             "/benchmark-chart.js",
             "/mol3d-stage.js",
             "/assets/ylm-orbital-animated.svg",
+            "/assets/ylm-capability-map.svg",
+            "/assets/options-abc-routing.svg",
+            "/assets/lab-verifier-pipeline.svg",
             "/assets/benchmark-data.json",
         ):
             with urllib.request.urlopen(base + asset_path, timeout=15) as asset_resp:
