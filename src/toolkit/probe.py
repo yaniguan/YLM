@@ -501,6 +501,7 @@ class YLMProbe:
 
         top_atom = int(np.argmax(pooled)) if n_atoms else None
         anchor = frame.pos_angstrom[top_atom].tolist() if top_atom is not None else [0.0, 0.0, 0.0]
+        v_unit = "Debye" if infer_v0_task(question) == 0 else "eV/A"
         vpreds = []
         for idx, rv in enumerate(raw_vecs):
             mag = float(np.linalg.norm(rv))
@@ -508,7 +509,7 @@ class YLMProbe:
                 name=f"vec_{idx}",
                 vector_au=rv.tolist(),
                 vector_physical=rv.tolist(),
-                unit="eV/A",
+                unit=v_unit,
                 magnitude=mag,
                 anchor_xyz_angstrom=anchor,
                 anchor_atom=top_atom,

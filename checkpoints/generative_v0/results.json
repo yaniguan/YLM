@@ -1,0 +1,89 @@
+{
+  "status": "MEASURED",
+  "checkpoint": "checkpoints/generative_v0",
+  "param_counts": {
+    "lm": 2471936,
+    "lm_non_embedding": 2369792,
+    "encoder": 161984,
+    "adapters": 107009,
+    "prefix_projector": 0,
+    "vec_readout": 21104,
+    "geometry_pathway": 290097,
+    "total": 2762033
+  },
+  "adapter_gates": [
+    0.39030390977859497
+  ],
+  "test": {
+    "n_eval": 200,
+    "vec_emission_rate": 0.995,
+    "dipole": {
+      "cosine": 0.983,
+      "mae_debye": 0.2691,
+      "n": 100
+    },
+    "force": {
+      "cosine": 0.2468,
+      "mae_ev_ang": 2.0097,
+      "n": 100
+    },
+    "o3_equivariance": {
+      "mean_rotation_rel_err": 2.6434372670630952e-06,
+      "mean_reflection_rel_err": 2.6434372670630952e-06
+    },
+    "sample_generations": [
+      {
+        "question": "Which way does the dipole point, and how strong is it?",
+        "generated": " -> dipole <vec> Debye"
+      },
+      {
+        "question": "Predict the electric dipole moment.",
+        "generated": " -> dipole <vec> Debye"
+      },
+      {
+        "question": "What is the force on the oxygen atom bonded to one carbon?",
+        "generated": " -> force (O) <vec> eV/A"
+      },
+      {
+        "question": "Predict the electric dipole moment.",
+        "generated": " -> dipole <vec> Debye"
+      }
+    ]
+  },
+  "test_heldout": {
+    "n_eval": 200,
+    "vec_emission_rate": 0.95,
+    "dipole": {
+      "cosine": 0.9161,
+      "mae_debye": 0.4847,
+      "n": 100
+    },
+    "force": {
+      "cosine": 0.1096,
+      "mae_ev_ang": 2.2552,
+      "n": 100
+    },
+    "o3_equivariance": {
+      "mean_rotation_rel_err": 2.5018092633681817e-06,
+      "mean_reflection_rel_err": 2.5018092633681817e-06
+    },
+    "sample_generations": [
+      {
+        "question": "Report the total dipole of the structure.",
+        "generated": " -> <vec> DeV DeV/A"
+      },
+      {
+        "question": "Report the net force on the carbon atom bonded to one hydrogen and three carbons.",
+        "generated": " -> force force force force (C"
+      },
+      {
+        "question": "Report the net force on the oxygen atom bonded to one hydrogen and one carbon.",
+        "generated": " -> force (N) <vec> eV/A"
+      },
+      {
+        "question": "Report the total dipole of the structure.",
+        "generated": " -> <vec> DeV DeV/A"
+      }
+    ]
+  }
+}

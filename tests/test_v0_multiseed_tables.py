@@ -159,7 +159,8 @@ def test_07_make_table_handles_multiseed_fractions_and_ignores_b_c(tmp_path: Pat
 
     # Existing runs_slurm reproduces committed results.md
     baseline_md = tmp_path / "baseline_results.md"
-    got_baseline = mod07.build_table([str(REPO_ROOT / "runs_slurm")], out_path=str(baseline_md))
+    slurm_dir = REPO_ROOT / "results" / "cluster_logs" / "runs_slurm"
+    got_baseline = mod07.build_table([str(slurm_dir)], out_path=str(baseline_md))
     expected_baseline = (REPO_ROOT / "results.md").read_text(encoding="utf-8").strip()
     assert got_baseline.strip() == expected_baseline
 
@@ -173,7 +174,7 @@ def test_07_make_table_handles_multiseed_fractions_and_ignores_b_c(tmp_path: Pat
         _write_run(extra, f"v0_optC_minilm_s{seed}", text="minilm", option="C", seed=seed)
 
     combined_md = tmp_path / "combined_results.md"
-    text_md = mod07.build_table([str(REPO_ROOT / "runs_slurm"), str(extra)], out_path=str(combined_md))
+    text_md = mod07.build_table([str(slurm_dir), str(extra)], out_path=str(combined_md))
     # 100% MiniLM stays at 5 seeds (not 7 or 9 from B/C!), and 3%/10%/30% all become 3 seeds with ± std
     assert "| YLM (Option A) + MiniLM | 100% | 5 |" in text_md
     for label in ("YLM (Option A) + MiniLM", "YLM (Option A) + MatSciBERT", "Baseline v: task ID instead of text"):
@@ -195,7 +196,8 @@ def test_08_analyze_sample_efficiency_multiseed(tmp_path: Path):
 
     plot_dir = tmp_path / "analysis_out"
     plot_dir.mkdir()
-    mod08.sample_efficiency([str(REPO_ROOT / "runs_slurm"), str(extra)], str(plot_dir))
+    slurm_dir = REPO_ROOT / "results" / "cluster_logs" / "runs_slurm"
+    mod08.sample_efficiency([str(slurm_dir), str(extra)], str(plot_dir))
     assert (plot_dir / "sample_efficiency.png").exists()
     assert (plot_dir / "sample_efficiency.png").stat().st_size > 5000
 

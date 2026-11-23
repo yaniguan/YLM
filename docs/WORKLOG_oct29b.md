@@ -2,7 +2,7 @@
 
 ## Scope and local availability
 
-Read README.md, 03_technical_design.md, progress.md, pipeline scripts 01–04,
+Read README.md, docs/notes/03_technical_design.md, docs/notes/progress.md, pipeline scripts 01–04,
 checkpoint evaluation/benchmark code, model/encoder/attention, helpers, B/C-lite,
 and tests. CPU only, two PyTorch/OpenMP/MKL threads per run.
 

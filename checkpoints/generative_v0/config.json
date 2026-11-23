@@ -1,0 +1,40 @@
+{
+  "model_cfg": {
+    "mode": "xattnA",
+    "lm": "tiny",
+    "vocab_size": 143,
+    "n_positions": 256,
+    "n_layer": 3,
+    "n_embd": 256,
+    "n_head": 4,
+    "bos_token_id": 1,
+    "eos_token_id": 2,
+    "encoder": "small",
+    "n_elements": 100,
+    "cutoff": 9.45,
+    "adapter_layers": [
+      2
+    ],
+    "cross_irreps": null,
+    "b_score_mode": "legacy",
+    "c_tp_mode": "fully_connected",
+    "key_dim": 64,
+    "vec_readout": true,
+    "vec_token_id": 142,
+    "vec_loss_weight": 0.5,
+    "use_motion_1o": false,
+    "freeze_encoder": true,
+    "include_mace_forces": true,
+    "extra": {}
+  },
+  "args": {
+    "arm": "xattnA_vec",
+    "seed": 0,
+    "epochs": 16,
+    "train_size": 4800
+  },
+  "units": {
+    "dipole": "Debye",
+    "force": "eV/A"
+  }
+}

@@ -1,4 +1,4 @@
-"""Controlled baselines for TensorQA-v0 (see 04_data_and_benchmark.md).
+"""Controlled baselines for TensorQA-v0 (see docs/notes/04_data_and_benchmark.md).
 
 PipelineForce  "text -> atom index -> force model"
     A rule-based parser turns the question into an atom index (src/parse_question.py).

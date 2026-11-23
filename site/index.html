@@ -752,17 +752,17 @@ ylm ask examples/water.xyz "What is the force vector on the oxygen atom?" --veri
         </div>
 
         <details id="repo-map" class="repo-details">
-          <summary>Repository packages &amp; modules overview <span aria-hidden="true">+</span></summary>
+          <summary>Repository 2-tier architecture &amp; package map <span aria-hidden="true">+</span></summary>
           <div class="repo-grid">
-            <div><strong class="lime mono">src/model.py &amp; irreps_to_text.py</strong><br>Core YLM model and Options A / B / C equivariant cross-attention.</div>
-            <div><strong class="lime mono">src/api.py &amp; scripts/bench_api.py</strong><br>Sub-100ms CPU inference predictor, CLI, and FastAPI endpoint for v0 checkpoints.</div>
-            <div><strong class="lime mono">src/universe_fm.py &amp; fm_baselines.py</strong><br>Multi-rank (<code>0e + 0o + 1o + 2e</code>) model plus Uni-Mol, Signed-Vol, GraphMVP, and EquiLLM.</div>
-            <div><strong class="blue mono">src/mace_backbone.py &amp; nequip_backbone.py</strong><br>Pretrained MACE-MP-0, MACE-OFF23, and NequIP / Allegro adapters + live MD hooks.</div>
-            <div><strong class="blue mono">src/toolkit/physics_audit.py &amp; ouroboros_bridge.py</strong><br>64-bit 8-law conservation checker and 2D-to-3D stereo SMILES bridge.</div>
-            <div><strong class="blue mono">lean/LabLean/</strong><br>Lean 4 protocol language and decidable safety/volume checker (<code>check_sound</code>, <code>run_conserves</code>).</div>
-            <div><strong class="purple mono">labledger/</strong><br>Append-only SHA-256 hash-chained multimodal experiment ledger with training export gates.</div>
-            <div><strong class="purple mono">src/token_factory.py &amp; lab_token_factory.py</strong><br>Verifier-gated QM9 force question factory, LabLean protocol factory, and 4-layer SQL gate.</div>
-            <div><strong class="purple mono">lab/ &amp; recipes/coscientist_posttrain/</strong><br>Commercial-safe protocol dataset, 96-cell factor ablation, and single-GPU SFT→DPO→GRPO recipe.</div>
+            <div><strong class="lime mono">Tier 1 · src/model.py &amp; irreps_to_text.py</strong><br>Core YLM model and Options A / B / C cross-attention (<code>channelwise</code> cuts Option C cross-attn params 18.8×, <code>N=15..400</code> atoms).</div>
+            <div><strong class="lime mono">Tier 1 · src/prog.py (GroupProgModel)</strong><br>Neuro-symbolic invariant selector (<code>force</code>, <code>diff</code>, <code>proj</code>, multi-atom <code>group</code>) + exact O(3) vector executor.</div>
+            <div><strong class="lime mono">Tier 1 · src/ylm_lm.py &amp; checkpoints/generative_v0</strong><br>Autoregressive <code>YLMCausalLM</code> generating text + <code>&lt;vec&gt;</code> O(3)-equivariant 3D dipole and force vectors, alongside sub-100ms <code>src/api.py</code>.</div>
+            <div><strong class="blue mono">Tier 2 · src/universe_fm.py &amp; fm_baselines.py</strong><br>Multi-rank (<code>0e + 0o + 1o + 2e</code>) model plus Uni-Mol, Signed-Vol, GraphMVP, and EquiLLM baselines.</div>
+            <div><strong class="blue mono">Tier 2 · src/mace_backbone.py &amp; nequip_backbone.py</strong><br>Pretrained MACE-MP-0, MACE-OFF23, and NequIP / Allegro adapters + OpenMM / LAMMPS live MD hooks.</div>
+            <div><strong class="blue mono">Tier 2 · src/toolkit/physics_audit.py &amp; ouroboros_bridge.py</strong><br>64-bit 8-law conservation checker and 2D-to-3D stereo SMILES bridge.</div>
+            <div><strong class="purple mono">Tier 2 · lean/LabLean/</strong><br>Standalone Lean 4 protocol language and decidable safety/volume checker (<code>check_sound</code>, <code>run_conserves</code>).</div>
+            <div><strong class="purple mono">Tier 2 · labledger/</strong><br>Standalone append-only SHA-256 hash-chained multimodal experiment ledger with training export gates.</div>
+            <div><strong class="purple mono">Tier 2 · src/token_factory.py &amp; lab/</strong><br>Verifier-gated QM9 force question factory, LabLean protocol factory, 4-layer SQL gate, and post-training recipes.</div>
           </div>
         </details>
       </div>

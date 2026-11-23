@@ -6,6 +6,7 @@ __pycache__/
 runs/
 .env
 !checkpoints/v0/*.pt
+!checkpoints/generative_v0/*.pt
 
 # Keep the committed protocol-factor bench files (root data/ is ignored).
 !ablation/protocol_factors/data/

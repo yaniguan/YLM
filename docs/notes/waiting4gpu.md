@@ -59,7 +59,7 @@ python scripts/32_benchmark_vs_unimol.py --tiny --epochs 20 --seeds 42 43 44 --m
 python scripts/35_build_and_eval_chiral_benchmark.py --tiny --epochs 24 --seeds 42 43 44 --match_params
 ```
 
-Results from a 3-seed size-matched CPU run (`seeds 42, 43, 44`) are saved in [`results/cpu_smoke_nov12/`](results/cpu_smoke_nov12/README.md). The tables below are copied from those files (`mean ± std`). These are tiny smoke tests, not final results.
+Results from a 3-seed size-matched CPU run (`seeds 42, 43, 44`) are saved in [`results/cpu_smoke_nov12/`](../../results/cpu_smoke_nov12/README.md). The tables below are copied from those files (`mean ± std`). These are tiny smoke tests, not final results.
 
 ### 4.1 Multi-task 3D comparison (`unimol_benchmark.json`, test split, `mean ± std`)
 
