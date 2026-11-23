@@ -1,0 +1,565 @@
+{
+  "methods": [
+    {
+      "name": "YLM + MatSciBERT",
+      "color": "#0d9488",
+      "dash": [],
+      "primary": true
+    },
+    {
+      "name": "YLM + MiniLM",
+      "color": "#2563eb",
+      "dash": [],
+      "primary": false
+    },
+    {
+      "name": "Task-ID Baseline (no text)",
+      "color": "#e11d48",
+      "dash": [
+        7,
+        6
+      ],
+      "primary": false
+    }
+  ],
+  "views": [
+    {
+      "key": "scaling_test",
+      "kind": "line",
+      "title": "TensorQA-v0 data scaling \u2014 Test split (32 random rotations)",
+      "xLabel": "Training set fraction (% of QM9 TensorQA-v0)",
+      "yLabel": "Force vector cosine similarity",
+      "xTicks": [
+        3,
+        10,
+        30,
+        100
+      ],
+      "yRange": [
+        0.0,
+        1.05
+      ],
+      "yTicks": [
+        0.0,
+        0.25,
+        0.5,
+        0.75,
+        1.0
+      ],
+      "caption": "Per-atom force cosine across 32 random SO(3) rotations per test question (84,757 questions). At 100%, whiskers show \u00b11 SD across 5 seeds (4 seeds for task-ID baseline). Source: results.md.",
+      "series": [
+        {
+          "name": "YLM + MatSciBERT",
+          "points": [
+            [
+              3,
+              0.422,
+              0.0
+            ],
+            [
+              10,
+              0.713,
+              0.0
+            ],
+            [
+              30,
+              0.951,
+              0.0
+            ],
+            [
+              100,
+              0.96,
+              0.004
+            ]
+          ]
+        },
+        {
+          "name": "YLM + MiniLM",
+          "points": [
+            [
+              3,
+              0.63,
+              0.0
+            ],
+            [
+              10,
+              0.799,
+              0.0
+            ],
+            [
+              30,
+              0.89,
+              0.0
+            ],
+            [
+              100,
+              0.946,
+              0.006
+            ]
+          ]
+        },
+        {
+          "name": "Task-ID Baseline (no text)",
+          "points": [
+            [
+              3,
+              0.039,
+              0.0
+            ],
+            [
+              10,
+              0.062,
+              0.0
+            ],
+            [
+              30,
+              0.092,
+              0.0
+            ],
+            [
+              100,
+              0.113,
+              0.004
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "key": "scaling_heldout",
+      "kind": "line",
+      "title": "TensorQA-v0 data scaling \u2014 Held-out question wordings",
+      "xLabel": "Training set fraction (% of QM9 TensorQA-v0)",
+      "yLabel": "Held-out force cosine similarity",
+      "xTicks": [
+        3,
+        10,
+        30,
+        100
+      ],
+      "yRange": [
+        0.0,
+        1.05
+      ],
+      "yTicks": [
+        0.0,
+        0.25,
+        0.5,
+        0.75,
+        1.0
+      ],
+      "caption": "Zero-shot generalization to 4 unseen question phrasings held out during training (32 random rotations per test item). MatSciBERT reaches 0.917 \u00b1 0.021 at 100% data. Source: results.md.",
+      "series": [
+        {
+          "name": "YLM + MatSciBERT",
+          "points": [
+            [
+              3,
+              0.402,
+              0.0
+            ],
+            [
+              10,
+              0.679,
+              0.0
+            ],
+            [
+              30,
+              0.854,
+              0.0
+            ],
+            [
+              100,
+              0.917,
+              0.021
+            ]
+          ]
+        },
+        {
+          "name": "YLM + MiniLM",
+          "points": [
+            [
+              3,
+              0.593,
+              0.0
+            ],
+            [
+              10,
+              0.753,
+              0.0
+            ],
+            [
+              30,
+              0.858,
+              0.0
+            ],
+            [
+              100,
+              0.859,
+              0.04
+            ]
+          ]
+        },
+        {
+          "name": "Task-ID Baseline (no text)",
+          "points": [
+            [
+              3,
+              0.039,
+              0.0
+            ],
+            [
+              10,
+              0.062,
+              0.0
+            ],
+            [
+              30,
+              0.092,
+              0.0
+            ],
+            [
+              100,
+              0.113,
+              0.004
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "key": "options_abc",
+      "kind": "grouped_bar",
+      "title": "IrrepsToText Options A / B / C & compositional vectors",
+      "yLabel": "Cosine similarity / Atom routing accuracy",
+      "yRange": [
+        0.0,
+        1.05
+      ],
+      "yTicks": [
+        0.0,
+        0.25,
+        0.5,
+        0.75,
+        1.0
+      ],
+      "categories": [
+        "Force Cosine (QM9)",
+        "Atom Routing Acc",
+        "Held-out Force Cos",
+        "Comp. Diff (F_A \u2212 F_B)"
+      ],
+      "caption": "Option A (invariant keys \u00d7 equivariant values), Option B (directional inner-product keys), and Option C (Clebsch\u2013Gordan self-product) under O(3) rotations + reflections. Sources: docs/results_options_abc.md & results_baselines.md.",
+      "bars": [
+        {
+          "name": "Option A",
+          "color": "#64748b",
+          "values": [
+            0.9559,
+            0.909,
+            0.903,
+            0.7586
+          ],
+          "sds": [
+            0.0,
+            0.0,
+            0.0,
+            0.0057
+          ]
+        },
+        {
+          "name": "Option B",
+          "color": "#2563eb",
+          "values": [
+            0.9588,
+            0.696,
+            0.923,
+            null
+          ],
+          "sds": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "name": "Option C (CG Product)",
+          "color": "#0d9488",
+          "values": [
+            0.9762,
+            0.92,
+            0.892,
+            0.8897
+          ],
+          "sds": [
+            0.0,
+            0.0,
+            0.0,
+            0.0918
+          ]
+        }
+      ]
+    },
+    {
+      "key": "cpu_api_pareto",
+      "kind": "grouped_bar",
+      "title": "CPU Inference API \u2014 Accuracy across speed variants (1 thread)",
+      "yLabel": "Cosine similarity / Atom hit rate",
+      "yRange": [
+        0.0,
+        1.05
+      ],
+      "yTicks": [
+        0.0,
+        0.25,
+        0.5,
+        0.75,
+        1.0
+      ],
+      "categories": [
+        "Force Cos (Test)",
+        "Force Cos (Held-out)",
+        "Atom Hit (Test)",
+        "Atom Hit (Held-out)"
+      ],
+      "caption": "Measured single-thread CPU inference on 300 test + 300 held-out TensorQA-v0 questions (src/api.py). Cold CPU p50 latency: MatSciBERT fp32 = 79 ms, MatSciBERT int8 = 35 ms (2.3\u00d7 faster), MiniLM fp32 = 18 ms, MiniLM int8 = 13 ms. Source: docs/cpu_api.md.",
+      "bars": [
+        {
+          "name": "MatSciBERT fp32 (79 ms)",
+          "color": "#0d9488",
+          "values": [
+            0.946,
+            0.91,
+            0.946,
+            0.929
+          ],
+          "sds": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "MatSciBERT int8 (35 ms)",
+          "color": "#2563eb",
+          "values": [
+            0.925,
+            0.896,
+            0.933,
+            0.92
+          ],
+          "sds": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "MiniLM fp32 (18 ms)",
+          "color": "#7c3aed",
+          "values": [
+            0.924,
+            0.888,
+            0.759,
+            0.737
+          ],
+          "sds": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "MiniLM int8 (13 ms)",
+          "color": "#d97706",
+          "values": [
+            0.882,
+            0.773,
+            0.732,
+            0.638
+          ],
+          "sds": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "key": "calisol_factors",
+      "kind": "grouped_bar",
+      "title": "CALiSol Protocol Factor Ablation \u2014 Native numbers vs text (5 seeds)",
+      "yLabel": "Pairwise conductivity ranking accuracy",
+      "yRange": [
+        0.45,
+        0.85
+      ],
+      "yTicks": [
+        0.5,
+        0.6,
+        0.7,
+        0.8
+      ],
+      "categories": [
+        "none (base)",
+        "Layer F (MoLFormer+RDKit)",
+        "Layer Q (xTB)",
+        "Layer S (Solvation)",
+        "All Layers (QFSM)"
+      ],
+      "caption": "300 held-out CALiSol-23 electrolyte pairs (chance = 0.50, logistic/kNN probes across 5 seeds). Layer F (MoLFormer logS/logD + RDKit logP/TPSA) gives a significant Holm-adjusted gain (+5.7 pp interaction when fed as native numbers vs text). Source: ablation/protocol_factors/README.md.",
+      "bars": [
+        {
+          "name": "Native Numbers (logreg)",
+          "color": "#0d9488",
+          "values": [
+            0.635,
+            0.727,
+            0.643,
+            0.627,
+            0.707
+          ],
+          "sds": [
+            0.028,
+            0.026,
+            0.027,
+            0.028,
+            0.026
+          ]
+        },
+        {
+          "name": "Plain Text",
+          "color": "#e11d48",
+          "values": [
+            0.631,
+            0.653,
+            0.68,
+            0.675,
+            0.595
+          ],
+          "sds": [
+            0.024,
+            0.023,
+            0.023,
+            0.024,
+            0.024
+          ]
+        },
+        {
+          "name": "Native + Text",
+          "color": "#2563eb",
+          "values": [
+            0.641,
+            0.673,
+            0.644,
+            0.661,
+            0.627
+          ],
+          "sds": [
+            0.022,
+            0.023,
+            0.023,
+            0.022,
+            0.023
+          ]
+        }
+      ]
+    },
+    {
+      "key": "universe_multirank",
+      "kind": "grouped_bar",
+      "title": "Multi-rank 3D comparison \u2014 1o vectors, 3\u00d73 tensors & routing",
+      "yLabel": "Test score under K = 8 O(3) rotations + reflections",
+      "yRange": [
+        0.0,
+        1.05
+      ],
+      "yTicks": [
+        0.0,
+        0.25,
+        0.5,
+        0.75,
+        1.0
+      ],
+      "categories": [
+        "1o Vector Cos",
+        "Held-out Vec Cos",
+        "0e+2e Tensor Cos",
+        "Atom Routing Acc"
+      ],
+      "caption": "Size-matched 3-seed CPU benchmark under K = 8 random O(3) rotations and mirror flips. Distance-only (Uni-Mol) and 2D graph (GraphMVP) models cannot rotate 1o vectors, while YLM leads on directional vectors and 3\u00d73 matrices. Source: results/cpu_smoke_nov12/.",
+      "bars": [
+        {
+          "name": "GraphMVP / 3D-InfoMax",
+          "color": "#94a3b8",
+          "values": [
+            0.0351,
+            0.0551,
+            0.65,
+            0.75
+          ],
+          "sds": [
+            0.01,
+            0.009,
+            0.003,
+            0.056
+          ]
+        },
+        {
+          "name": "Uni-Mol (3D Distance)",
+          "color": "#e11d48",
+          "values": [
+            0.0661,
+            0.0227,
+            0.6586,
+            0.764
+          ],
+          "sds": [
+            0.022,
+            0.01,
+            0.008,
+            0.024
+          ]
+        },
+        {
+          "name": "EquiLLM (0e Bridge + 1o)",
+          "color": "#2563eb",
+          "values": [
+            0.5356,
+            0.3095,
+            0.9256,
+            0.653
+          ],
+          "sds": [
+            0.04,
+            0.053,
+            0.012,
+            0.013
+          ]
+        },
+        {
+          "name": "YLM-Universe (Ours)",
+          "color": "#0d9488",
+          "values": [
+            0.6292,
+            0.4963,
+            0.9915,
+            0.875
+          ],
+          "sds": [
+            0.038,
+            0.025,
+            0.002,
+            0.04
+          ]
+        }
+      ]
+    }
+  ]
+}

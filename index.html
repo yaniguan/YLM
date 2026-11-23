@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#fbfcfe">
+  <title>YLM: Equivariant Language-Geometry Alignment · YLM Directional Chemistry Studio</title>
+  <meta name="description" content="Ask in English, get O(3)-equivariant 3D forces, dipoles, chiral signs, and 3x3 tensors, paired with Lean 4 lab protocol verification and token factories.">
+  <link rel="canonical" href="https://yaniguan.github.io/YLM/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yaniguan.github.io/YLM/">
+  <meta property="og:title" content="YLM — Equivariant 3D Chemistry &amp; Verified Lab Co-Scientist">
+  <meta property="og:description" content="0.960 force cosine across 32 rotations, 8/8 float64 symmetry laws, 79 ms CPU API, LabLean 96-well protocol checker, and interactive Studio.">
+  <link rel="icon" href="assets/ylm-orbital-static.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="mol3d-stage.js"></script>
+  <script defer src="benchmark-chart.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="YLM home">
+      <img src="assets/ylm-orbital-animated.svg" width="52" height="26" alt="">
+      <span>YLM</span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="#capabilities">Functions</a>
+      <a href="#method">Architecture</a>
+      <a href="#benchmarks">Benchmarks</a>
+      <a href="#studio">Interactive Studio</a>
+      <a href="#verifiers">Lab &amp; Verifiers</a>
+      <a href="#citation">Code</a>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch color theme">☾ Dark</button>
+      <a class="nav-cta" href="https://github.com/yaniguan/YLM" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero wrap">
+      <p class="eyebrow"><span class="status-dot"></span> O(3) Equivariant Chemistry · Formal Lab Verification</p>
+      <h1>
+        <span class="hero-name">YLM<span class="title-colon">:</span></span>
+        <span class="hero-title">Language-to-3D Tensor Alignment &amp; Verified Lab Tooling</span>
+      </h1>
+      <p class="hero-deck">
+        Question tokens attend directly to <strong>spherical-harmonic atom features</strong> so 3D forces, dipoles, chirality, and symmetric 3×3 tensors rotate and reflect by construction — paired with <strong>Lean 4 protocol checks</strong> and <strong>verifier-gated token factories</strong>.
+      </p>
+      <div class="hero-actions">
+        <a class="button primary" href="#studio">Launch Interactive Studio <span aria-hidden="true">↓</span></a>
+        <a class="button secondary" href="https://github.com/yaniguan/YLM" target="_blank" rel="noopener">GitHub Repository <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="#citation">Quickstart &amp; BibTeX <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="meta-strip" aria-label="Project metadata">
+        <span>Yani Guan</span><span>·</span>
+        <span>MIT License</span><span>·</span>
+        <span>e3nn + MACE / NequIP</span><span>·</span>
+        <span>Lean 4 (LabLean)</span><span>·</span>
+        <span>1–2 MB v0 Checkpoints</span>
+      </div>
+      <p class="meta-note">Supported by API credits from <a href="https://antigravity.google/" target="_blank" rel="noopener">Google Antigravity for Science</a> &nbsp;·&nbsp; <a href="#repo-map">Explore all repository packages</a></p>
+    </section>
+
+    <!-- 4-Column Crisp KPI Strip -->
+    <section class="wrap" aria-label="Headline metrics">
+      <div class="kpi-strip">
+        <a class="kpi-card" href="#benchmarks">
+          <span class="small-label">TensorQA-v0 Force</span>
+          <div class="kpi-num"><span class="lime">0.960</span> <small>vs 0.113</small></div>
+          <p>Per-atom force cosine across 32 rotations (5 seeds, MatSciBERT) vs task-ID without text.</p>
+        </a>
+        <a class="kpi-card" href="#symmetry">
+          <span class="small-label blue">64-Bit Physics Audit</span>
+          <div class="kpi-num"><span class="blue">8 / 8</span> <small>~10⁻⁹ err</small></div>
+          <p>Exact translation, SO(3) rotation, mirror parity, Curie planar zero, and crystal PBC laws.</p>
+        </a>
+        <a class="kpi-card" href="#studio" data-jump-pane="pane-playground">
+          <span class="small-label purple">CPU Inference API</span>
+          <div class="kpi-num"><span class="purple">79 ms</span> <small>35 ms int8</small></div>
+          <p>Single-thread CPU latency per request on full MatSciBERT v0 (13 ms with MiniLM-int8).</p>
+        </a>
+        <a class="kpi-card" href="#verifiers">
+          <span class="small-label">LabLean &amp; Token Factory</span>
+          <div class="kpi-num"><span>0</span> <small>bad items kept</small></div>
+          <p>17,464 mutated force prompts &amp; 6,400 wrong SQL queries caught; 3,594 Lean-checked protocols.</p>
+        </a>
+      </div>
+    </section>
+
+    <!-- Interactive 6-Function Launcher Cards -->
+    <section class="wrap" id="capabilities" style="padding-top:44px;">
+      <div class="section-line">
+        <h2>Click any function to try it live in the browser.</h2>
+        <span>6 interactive modules · Zero server setup required</span>
+      </div>
+      <div class="capability-grid">
+        <button type="button" class="cap-card" data-jump-pane="pane-playground">
+          <div class="cap-top">
+            <span class="cap-badge">1o Vector QA</span>
+            <span class="cap-jump">Try live →</span>
+          </div>
+          <h3>Ask 3D Molecules &amp; CPU API</h3>
+          <p>Query per-atom forces or molecular dipoles in English, inspect token-to-atom routing α_ti, and compare fp32 vs int8 CPU latency.</p>
+          <div class="cap-meta mono">src/model.py · src/api.py</div>
+        </button>
+
+        <button type="button" class="cap-card" data-jump-pane="pane-options">
+          <div class="cap-top">
+            <span class="cap-badge blue-b">Options A / B / C</span>
+            <span class="cap-jump">Try live →</span>
+          </div>
+          <h3>Irreps Cross-Attention Router</h3>
+          <p>Compare linear pooling (A), directional dot-product + <code>--attn_sup</code> (B), and channel-wise Clebsch–Gordan coupling (C, 0.85M params).</p>
+          <div class="cap-meta mono">src/irreps_to_text.py · F_A − F_B</div>
+        </button>
+
+        <button type="button" class="cap-card" data-jump-pane="pane-md">
+          <div class="cap-top">
+            <span class="cap-badge">MLIP &amp; MD Hooks</span>
+            <span class="cap-jump">Try live →</span>
+          </div>
+          <h3>Reactive MD &amp; Proton Transfer</h3>
+          <p>Mount MACE / NequIP backbones and watch OpenMM / LAMMPS hooks detect bond breaking and H⁺ hopping step by step.</p>
+          <div class="cap-meta mono">src/toolkit/mlip_md.py · md_hooks.py</div>
+        </button>
+
+        <button type="button" class="cap-card" data-jump-pane="pane-ouroboros">
+          <div class="cap-top">
+            <span class="cap-badge purple-b">0o Stereochem</span>
+            <span class="cap-jump">Try live →</span>
+          </div>
+          <h3>Ouroboros 2D → 3D Chirality</h3>
+          <p>Convert 2D OCSR drawings and <code>@/@@</code> SMILES into 3D conformers and verify exact <code>f(R) + f(S) = 0</code> mirror anti-symmetry.</p>
+          <div class="cap-meta mono">src/universe_fm.py · ouroboros_bridge.py</div>
+        </button>
+
+        <button type="button" class="cap-card" data-jump-pane="pane-lablean">
+          <div class="cap-top">
+            <span class="cap-badge blue-b">Lean 4 Checker</span>
+            <span class="cap-jump">Try live →</span>
+          </div>
+          <h3>LabLean 96-Well Protocol Verifier</h3>
+          <p>Step through PCR and serial-dilution protocols on an interactive 96-well plate with proven volume conservation and safety rules.</p>
+          <div class="cap-meta mono">lean/LabLean/ · check_sound</div>
+        </button>
+
+        <button type="button" class="cap-card" data-jump-pane="pane-factory">
+          <div class="cap-top">
+            <span class="cap-badge purple-b">Data &amp; Ledger</span>
+            <span class="cap-jump">Try live →</span>
+          </div>
+          <h3>Token Factory &amp; LabLedger Gate</h3>
+          <p>Test V0–V3 force question verifiers against adversarial mutations and inspect SHA-256 tamper detection on <code>labledger/v1</code>.</p>
+          <div class="cap-meta mono">src/token_factory.py · labledger/</div>
+        </button>
+      </div>
+    </section>
+
+    <!-- Live 5-Chapter Cinematic 3D Stage -->
+    <section class="demo-section wrap" id="demo" aria-labelledby="demo-heading">
+      <div class="section-line">
+        <h2 id="demo-heading">Side-by-side 3D equivariance stage</h2>
+        <span>Drag canvas to orbit · Click chapters below to switch tensor rank</span>
+      </div>
+      <div class="film-frame">
+        <div class="stage-topbar">
+          <span id="hero-stage-prompt" class="stage-prompt">“What is the 3D molecular dipole moment vector of (R)-fluoroethylene carbonate?”</span>
+          <button type="button" id="hero-stage-toggle" class="stage-ctrl-btn">Ⅱ Pause</button>
+        </div>
+        <canvas id="hero-stage-canvas" width="1120" height="430" aria-label="Side-by-side 3D molecular comparison between equivariant YLM and a distance-only baseline"></canvas>
+      </div>
+      <div class="chapters" aria-label="Select 3D symmetry chapter">
+        <button type="button" data-hero-chapter="0" class="active"><span>00 · Overview</span> Dipole &amp; 3D pose</button>
+        <button type="button" data-hero-chapter="1"><span>01 · SO(3) Rotation</span> Per-atom force (1o)</button>
+        <button type="button" data-hero-chapter="2"><span>02 · Mirror Parity</span> (R) vs (S) twins (0o)</button>
+        <button type="button" data-hero-chapter="3"><span>03 · Token Routing</span> Language selects atom</button>
+        <button type="button" data-hero-chapter="4"><span>04 · 3×3 Tensor</span> Quadrupole &amp; planar zero</button>
+      </div>
+    </section>
+
+    <!-- 01 / Interactive Live Workbench (Moved high up so visitors can play immediately!) -->
+    <section class="section studio-section" id="studio">
+      <div class="wrap">
+        <div class="section-heading" style="margin-bottom:22px;">
+          <p class="eyebrow">01 / Interactive Workbench</p>
+          <h2>YLM Directional Chemistry Studio</h2>
+          <p class="section-intro">
+            Eight interactive sandboxes covering 3D O(3) symmetry, token-to-atom routing, Options A/B/C vector algebra, reactive MD, 2D→3D chirality, Lean 4 lab protocol checking, and verifier-gated data pipelines.
+          </p>
+        </div>
+
+        <div class="studio-bar">
+          <div class="studio-tabs" role="tablist" aria-label="Studio tools">
+            <button type="button" class="studio-tab active" data-pane="pane-physics" role="tab" aria-selected="true">1 · Symmetry Sandbox</button>
+            <button type="button" class="studio-tab" data-pane="pane-playground" role="tab" aria-selected="false">2 · Ask 3D &amp; CPU API</button>
+            <button type="button" class="studio-tab" data-pane="pane-options" role="tab" aria-selected="false">3 · Options A/B/C Router</button>
+            <button type="button" class="studio-tab" data-pane="pane-md" role="tab" aria-selected="false">4 · Reaction Dynamics</button>
+            <button type="button" class="studio-tab" data-pane="pane-ouroboros" role="tab" aria-selected="false">5 · 2D → 3D Chirality</button>
+            <button type="button" class="studio-tab" data-pane="pane-lablean" role="tab" aria-selected="false">6 · LabLean Checker</button>
+            <button type="button" class="studio-tab" data-pane="pane-factory" role="tab" aria-selected="false">7 · Token Factory &amp; Ledger</button>
+            <button type="button" class="studio-tab" data-pane="pane-benchmark" role="tab" aria-selected="false">8 · Live Benchmark</button>
+          </div>
+          <span id="studio-engine-status" class="engine-badge"><span class="status-dot"></span> Checking local engine…</span>
+        </div>
+
+        <!-- Tab 1: Symmetry Sandbox -->
+        <div id="pane-physics" class="studio-pane active">
+          <div class="controls-row">
+            <select id="sym-preset" class="studio-select" aria-label="Select molecule preset">
+              <option value="r_fec_chiral">(R)-Fluoroethylene carbonate · Chiral electrolyte</option>
+              <option value="r_bcfm_chiral">(R)-CHBrClF · Chiral tetrahedron</option>
+              <option value="water_c2v">Water (H₂O) · Planar C₂v control</option>
+              <option value="trans_difluoroethene_c2h">trans-FHC=CHF · Centrosymmetric C₂h</option>
+              <option value="lifepo4_pbc_crystal">LiFePO₄ · 3D periodic cathode crystal</option>
+            </select>
+            <select id="sym-precision" class="studio-select" aria-label="Floating-point precision">
+              <option value="float64">64-bit strict (float64)</option>
+              <option value="float32">32-bit standard (float32)</option>
+            </select>
+            <button type="button" id="btn-run-audit" class="studio-btn">Verify 8 Physics Laws</button>
+          </div>
+
+          <div class="studio-grid-2">
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>3D Pose &amp; Mirror Sandbox</h3>
+                <span id="sym-det-pill" class="pill-tag mono">det(Q) = −1.0</span>
+              </div>
+              <div class="dual-stage">
+                <div class="mini-stage-box">
+                  <span class="mini-stage-label">Original frame X</span>
+                  <canvas id="canvas-sym-orig" class="mini-stage-canvas"></canvas>
+                </div>
+                <div class="mini-stage-box">
+                  <span class="mini-stage-label">Transformed X Qᵀ + t</span>
+                  <canvas id="canvas-sym-trans" class="mini-stage-canvas"></canvas>
+                </div>
+              </div>
+
+              <div class="slider-grid">
+                <div>
+                  <label for="sl-rx">X rotation · <span id="lbl-rx" class="mono">35°</span></label>
+                  <input type="range" id="sl-rx" min="-180" max="180" value="35">
+                </div>
+                <div>
+                  <label for="sl-ry">Y rotation · <span id="lbl-ry" class="mono">−48°</span></label>
+                  <input type="range" id="sl-ry" min="-180" max="180" value="-48">
+                </div>
+                <div>
+                  <label for="sl-rz">Z rotation · <span id="lbl-rz" class="mono">72°</span></label>
+                  <input type="range" id="sl-rz" min="-180" max="180" value="72">
+                </div>
+              </div>
+
+              <div class="check-row">
+                <label class="check-chip"><input type="checkbox" id="chk-reflect" checked> Mirror reflection (det = −1)</label>
+                <label class="check-chip"><input type="checkbox" id="chk-permute"> Permute atom order</label>
+                <label class="check-chip"><input type="checkbox" id="chk-shift"> Shift +t in 3D space</label>
+              </div>
+
+              <table class="editorial-table" style="margin-top:14px;">
+                <thead>
+                  <tr>
+                    <th>Model</th>
+                    <th>0e Drift</th>
+                    <th>0o Mirror Err</th>
+                    <th>1o Arrow Cos</th>
+                    <th>3×3 Matrix Err</th>
+                  </tr>
+                </thead>
+                <tbody id="sym-metrics-tbody"></tbody>
+              </table>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>8 Conservation &amp; Symmetry Laws</h3>
+                <span id="audit-summary-pill" class="pill-tag ok">8 / 8 Passed</span>
+              </div>
+              <div id="audit-laws-list" class="law-rows"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Ask 3D Molecule & CPU API -->
+        <div id="pane-playground" class="studio-pane">
+          <div class="studio-grid-2">
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>Ask a Directional Question in English</h3>
+                <span id="ask-api-pill" class="pill-tag ok mono">CPU p50: 79 ms</span>
+              </div>
+              <div class="preset-chips" id="ask-preset-chips">
+                <button type="button" class="preset-chip active" data-struct="water_c2v" data-q="What is the force vector on the oxygen atom?">H₂O · Oxygen force</button>
+                <button type="button" class="preset-chip" data-struct="r_fec_chiral" data-q="What is the 3D molecular dipole moment vector?">(R)-FEC · Dipole vector</button>
+                <button type="button" class="preset-chip" data-struct="CCO" data-q="What is the force on the hydroxyl oxygen atom?">Ethanol · Hydroxyl O</button>
+                <button type="button" class="preset-chip" data-struct="c1ccncc1" data-q="What is the molecular dipole vector of pyridine?">Pyridine · Ring dipole</button>
+              </div>
+              <div class="controls-row">
+                <input type="text" id="ask-structure" class="studio-input mono" value="water_c2v" aria-label="Preset ID or SMILES">
+                <select id="ask-api-variant" class="studio-select" aria-label="CPU API Variant">
+                  <option value="matscibert_fp32">MatSciBERT fp32 (default · 79 ms)</option>
+                  <option value="matscibert_int8">MatSciBERT int8 text (35 ms)</option>
+                  <option value="minilm_fp32">MiniLM fp32 (18 ms)</option>
+                  <option value="minilm_int8">MiniLM int8 (13 ms)</option>
+                </select>
+                <button type="button" id="btn-ask-run" class="studio-btn">Predict 3D Vector</button>
+              </div>
+              <div class="controls-row" style="margin-bottom:0;">
+                <input type="text" id="ask-question" class="studio-input" value="What is the force vector on the oxygen atom?" aria-label="Question in English">
+              </div>
+
+              <div id="ask-result-summary" style="margin-top:16px;"></div>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>3D Vector &amp; Token-to-Atom Attention</h3>
+                <span id="ask-rot-pill" class="pill-tag ok mono">rot err: 1.2e-6</span>
+              </div>
+              <div class="mini-stage-box">
+                <span class="mini-stage-label">Drag to rotate · Teal halo shows routed atom α_ti</span>
+                <canvas id="canvas-ask-3d" class="mini-stage-canvas" style="height:295px;"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3 (NEW): Options A / B / C Interactive Router -->
+        <div id="pane-options" class="studio-pane">
+          <div class="controls-row">
+            <div class="preset-chips" id="opt-task-chips" style="margin-bottom:0;">
+              <button type="button" class="preset-chip active" data-opt-task="single">Single-Atom Force · F(O_carbonyl)</button>
+              <button type="button" class="preset-chip" data-opt-task="diff">Two-Atom Force Difference · F(O1) − F(F6)</button>
+              <button type="button" class="preset-chip" data-opt-task="proj">Signed Axis Projection · (F(C5) · u) u along C5→F6</button>
+            </div>
+          </div>
+          <div class="controls-row">
+            <span style="font-size:12.5px;font-weight:600;color:var(--muted);">Cross-Attention Variant:</span>
+            <div class="preset-chips" id="opt-mode-chips" style="margin-bottom:0;">
+              <button type="button" class="preset-chip" data-opt-mode="A">Option A (Invariant Keys)</button>
+              <button type="button" class="preset-chip" data-opt-mode="B">Option B (Plain Directional)</button>
+              <button type="button" class="preset-chip" data-opt-mode="B_sup">Option B (+ --attn_sup 0.1)</button>
+              <button type="button" class="preset-chip active" data-opt-mode="C">Option C (Channelwise CG · 0.85M)</button>
+            </div>
+          </div>
+
+          <div class="studio-grid-2">
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3 id="opt-stage-title">3D Routed Atoms &amp; Predicted Vector</h3>
+                <span id="opt-cos-pill" class="pill-tag ok mono">cos = 0.976</span>
+              </div>
+              <div class="mini-stage-box">
+                <span class="mini-stage-label">Solid teal = selected Option · Dashed blue = xTB ground truth</span>
+                <canvas id="canvas-opt-3d" class="mini-stage-canvas" style="height:275px;"></canvas>
+              </div>
+              <p id="opt-mechanism-note" style="font-size:13px;color:var(--muted);margin-top:12px;"></p>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>Per-Atom Routing Weights α_i &amp; Cost</h3>
+                <span id="opt-param-pill" class="pill-tag mono">0.85M params</span>
+              </div>
+              <div id="opt-attn-bars" class="attn-bar-list"></div>
+              <div id="opt-bench-metrics" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Reaction Dynamics -->
+        <div id="pane-md" class="studio-pane">
+          <div class="controls-row">
+            <select id="md-mode" class="studio-select" aria-label="Trajectory mode">
+              <option value="scan_zundel">Zundel H₅O₂⁺ Proton-Transfer Barrier Scan</option>
+              <option value="live_md">Live Velocity-Verlet NVE/Langevin Trajectory</option>
+            </select>
+            <button type="button" id="btn-run-md" class="studio-btn">Run Trajectory &amp; Hooks</button>
+            <button type="button" id="btn-play-md" class="studio-btn ghost">▶ Auto-Scrub</button>
+          </div>
+
+          <div class="studio-grid-2">
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>3D Reactive Trajectory Frame</h3>
+                <span id="md-frame-label" class="pill-tag mono">Frame 1 / 9</span>
+              </div>
+              <div class="mini-stage-box">
+                <span class="mini-stage-label">Shared proton H⁺ &amp; equivariant force arrow</span>
+                <canvas id="canvas-md-3d" class="mini-stage-canvas" style="height:265px;"></canvas>
+              </div>
+              <div style="margin-top:12px;">
+                <label for="md-scrubber" style="font-size:12px;color:var(--muted);display:block;margin-bottom:5px;">Scrub reaction coordinate / MD step</label>
+                <input type="range" id="md-scrubber" min="0" max="8" value="0" style="width:100%;accent-color:var(--lime);">
+              </div>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>Potential Energy &amp; Reaction Hook Log</h3>
+                <span id="md-event-pill" class="pill-tag ok">H⁺ transfer detected</span>
+              </div>
+              <div id="md-energy-chart"></div>
+              <div id="md-events-log" style="margin-top:12px;font-size:13px;color:var(--muted);"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 5: Ouroboros 2D -> 3D Chirality -->
+        <div id="pane-ouroboros" class="studio-pane">
+          <div class="controls-row">
+            <input type="text" id="ob-smiles" class="studio-input mono" value="O=C1OC[C@H](F)O1" aria-label="Chiral SMILES">
+            <button type="button" id="btn-flip-ob" class="studio-btn ghost">⇄ Flip (R) / (S)</button>
+            <button type="button" id="btn-run-ob" class="studio-btn">Embed 3D &amp; Verify Twin</button>
+          </div>
+          <div class="preset-chips" id="ob-chips">
+            <button type="button" class="preset-chip active" data-smi="O=C1OC[C@H](F)O1">(R)-FEC · O=C1OC[C@H](F)O1</button>
+            <button type="button" class="preset-chip" data-smi="O=C1OC[C@@H](F)O1">(S)-FEC · O=C1OC[C@@H](F)O1</button>
+            <button type="button" class="preset-chip" data-smi="F[C@H](Cl)Br">(R)-CHBrClF</button>
+            <button type="button" class="preset-chip" data-smi="C[C@H](O)C(=O)O">L-Lactic acid</button>
+          </div>
+
+          <div class="studio-grid-2">
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>Embedded 3D Stereoisomer</h3>
+                <span id="ob-stereo-pill" class="pill-tag ok">CIP Stereocenter Verified</span>
+              </div>
+              <div class="mini-stage-box">
+                <span class="mini-stage-label">3D ETKDGv3 conformer + chiral center highlight</span>
+                <canvas id="canvas-ob-3d" class="mini-stage-canvas" style="height:265px;"></canvas>
+              </div>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>Enantiomer Anti-Symmetry Check</h3>
+                <span class="pill-tag mono">f(R) + f(S) = 0</span>
+              </div>
+              <div id="ob-metrics-box"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 6 (NEW): LabLean 96-Well Protocol Checker -->
+        <div id="pane-lablean" class="studio-pane">
+          <div class="preset-chips" id="lean-preset-chips">
+            <button type="button" class="preset-chip active" data-lean="pcr_valid">✓ Addgene PCR Master Mix (Valid)</button>
+            <button type="button" class="preset-chip" data-lean="dilution_valid">✓ iGEM 2-Fold Serial Dilution (Valid)</button>
+            <button type="button" class="preset-chip" data-lean="err_overflow">✕ Broken: Well Overflow (&gt;200 µL)</button>
+            <button type="button" class="preset-chip" data-lean="err_pipette">✕ Broken: Pipette Out of Range</button>
+            <button type="button" class="preset-chip" data-lean="err_contam">✕ Broken: Tip Cross-Contamination</button>
+            <button type="button" class="preset-chip" data-lean="err_rotor">✕ Broken: Unbalanced Centrifuge</button>
+          </div>
+
+          <div class="controls-row">
+            <label style="font-size:12.5px;color:var(--muted);">Pipette:
+              <select id="lean-pipette" class="studio-select">
+                <option value="P2">P2 (0.2–2 µL)</option>
+                <option value="P20">P20 (2–20 µL)</option>
+                <option value="P200" selected>P200 (20–200 µL)</option>
+                <option value="P1000">P1000 (100–1000 µL)</option>
+              </select>
+            </label>
+            <label style="font-size:12.5px;color:var(--muted);">Transfer (µL):
+              <input type="number" id="lean-vol" class="studio-select mono" value="50" min="0.5" max="300" step="0.5" style="width:86px;">
+            </label>
+            <label class="check-chip"><input type="checkbox" id="lean-fresh-tip" checked> Fresh sterile tip per reagent</label>
+            <label class="check-chip"><input type="checkbox" id="lean-thawed" checked> Thaw stocks first</label>
+            <label class="check-chip"><input type="checkbox" id="lean-balanced" checked> Balanced sealed rotor (Δm ≤ 100 mg)</label>
+          </div>
+
+          <div class="studio-grid-2">
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>96-Well Plate State &amp; Volume Conservation</h3>
+                <span id="lean-conserve-pill" class="pill-tag ok mono">ΣV_init = ΣV_final = 600.0 µL</span>
+              </div>
+              <div class="plate-wrap">
+                <div id="lean-plate-grid" class="plate-grid" aria-label="96-well plate liquid map"></div>
+              </div>
+              <p id="lean-step-trace" class="mono" style="font-size:12px;color:var(--muted);margin-top:12px;"></p>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>Decidable Lean 4 Checker Rules</h3>
+                <span id="lean-verdict-pill" class="pill-tag ok">ValidProtocol · 9 / 9</span>
+              </div>
+              <div id="lean-rules-list" class="law-rows"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 7 (NEW): Token Factory & LabLedger Verifier Gate -->
+        <div id="pane-factory" class="studio-pane">
+          <div class="studio-grid-2">
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>Token Factory V0–V3 Force Verifier</h3>
+                <span id="tf-verdict-pill" class="pill-tag ok">KEPT · Verified</span>
+              </div>
+              <div class="preset-chips" id="tf-preset-chips">
+                <button type="button" class="preset-chip active" data-tf-q="What is the force on the oxygen atom bonded to two carbons?" data-tf-split="train">✓ Valid unique atom</button>
+                <button type="button" class="preset-chip" data-tf-q="What is the force on a carbon atom?" data-tf-split="train">✕ Indefinite “a carbon”</button>
+                <button type="button" class="preset-chip" data-tf-q="What is the force on the oxygen atom not bonded to hydrogen?" data-tf-split="train">✕ Negation mutation</button>
+                <button type="button" class="preset-chip" data-tf-q="What is the force on the carbon atom bonded to one carbon?" data-tf-split="train">✕ V2d “at-least” ambiguity</button>
+                <button type="button" class="preset-chip" data-tf-q="Give the force vector acting on the fluorine atom." data-tf-split="test">✕ V1 held-out split leak</button>
+              </div>
+              <div class="controls-row">
+                <input type="text" id="tf-question-input" class="studio-input" value="What is the force on the oxygen atom bonded to two carbons?" aria-label="Candidate force question">
+                <select id="tf-split-select" class="studio-select" aria-label="Molecule split">
+                  <option value="train" selected>split: train</option>
+                  <option value="test">split: test</option>
+                </select>
+              </div>
+              <div id="tf-gates-grid" class="gate-steps"></div>
+              <div id="tf-detail-box" style="font-size:13px;color:var(--muted);margin-top:8px;"></div>
+            </div>
+
+            <div class="studio-card">
+              <div class="studio-card-head">
+                <h3>LabLedger SHA-256 Hash-Chain Inspector</h3>
+                <span id="ledger-status-pill" class="pill-tag ok mono">Chain Verified (0.8 ms)</span>
+              </div>
+              <p style="font-size:13px;color:var(--muted);margin-bottom:10px;">
+                <code>labledger/v1</code> stores append-only events (<code>add</code>, <code>supersede</code>, <code>retract</code>). Try tampering with an earlier reading to see cryptographic chain verification catch it:
+              </p>
+              <div class="controls-row">
+                <button type="button" id="btn-ledger-tamper" class="studio-btn ghost">⚡ Tamper Event #2 Reading</button>
+                <button type="button" id="btn-ledger-reset" class="studio-btn">Restore Valid Ledger</button>
+              </div>
+              <div id="ledger-events-list" class="ledger-chain"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 8: Benchmark Suite -->
+        <div id="pane-benchmark" class="studio-pane">
+          <div class="studio-card">
+            <div class="studio-card-head">
+              <div>
+                <h3>Multi-Task O(3) Model Comparison</h3>
+                <p style="font-size:12.5px;color:var(--muted);margin-top:3px;">Reference 3-seed size-matched results from <code>results/cpu_smoke_nov12/</code>, or run a fresh mini CPU training loop when <code>ylm serve</code> is active.</p>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;">
+                <select id="bench-epochs" class="studio-select" aria-label="Live training epochs">
+                  <option value="3">Live run: 3 epochs (~12s)</option>
+                  <option value="6">Live run: 6 epochs (~24s)</option>
+                </select>
+                <button type="button" id="btn-run-bench" class="studio-btn ghost">Run Live CPU Check</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="editorial-table">
+                <thead>
+                  <tr>
+                    <th>Model Family</th>
+                    <th>0e Energy MAE ↓</th>
+                    <th>1o Vec Cos ↑</th>
+                    <th>Vec O(3) Err ↓</th>
+                    <th>0e+2e Tensor Cos ↑</th>
+                    <th>Atom Routing ↑</th>
+                  </tr>
+                </thead>
+                <tbody id="bench-live-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 / Visual Architecture & Routing Diagrams -->
+    <section class="section wrap" id="method">
+      <div class="section-heading">
+        <p class="eyebrow">02 / Architecture &amp; Routing Figures</p>
+        <h2>How language meets 3D spherical harmonics.</h2>
+        <p class="section-intro">
+          Click any schematic below to inspect full-resolution tensor dimensions, cross-attention variants, and system connections.
+        </p>
+      </div>
+
+      <div class="figure-stack">
+        <figure class="figure-shell">
+          <button type="button" class="image-expand" data-image="assets/ylm-capability-map.svg" data-caption="System overview of YLM: 3D geometries, Ouroboros 2D stereo drawings, and lab protocols flow into O(3)-equivariant cross-attention, sub-100ms CPU inference, and Lean 4 / SQL / LabLedger verification." aria-label="Enlarge full YLM capability map">
+            <img src="assets/ylm-capability-map.svg" width="1200" height="520" alt="Three-column system diagram showing inputs, O(3) equivariant core, and verified lab stack.">
+            <span class="expand-icon" aria-hidden="true">↗</span>
+          </button>
+          <figcaption><strong>Figure 1 · End-to-End Capability Map.</strong> Connects 3D molecules/crystals (<code>e3nn</code>, MACE, NequIP) and 2D OCSR drawings to equivariant vector/tensor readouts and formal wet-lab verification.</figcaption>
+        </figure>
+
+        <div class="two-col-cards" style="margin-bottom:0;">
+          <figure class="figure-shell">
+            <button type="button" class="image-expand" data-image="assets/irreps-architecture.svg" data-caption="Two-stream Irreps-to-Text alignment: rotation-invariant attention scores alpha_ti route Wigner-D equivariant values to 0e, 0o, 1o, and 0e+2e heads." aria-label="Enlarge Irreps-to-Text architecture figure">
+              <img src="assets/irreps-architecture.svg" width="1200" height="540" loading="lazy" alt="Two-stream Irreps-to-Text cross-attention schematic.">
+              <span class="expand-icon" aria-hidden="true">↗</span>
+            </button>
+            <figcaption><strong>Figure 2 · Two-Stream Alignment.</strong> Attention weights stay strictly O(3)-invariant while values carry full <code>0e + 0o + 1o + 2e</code> irreps.</figcaption>
+          </figure>
+
+          <figure class="figure-shell">
+            <button type="button" class="image-expand" data-image="assets/options-abc-routing.svg" data-caption="Comparison of Option A (invariant norms), Option B (normalized directional inner product + --attn_sup), and Option C (channel-wise Clebsch-Gordan tensor product, 0.85M parameters)." aria-label="Enlarge Options A, B, and C comparison diagram">
+              <img src="assets/options-abc-routing.svg" width="1200" height="460" loading="lazy" alt="Three-panel schematic comparing Options A, B, and C.">
+              <span class="expand-icon" aria-hidden="true">↗</span>
+            </button>
+            <figcaption><strong>Figure 3 · Options A vs B vs C.</strong> Channel-wise Clebsch–Gordan coupling cuts Option C parameters 15× while solving multi-atom vector differences and projections.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 / Quantitative Benchmarks -->
+    <section class="section section-alt" id="benchmarks">
+      <div class="wrap">
+        <div class="section-heading">
+          <p class="eyebrow">03 / Measured Benchmarks</p>
+          <h2>Six empirical suites — wins and limits stated plainly.</h2>
+          <p class="section-intro">
+            Switch between QM9 32-rotation force scaling, held-out phrasings, Options A/B/C, single-thread CPU API latency/accuracy, CALiSol 96-cell protocol factors, and size-matched chiral comparisons.
+          </p>
+        </div>
+
+        <div class="chart-shell">
+          <div class="chart-heading">
+            <div>
+              <h3>Interactive Repository Benchmark Explorer</h3>
+              <p>Data sourced directly from committed <code>results.md</code>, <code>docs/cpu_api.md</code>, <code>ablation/protocol_factors/</code>, and <code>results/cpu_smoke_nov12/</code></p>
+            </div>
+            <div class="comparison-controls">
+              <label for="benchmark-select" class="small-label">Dataset</label>
+              <select id="benchmark-select" aria-label="Select benchmark view"></select>
+              <label class="sd-toggle"><input type="checkbox" id="benchmark-show-sd" checked> Show ±1 SD</label>
+            </div>
+          </div>
+          <div id="benchmark-chart"></div>
+          <div id="benchmark-chart-legend" class="benchmark-legend"></div>
+          <p id="benchmark-chart-caption" class="chart-caption"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 / Symmetry, Chirality & Verified Lab Pipeline -->
+    <section class="section wrap" id="symmetry">
+      <div class="section-heading">
+        <p class="eyebrow">04 / Symmetry &amp; Formal Lab Gates</p>
+        <h2>Algebraic guarantees for 3D physics <span class="muted-heading">and wet-lab protocols.</span></h2>
+      </div>
+
+      <div class="two-col-cards">
+        <article class="clean-panel">
+          <span class="small-label">64-Bit Equivariance &amp; Scope</span>
+          <h3>8 conservation laws + honest scalar baseline check</h3>
+          <p>
+            <code>ylm audit-physics</code> verifies translation, SO(3) rotation, O(3) reflection, atom permutation, <code>M = Mᵀ</code>, Curie planar cancellation, <code>F = −∂E/∂x</code>, and 3D PBC in IEEE-754 <code>float64</code>. On invariant scalar energy (<code>0e</code> MAE), <code>YLMUniverseModel</code> (<code>0.098</code>) does not beat dedicated invariant models (<code>EquiLLM 0.087</code>); its gains are on 3D vectors, 3×3 tensors, and chirality.
+          </p>
+          <ol class="workflow" aria-label="Eight physical symmetry checks">
+            <li>1. Translation</li>
+            <li>2. SO(3) rotation</li>
+            <li>3. Mirror parity</li>
+            <li>4. Permutation</li>
+            <li>5. Symmetric 3×3</li>
+            <li>6. Curie zero</li>
+            <li>7. F = −∂E/∂x</li>
+            <li>8. Crystal PBC</li>
+          </ol>
+        </article>
+
+        <article class="clean-panel" id="verifiers">
+          <span class="small-label blue">LabLean · Token Factory · LabLedger</span>
+          <h3>Zero unchecked synthetic claims enter post-training</h3>
+          <p>
+            <code>lean/</code> proves soundness and volume conservation for 96-well bench protocols in Lean 4 (zero <code>sorry</code>). <code>scripts/40</code> &amp; <code>41</code> filter force questions and lab protocols through exact verifiers and dual-DB SQL execution, while <code>labledger/</code> records multimodal lab runs in a tamper-evident SHA-256 chain with commercial-safe licensing gates (<code>lab/distill.py --commercial</code>).
+          </p>
+          <ol class="workflow" aria-label="Lab verification stack">
+            <li>LabLean (Lean 4)</li>
+            <li>Volume replay</li>
+            <li>Dual-DB SQL gate</li>
+            <li>SHA-256 LabLedger</li>
+            <li>Commercial license check</li>
+          </ol>
+        </article>
+      </div>
+
+      <div class="two-col-cards" style="margin-bottom:0;">
+        <figure class="figure-shell">
+          <button type="button" class="image-expand" data-image="assets/chiral-symmetry-figure.svg" data-caption="Mirror reflection across plane sigma flips YLM 0o handedness sign (+0.8421 to -0.8421) while planar H2O and centrosymmetric C2H2F2 cancel to machine zero." aria-label="Enlarge chirality and Curie symmetry figure">
+            <img src="assets/chiral-symmetry-figure.svg" width="1200" height="450" loading="lazy" alt="Mirror enantiomer reflection and Curie symmetry cancellation diagram.">
+            <span class="expand-icon" aria-hidden="true">↗</span>
+          </button>
+          <figcaption><strong>Figure 4 · Enantiomer Parity &amp; Curie Zeros.</strong> Pairwise distances are identical on mirror twins, whereas <code>0o</code> flips sign exactly.</figcaption>
+        </figure>
+
+        <figure class="figure-shell">
+          <button type="button" class="image-expand" data-image="assets/lab-verifier-pipeline.svg" data-caption="Measured filtering funnels for the Force Question Token Factory (86.9% Arm-A kept, 0/17,464 mutations kept) and LabLean + SQL Factory (88.7% protocols kept, 0 wrong SQL queries kept)." aria-label="Enlarge verifier-gated token factory pipeline figure">
+            <img src="assets/lab-verifier-pipeline.svg" width="1200" height="470" loading="lazy" alt="Two-track funnel diagram of Force Token Factory and LabLean Protocol Factory.">
+            <span class="expand-icon" aria-hidden="true">↗</span>
+          </button>
+          <figcaption><strong>Figure 5 · Sealed Verifier Funnels.</strong> Measured CPU acceptance and adversarial rejection rates across 70k+ candidate records.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 05 / Interactive CLI/API Recipes & Citation -->
+    <section class="section section-alt" id="citation">
+      <div class="wrap">
+        <div class="paper-heading">
+          <div>
+            <p class="eyebrow">05 / Quickstart &amp; Reference</p>
+            <h2>Run any module in two lines.</h2>
+            <p>Switch between CLI and Python snippets below to run the Studio, query the sub-100ms CPU API, verify Lean 4 protocols, or audit 64-bit physics laws.</p>
+          </div>
+          <div class="paper-links">
+            <a class="button primary" href="https://github.com/yaniguan/YLM" target="_blank" rel="noopener">GitHub Repository <span aria-hidden="true">↗</span></a>
+            <a class="button secondary" href="https://github.com/yaniguan/YLM/releases/tag/v0.1.0" target="_blank" rel="noopener">TensorQA-v0 Release <span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+
+        <div class="citation-box">
+          <div class="citation-top">
+            <span>Interactive CLI &amp; API Recipes</span>
+            <div class="recipe-pills" id="recipe-pills">
+              <button type="button" class="recipe-pill active" data-recipe="studio">Studio &amp; Probe</button>
+              <button type="button" class="recipe-pill" data-recipe="api">CPU Inference API</button>
+              <button type="button" class="recipe-pill" data-recipe="physics">Physics &amp; OCSR</button>
+              <button type="button" class="recipe-pill" data-recipe="lablean">LabLean &amp; Ledger</button>
+              <button type="button" class="recipe-pill" data-recipe="factory">Token Factories</button>
+            </div>
+            <button type="button" id="copy-recipe" class="copy-btn">Copy snippet</button>
+          </div>
+          <pre id="recipe-code">git clone https://github.com/yaniguan/YLM.git &amp;&amp; cd YLM
+pip install -e . &amp;&amp; ylm serve --port 8765
+ylm ask examples/water.xyz "What is the force vector on the oxygen atom?" --verify-o3</pre>
+        </div>
+
+        <div class="citation-box">
+          <div class="citation-top">
+            <span>BibTeX</span>
+            <button type="button" id="copy-citation" class="copy-btn">Copy citation</button>
+            <span id="copy-status" role="status" aria-live="polite"></span>
+          </div>
+          <pre id="bibtex">@misc{ylm2026,
+  title  = {{YLM}: Irreps-to-Text Cross-Attention for Equivariant Language-Geometry Alignment},
+  author = {Guan, Yani},
+  year   = {2026},
+  url    = {https://github.com/yaniguan/YLM},
+  note   = {Open-source research code, TensorQA-v0 benchmark, LabLean verifier, and v0 checkpoints}
+}</pre>
+        </div>
+
+        <details id="repo-map" class="repo-details">
+          <summary>Repository 2-tier architecture &amp; package map <span aria-hidden="true">+</span></summary>
+          <div class="repo-grid">
+            <div><strong class="lime mono">Tier 1 · src/model.py &amp; irreps_to_text.py</strong><br>Core YLM model and Options A / B / C cross-attention (<code>channelwise</code> cuts Option C cross-attn params 18.8×, <code>N=15..400</code> atoms).</div>
+            <div><strong class="lime mono">Tier 1 · src/prog.py (GroupProgModel)</strong><br>Neuro-symbolic invariant selector (<code>force</code>, <code>diff</code>, <code>proj</code>, multi-atom <code>group</code>) + exact O(3) vector executor.</div>
+            <div><strong class="lime mono">Tier 1 · src/ylm_lm.py &amp; checkpoints/generative_v0</strong><br>Autoregressive <code>YLMCausalLM</code> generating text + <code>&lt;vec&gt;</code> O(3)-equivariant 3D dipole and force vectors, alongside sub-100ms <code>src/api.py</code>.</div>
+            <div><strong class="blue mono">Tier 2 · src/universe_fm.py &amp; fm_baselines.py</strong><br>Multi-rank (<code>0e + 0o + 1o + 2e</code>) model plus Uni-Mol, Signed-Vol, GraphMVP, and EquiLLM baselines.</div>
+            <div><strong class="blue mono">Tier 2 · src/mace_backbone.py &amp; nequip_backbone.py</strong><br>Pretrained MACE-MP-0, MACE-OFF23, and NequIP / Allegro adapters + OpenMM / LAMMPS live MD hooks.</div>
+            <div><strong class="blue mono">Tier 2 · src/toolkit/physics_audit.py &amp; ouroboros_bridge.py</strong><br>64-bit 8-law conservation checker and 2D-to-3D stereo SMILES bridge.</div>
+            <div><strong class="purple mono">Tier 2 · lean/LabLean/</strong><br>Standalone Lean 4 protocol language and decidable safety/volume checker (<code>check_sound</code>, <code>run_conserves</code>).</div>
+            <div><strong class="purple mono">Tier 2 · labledger/</strong><br>Standalone append-only SHA-256 hash-chained multimodal experiment ledger with training export gates.</div>
+            <div><strong class="purple mono">Tier 2 · src/token_factory.py &amp; lab/</strong><br>Verifier-gated QM9 force question factory, LabLean protocol factory, 4-layer SQL gate, and post-training recipes.</div>
+          </div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <a class="brand" href="#">
+      <img src="assets/ylm-orbital-static.svg" width="46" height="23" alt="">
+      <span>YLM</span>
+    </a>
+    <p>Ask in words. Rotate in 3D. Verify before the bench.</p>
+    <a href="https://github.com/yaniguan/YLM" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
+    <span>MIT · 2026</span>
+  </footer>
+
+  <dialog id="figure-dialog" aria-label="Expanded research figure">
+    <button type="button" id="close-figure" aria-label="Close expanded figure">×</button>
+    <img id="expanded-image" alt="">
+    <p id="expanded-caption"></p>
+  </dialog>
+</body>
+</html>

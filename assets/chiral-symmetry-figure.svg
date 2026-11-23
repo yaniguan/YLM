@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 450" font-family='Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'>
+  <rect width="1200" height="450" rx="14" fill="#ffffff"/>
+  <rect x="1" y="1" width="1198" height="448" rx="13" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <text x="36" y="42" font-size="12" font-weight="700" letter-spacing="1.6" fill="#7c3aed">PARITY &amp; POINT-GROUP SELECTION RULES · 64-BIT VERIFIED</text>
+  <text x="36" y="68" font-size="22" font-weight="650" fill="#0f172a">Mirror Enantiomer Sign Flip (0o) and Curie Planar Cancellation</text>
+
+  <!-- Left Box: (R) vs (S) Mirror Plane -->
+  <rect x="36" y="96" width="710" height="322" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+
+  <!-- (R)-enantiomer -->
+  <text x="195" y="130" text-anchor="middle" font-size="15" font-weight="700" fill="#0f766e">(R)-Enantiomer (X)</text>
+  <line x1="195" y1="220" x2="195" y2="158" stroke="#334155" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="195" y1="220" x2="132" y2="258" stroke="#334155" stroke-width="3.5" stroke-linecap="round"/>
+  <polygon points="195,220 252,248 242,265" fill="#0d9488"/>
+  <line x1="195" y1="220" x2="226" y2="286" stroke="#64748b" stroke-width="2.5" stroke-dasharray="4 4"/>
+  <circle cx="195" cy="220" r="18" fill="#334155"/>
+  <text x="195" y="225" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">C*</text>
+  <circle cx="195" cy="152" r="15" fill="#0d9488"/><text x="195" y="157" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">F</text>
+  <circle cx="126" cy="262" r="15" fill="#e11d48"/><text x="126" y="267" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">O</text>
+  <circle cx="256" cy="260" r="15" fill="#2563eb"/><text x="256" y="265" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">CH₂</text>
+  <circle cx="230" cy="292" r="12" fill="#94a3b8"/><text x="230" y="296" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">H</text>
+
+  <rect x="86" y="330" width="218" height="64" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="195" y="354" text-anchor="middle" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="14" font-weight="700" fill="#047857">YLM 0o = +0.8421</text>
+  <text x="195" y="376" text-anchor="middle" font-size="12" fill="#475569">0e Dist-Model = +0.1930</text>
+
+  <!-- Mirror Plane sigma -->
+  <line x1="391" y1="114" x2="391" y2="398" stroke="#7c3aed" stroke-width="2.2" stroke-dasharray="7 5"/>
+  <rect x="345" y="112" width="92" height="24" rx="12" fill="#f3e8ff" stroke="#c084fc"/>
+  <text x="391" y="128" text-anchor="middle" font-size="11.5" font-weight="700" fill="#6d28d9">Mirror σ</text>
+  <text x="391" y="224" text-anchor="middle" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="11.5" fill="#6d28d9">det(Q) = −1</text>
+  <text x="391" y="244" text-anchor="middle" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="11" fill="#64748b">D(R) ≡ D(S)</text>
+
+  <!-- (S)-enantiomer -->
+  <text x="586" y="130" text-anchor="middle" font-size="15" font-weight="700" fill="#6d28d9">(S)-Enantiomer (σX)</text>
+  <line x1="586" y1="220" x2="586" y2="158" stroke="#334155" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="586" y1="220" x2="649" y2="258" stroke="#334155" stroke-width="3.5" stroke-linecap="round"/>
+  <polygon points="586,220 529,248 539,265" fill="#7c3aed"/>
+  <line x1="586" y1="220" x2="555" y2="286" stroke="#64748b" stroke-width="2.5" stroke-dasharray="4 4"/>
+  <circle cx="586" cy="220" r="18" fill="#334155"/>
+  <text x="586" y="225" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">C*</text>
+  <circle cx="586" cy="152" r="15" fill="#0d9488"/><text x="586" y="157" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">F</text>
+  <circle cx="655" cy="262" r="15" fill="#e11d48"/><text x="655" y="267" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">O</text>
+  <circle cx="525" cy="260" r="15" fill="#2563eb"/><text x="525" y="265" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">CH₂</text>
+  <circle cx="551" cy="292" r="12" fill="#94a3b8"/><text x="551" y="296" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">H</text>
+
+  <rect x="477" y="330" width="218" height="64" rx="8" fill="#faf5ff" stroke="#d8b4fe"/>
+  <text x="586" y="354" text-anchor="middle" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="14" font-weight="700" fill="#6d28d9">YLM 0o = −0.8421</text>
+  <text x="586" y="376" text-anchor="middle" font-size="12" fill="#e11d48">0e Dist-Model = +0.1930 (blind!)</text>
+
+  <!-- Right Box: Curie Symmetry Cancellation -->
+  <rect x="774" y="96" width="390" height="322" rx="12" fill="#f0fdfa" stroke="#99f6e4" stroke-width="1.3"/>
+  <text x="798" y="128" font-size="12" font-weight="700" letter-spacing="1.2" fill="#0f766e">CURIE SYMMETRY ZEROS</text>
+  <text x="798" y="156" font-size="17" font-weight="700" fill="#0f172a">Achiral Point Groups Cancel by Algebra</text>
+
+  <rect x="798" y="176" width="342" height="104" rx="9" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="816" y="201" font-size="14" font-weight="650" fill="#0f172a">Planar H₂O (C₂v mirror plane σ_xz)</text>
+  <text x="816" y="224" font-size="12.5" fill="#475569">σ_xz leaves X unchanged, so f_0o(X) = −f_0o(X):</text>
+  <text x="816" y="252" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="13" font-weight="700" fill="#047857">|f_0o(H₂O)| = 3.9 × 10⁻¹⁶  (exact zero)</text>
+
+  <rect x="798" y="294" width="342" height="104" rx="9" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="816" y="319" font-size="14" font-weight="650" fill="#0f172a">Centrosymmetric trans-C₂H₂F₂ (C₂h)</text>
+  <text x="816" y="342" font-size="12.5" fill="#475569">Inversion P = −I maps X → −X, cancelling dipoles:</text>
+  <text x="816" y="370" font-family='"SFMono-Regular", Consolas, ui-monospace, monospace' font-size="13" font-weight="700" fill="#2563eb">||μ_1o|| = 1.7 × 10⁻¹²  (exact zero)</text>
+</svg>
