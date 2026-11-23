@@ -1,0 +1,60 @@
+{
+  "status": "MEASURED",
+  "device": "cpu",
+  "text_dim": 384,
+  "models": {
+    "Option A": {
+      "total_params": 341889,
+      "cross_attn_params": 85600,
+      "checkpoint_mb_fp32": 1.3
+    },
+    "Option C (channelwise)": {
+      "total_params": 941249,
+      "cross_attn_params": 684960,
+      "checkpoint_mb_fp32": 3.59
+    },
+    "Option C (fully_connected)": {
+      "total_params": 13137857,
+      "cross_attn_params": 12881568,
+      "checkpoint_mb_fp32": 50.12
+    }
+  },
+  "latency_ms": [
+    {
+      "n_atoms": 15,
+      "regime": "QM9 small molecule",
+      "median_ms": {
+        "Option A": 20.64,
+        "Option C (channelwise)": 28.93,
+        "Option C (fully_connected)": 39.71
+      }
+    },
+    {
+      "n_atoms": 64,
+      "regime": "Drug-like ligand / macrocycle",
+      "median_ms": {
+        "Option A": 78.32,
+        "Option C (channelwise)": 84.75,
+        "Option C (fully_connected)": 97.89
+      }
+    },
+    {
+      "n_atoms": 180,
+      "regime": "Li+ electrolyte solvation shell",
+      "median_ms": {
+        "Option A": 314.12,
+        "Option C (channelwise)": 280.15,
+        "Option C (fully_connected)": 273.4
+      }
+    },
+    {
+      "n_atoms": 400,
+      "regime": "Biomolecular pocket / crystal supercell",
+      "median_ms": {
+        "Option A": 652.06,
+        "Option C (channelwise)": 688.71,
+        "Option C (fully_connected)": 603.42
+      }
+    }
+  ]
+}

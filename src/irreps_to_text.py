@@ -1,4 +1,4 @@
-"""Irreps-to-Text cross-attention, Options A/B/C (03_technical_design.md).
+"""Irreps-to-Text cross-attention, Options A/B/C (docs/notes/03_technical_design.md).
 
 Text tokens ask, atoms answer.
   query   = from text hidden state h_t          (invariant)

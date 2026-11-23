@@ -75,6 +75,22 @@ rotation error: 1.2e-06
 
 `task=0` asks for the molecular dipole instead. To evaluate on the full benchmark, build the data (QM9 + GFN2-xTB, steps 1–3 in [docs below](#reproduce)) and run `python scripts/09_eval_checkpoint.py --ckpt checkpoints/v0/ylm_matscibert_s0.pt --demo`.
 
+### Autoregressive `<vec>` Causal LM quickstart (no extra downloads)
+
+`checkpoints/generative_v0/` ships a self-contained `YLMCausalLM` (`mode="xattnA"`, `vec_readout=True`, `CharTokenizer`) that generates text answers containing `<vec>` alongside exact O(3)-equivariant 3D dipole (`Debye`) and atom-force (`eV/A`) vectors:
+
+```python
+from src.toolkit.ingest import StructureFrame
+from src.toolkit.probe import YLMProbe
+
+probe = YLMProbe.from_checkpoint("checkpoints/generative_v0", device="cpu")
+water = StructureFrame(Z=[8, 1, 1], pos_bohr=[[0.0, 0.0, 0.0], [1.81, 0.0, 0.0], [-0.45, 1.75, 0.0]], label="water")
+res = probe.ask(water, "What is the dipole moment of the molecule?", verify_o3=True)
+print(res.answer)                          # -> dipole <vec> Debye
+print(res.vectors[0].vector_physical)      # 3D vector in Debye
+print("O(3) passed:", res.o3_check.passed) # True (rotations + reflections)
+```
+
 ## Key features
 
 - **Irreps-to-Text cross-attention.** Text queries l ≥ 1 irreps directly. Attention weights use only invariants, so the output is exactly SE(3)-equivariant.
@@ -111,6 +127,27 @@ Force questions (hartree/bohr), trained and scored in [`colab/ylm_train.ipynb`](
 
 These Colab runs rebuilt the dataset from `qm9.zip` via `scripts/01`–`03`, and rebuilding does not produce the exact packaged v0 file (a fresh rebuild in [`docs/WORKLOG_oct29b.md`](docs/WORKLOG_oct29b.md) gave `84,787` questions and `571` unique strings vs `84,757` / `584` in v0), so compare Options A, B, and C within this table rather than directly against the v0 table above.
 
+### Language-geometry interface generalization (`scripts/64_interface_generalization_study.py`, 3 seeds)
+
+On rigid v0 templates, a hand-written regex (`src/parse_question.py`) + equivariant force head matches learned interfaces. To measure what happens beyond fixed templates, `scripts/64_interface_generalization_study.py` evaluates four interfaces mounted on the **same** frozen 60-epoch QM9 `Encoder` (`checkpoints/v0/ylm_matscibert_s0.pt`) and frozen `MiniLM-L6-v2` embeddings across 3 seeds on molecule-disjoint official `TensorQA-v0.1.0` GFN2-xTB splits ([`results/interface_generalization/results.json`](results/interface_generalization/results.json)):
+
+| Interface | `rigid_single` cos | `ood_synonym_single` cos | `ood_synonym_comp` cos | `group_ood` cos ($\sum_{i \in G} \mathbf{F}_i$) | Rule parse rate (ID / OOD) |
+|---|---:|---:|---:|---:|---:|
+| Rule parser + O(3) executor (`rule_exec`) | **0.8856 ± 0.0053** | 0.0000 ± 0.0000 | 0.0000 ± 0.0000 | 0.0000 ± 0.0000 | `0.980` / `0.000` |
+| Option A continuous (`optA_cont`) | 0.3687 ± 0.0063 | 0.3429 ± 0.0254 | 0.1474 ± 0.0176 | 0.7954 ± 0.0162 | learned |
+| Option B/C-lite continuous (`optBC_cont`) | 0.4028 ± 0.1497 | 0.3730 ± 0.1559 | 0.1838 ± 0.0926 | 0.7474 ± 0.0631 | learned |
+| Neuro-symbolic + O(3) executor (`GroupProgModel`) | 0.8718 ± 0.0107 | **0.7984 ± 0.0775** | **0.5162 ± 0.0511** | **0.8687 ± 0.0321** | learned (`3.4e-6` O(3) err) |
+
+### System-size & channelwise CG scaling (`scripts/66_scaling_benchmark.py`, `N = 15..400` atoms)
+
+Measured parameter counts, fp32 checkpoint sizes, and single-molecule CPU forward latencies from QM9 (`N=15`) up to biomolecular pockets / crystal supercells (`N=400`, [`results/scaling/results.json`](results/scaling/results.json)):
+
+| Architecture | Cross-attn params | Checkpoint (fp32) | `N=15` ms | `N=64` ms | `N=180` ms | `N=400` ms |
+|---|---:|---:|---:|---:|---:|---:|
+| Option A | 85,600 | 1.30 MB | 20.64 | 78.32 | 314.12 | 652.06 |
+| Option C (`channelwise`) | **684,960** (**18.8× smaller**) | **3.59 MB** | 28.93 | 84.75 | 280.15 | 688.71 |
+| Option C (`fully_connected`) | 12,881,568 | 50.12 MB | 39.71 | 97.89 | 273.40 | 603.42 |
+
 ## How it works
 
 ```mermaid
@@ -123,30 +160,33 @@ flowchart LR
     R --> V["Vector answer<br/>(force, dipole)"]
 ```
 
-One rule: attention weights use only invariant numbers; anything with a direction is only scaled by invariants or combined through Clebsch-Gordan products. Rotating the input by R then rotates the output by R. Design details: [`03_technical_design.md`](03_technical_design.md).
+One rule: attention weights use only invariant numbers; anything with a direction is only scaled by invariants or combined through Clebsch-Gordan products. Rotating the input by R then rotates the output by R. Design details: [`docs/notes/03_technical_design.md`](docs/notes/03_technical_design.md).
 
-## Repo layout
+## Repository scope & layout (2-tier map)
 
-```
-src/          encoder, Irreps-to-Text attention (A/B/C), model, inference helper
-scripts/      01 labels → 02 questions → 03 text features → 04 train → 07 table → 09 eval checkpoint
-checkpoints/  v0 checkpoints + results.json
-tests/        equivariance tests
-analysis/     sample-efficiency plot, error breakdown
-docs/         experiment notes, Option A/B/C results
-colab/        GPU notebooks
-00–06_*.md    glossary, related work, novelty check, design, benchmark, risks, plan
-```
+The repository is organized into two explicit tiers so the core equivariant language-geometry claims stay cleanly separated from domain and lab-verifier extensions:
+
+### Tier 1 — Core Measured Equivariant Stack
+- `src/encoder.py`, `src/irreps_to_text.py`, `src/model.py`: SE(3)/O(3)-equivariant `e3nn` message passing and Options A / B / C cross-attention (`c_tp_mode="channelwise"` cuts Option C cross-attention parameters **18.8x**, from `12.88M` to `0.68M`).
+- `src/prog.py` (`ProgModel`, `GroupProgModel`): neuro-symbolic invariant semantic selector (`force`, `diff`, `proj`, multi-atom `group`) paired with an exact O(3) vector executor (`scripts/64_interface_generalization_study.py`).
+- `src/ylm_lm.py` (`YLMCausalLM` + `<vec>`): causal language model with `IrrepsAdapter` side streams that autoregressively generates text containing `<vec>` and emits O(3)-equivariant 3D vectors (`checkpoints/generative_v0/`, `scripts/65_train_generative_ylm.py`).
+- `checkpoints/v0/` & `checkpoints/generative_v0/`: shipped 1–4 MB checkpoints + `src/api.py` sub-100ms CPU inference API + `ylm` CLI (`src/toolkit/`).
+- `results/` & `tests/`: measured JSON artifacts (`results/interface_generalization/`, `results/scaling/`), historical cluster logs (`results/cluster_logs/`), and float64 symmetry regression suites.
+
+### Tier 2 — Standalone Verifiers & Domain Extensions
+- `lean/LabLean/`: Lean 4 formal verifier proving liquid-handling protocol safety and volume conservation (`0` `sorry`).
+- `labledger/` & `lab/`: SHA-256 hash-chained experiment ledger, dual-DB SQL verifier, and commercial-safe protocol recipes (`recipes/`).
+- `src/mace_backbone.py`, `src/nequip_backbone.py`, `src/universe_fm.py`: MACE / NequIP / Allegro adapters, OpenMM / LAMMPS live reaction hooks, Ouroboros 2D-to-3D stereo bridge, and chiral `0o` / symmetric `2e` multi-task heads.
+- `docs/notes/`: archived early design memos (`00_glossary.md`–`06_plan_12_weeks.md`, `HIGHLIGHTS.md`, `progress.md`, `waiting4gpu.md`).
 
 <a id="reproduce"></a>To reproduce against the **exact official v0 benchmark** (`84,757` questions, `584` unique strings; pinned SHA-256 digests in [`DATA_CARD.md`](DATA_CARD.md)), unpack `tensorqa_v0.tar.gz` from the [v0.1.0 release](https://github.com/yaniguan/YLM/releases/tag/v0.1.0) with `python scripts/06b_unpack_release.py --download` and verify with `python -m src.provenance --check-v0 data/tensorqa_v0.json`, then run `scripts/03_embed_text.py`, `scripts/04_train.py`, and `scripts/07_make_table.py`. For multi-seed Option A/B/C runs on the packaged v0 file (32 rotations), use `jobs/sweep_options_v0.sh` + `scripts/17_make_options_table.py` (or `colab/ylm_train.ipynb` with `YLM_MODE=options`); for multi-seed 3%/10%/30% data curves, use `jobs/sweep_fractions.sh` + `scripts/08_analyze.py` (or `YLM_MODE=fractions`). Rebuilding from `qm9.zip` via `scripts/01`–`02` produces a different question file and must not be compared directly to the v0 table above.
 
 ## Limitations / status
 
-- **v0.** Labels are GFN2-xTB (semi-empirical), not DFT. Questions come from 12 templates (4 held out).
-- Only vectors (l = 1) are asked, although the encoder carries l = 2.
-- **A rule parser + equivariant force model matches or beats YLM** on v0 questions (force MAE 0.0057 vs 0.0064, [`results_baselines.md`](results_baselines.md)); harder compositional questions are needed.
-- The Qwen2.5-0.5B coordinates-as-text baseline did not learn the force, so it is not evidence that an end-to-end LLM cannot.
-- The text encoder is frozen and the model does not generate text yet. Attention often lands on a bonded neighbour, not the exact atom.
+- **v0 labels.** Labels in `TensorQA-v0` are GFN2-xTB (semi-empirical), not DFT.
+- **When rule parsing suffices vs when neuro-symbolic interfaces win.** On rigid v0 templates, a regex + equivariant force head matches or beats YLM (force MAE `0.0057` vs `0.0064`, [`results_baselines.md`](results_baselines.md)). On held-out chemical paraphrases, compositional vector differences/projections, and multi-atom group net forces (`scripts/64_interface_generalization_study.py`), regex parse rate drops to `0.000`, continuous text-regressed coefficients degrade (`0.147`–`0.184` cosine on OOD compositional), and `GroupProgModel` reaches `0.798` / `0.516` / `0.869` cosine with exact O(3) equivariance.
+- **Generative `<vec>` Causal LM (`checkpoints/generative_v0/`).** Autoregressive `<vec>` decoding works out of the box (`99.5%` `<vec>` emission on `test`, `95.0%` on `test_heldout`, `0.983` / `0.916` dipole cosine, `~2.6e-6` O(3) error; [`checkpoints/generative_v0/README.md`](checkpoints/generative_v0/README.md)). Because the shipped offline decoder uses a `2.47M` character-level GPT-2 trained from scratch, per-atom force cosine is `0.247` (vs `0.960` with pretrained `MatSciBERT`); multi-GPU fine-tuning of a pretrained BPE causal LM (`Qwen2.5-0.5B`) is queued under `Issues #56, #58`.
+- **Unpaired coordinates-as-text baselines.** Early single-seed `Qwen2.5-0.5B` coordinates-as-text runs did not converge on forces (`results_baselines.md`), so they do not rule out larger fine-tuned text-only LLMs.
 
 ## Optional equivariant baselines
 
@@ -171,7 +211,7 @@ The report is off by default.
 ## Optional multi-layer cross-attention
 
 Pass `--n_cross_layers K` (`K >= 2`) to `scripts/04_train.py`, or `YLM(..., n_cross_layers=K)`,
-to stack `K` interactive two-stream blocks from `03_technical_design.md`. After each
+to stack `K` interactive two-stream blocks from [`docs/notes/03_technical_design.md`](docs/notes/03_technical_design.md). After each
 cross-attention step, O(3) invariants of the equivariant side stream `e_t` feed back
 into the text stream `h_t` alongside masked token self-attention before the next
 `IrrepsToText` query and equivariant residual mix. The default `n_cross_layers=1`

@@ -17,7 +17,8 @@ NAMES = {  # packaged name -> run directory
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--runs", default="runs_slurm")
+    default_runs = "results/cluster_logs/runs_slurm" if os.path.exists("results/cluster_logs/runs_slurm") else "runs_slurm"
+    p.add_argument("--runs", default=default_runs)
     p.add_argument("--out", default="checkpoints/v0")
     args = p.parse_args()
     os.makedirs(args.out, exist_ok=True)

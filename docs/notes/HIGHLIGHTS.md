@@ -1,7 +1,7 @@
 # v0 highlights (evidence for a paper draft)
 
 Each line is a claim, the number behind it, and where it comes from. Lowest-bar claims only; v0 is a feasibility result.
-Updated 2026-10-18 after the post-v0 baselines ([`results_baselines.md`](results_baselines.md)).
+Updated 2026-10-18 after the post-v0 baselines ([`results_baselines.md`](../../results_baselines.md)).
 
 | # | Claim | Evidence | Source |
 |---|---|---|---|

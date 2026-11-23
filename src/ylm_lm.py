@@ -479,4 +479,40 @@ class YLMCausalLM(nn.Module):
         }
 
     def gates(self) -> list:
-        return [float(torch.tanh(a.gate)) for a in self.adapters]
+        return [float(torch.tanh(a.gate.detach())) for a in self.adapters]
+
+    def load_v0_encoder(
+        self,
+        ckpt_path: str,
+        freeze: bool = False,
+        load_cross_and_readout: bool = True,
+    ) -> torch.Tensor:
+        """Load 60-epoch QM9 xTB equivariant Encoder (and matching cross/readout) from a v0 checkpoint."""
+        if self.irreps is None or not isinstance(self.irreps.encoder, Encoder):
+            raise ValueError("load_v0_encoder requires a native Encoder geometry pathway")
+        ck = torch.load(ckpt_path, map_location="cpu", weights_only=False)
+        sd = ck["state_dict"] if isinstance(ck, dict) and "state_dict" in ck else ck
+        enc_sd = {k[len("encoder."):]: v for k, v in sd.items() if k.startswith("encoder.")}
+        if not enc_sd:
+            raise ValueError(f"No encoder.* keys found in {ckpt_path}")
+        target_enc = self.irreps.encoder
+        src_emb = enc_sd.pop("embed.weight")
+        n_copy = min(src_emb.shape[0], target_enc.embed.weight.shape[0])
+        with torch.no_grad():
+            target_enc.embed.weight[:n_copy].copy_(src_emb[:n_copy])
+        target_enc.load_state_dict(enc_sd, strict=False)
+        if freeze:
+            for p in target_enc.parameters():
+                p.requires_grad_(False)
+        if load_cross_and_readout:
+            with torch.no_grad():
+                for adapter in self.adapters:
+                    for name, dst_p in adapter.cross.named_parameters():
+                        src_t = sd.get(f"cross.{name}")
+                        if src_t is not None and dst_p.shape == src_t.shape:
+                            dst_p.copy_(src_t)
+                if self.vec_head is not None and "readout.weight" in sd:
+                    if self.vec_head.weight.shape == sd["readout.weight"].shape:
+                        self.vec_head.weight.copy_(sd["readout.weight"])
+        scale = ck.get("scale", [1.0, 1.0]) if isinstance(ck, dict) else [1.0, 1.0]
+        return torch.as_tensor(scale, dtype=torch.float32)

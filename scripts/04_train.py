@@ -7,7 +7,7 @@ Run (examples):
 
 Output: runs/<name>/results.json, runs/<name>/model.pt, runs/<name>/log.txt
 
-Evaluation (rotation protocol, 04_data_and_benchmark.md):
+Evaluation (rotation protocol, docs/notes/04_data_and_benchmark.md):
   every test question is run under K random rotations. We report
     mae       : mean absolute error per vector component, physical units (e*bohr or hartree/bohr)
     cosine    : cosine between predicted and true vector (direction correct?)
