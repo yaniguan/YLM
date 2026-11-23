@@ -98,13 +98,17 @@ class PolModel(nn.Module):
     def program(self, text, tmask, inv, mask):
         h = self.text_proj(text)
         keys = self.k(inv)
+        has_atoms = mask.any(dim=1)
+        safe_mask = mask.clone()
+        safe_mask[~has_atoms, 0] = True
         pooled, logits = [], []
         for k in range(2):
             w = self.token_w[k](h).squeeze(-1).masked_fill(~tmask, float("-inf")).softmax(-1)
             hk = torch.einsum("bt,btd->bd", w, h)
             lg = (torch.einsum("bk,bnk->bn", self.q[k](hk), keys) / math.sqrt(self.key)).masked_fill(
-                ~mask, float("-inf")
+                ~safe_mask, float("-inf")
             )
+            lg = torch.where(has_atoms[:, None], lg, torch.zeros_like(lg))
             pooled.append(hk)
             logits.append(lg)
         cls = (h * tmask[..., None]).sum(1) / tmask.sum(1, keepdim=True).clamp(min=1)

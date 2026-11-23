@@ -17,11 +17,15 @@ import tarfile
 import zipfile
 
 DROP_SUFFIX = (".pt",)
-TEXT_SUFFIX = (".py", ".md", ".txt", ".sh", ".yml", ".yaml", ".json", ".jsonl", ".tex", ".bib", ".cfg", ".toml", "LICENSE")
+TEXT_SUFFIX = (
+    ".py", ".md", ".txt", ".sh", ".yml", ".yaml", ".json", ".jsonl",
+    ".tex", ".bib", ".cfg", ".toml", ".html", ".js", ".css", ".svg",
+    ".ipynb", ".lean", "LICENSE",
+)
 
 
-def detect_repo_owner() -> list[str]:
-    out = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True)
+def detect_repo_owner(cwd: str = ".") -> list[str]:
+    out = subprocess.run(["git", "remote", "get-url", "origin"], cwd=cwd, capture_output=True, text=True)
     if out.returncode != 0:
         return []
     url = out.stdout.strip()
@@ -29,14 +33,16 @@ def detect_repo_owner() -> list[str]:
     return [m.group(1)] if m else []
 
 
-def build_rules(extra_terms: list[str]) -> tuple[list[tuple[str, str]], list[str]]:
-    owners = detect_repo_owner()
+def build_rules(extra_terms: list[str], cwd: str = ".") -> tuple[list[tuple[str, str]], list[str]]:
+    owners = detect_repo_owner(cwd=cwd)
     replace = [
         (r"github\.com/[A-Za-z0-9_.-]+/YLM", "anonymous.example/YLM"),
         (r"[A-Za-z0-9_.-]+\.github\.io/YLM", "anonymous.example/YLM"),
-        (r"/Users/\w+", "/home/user"),
+        (r"/Users/[A-Za-z0-9_.-]+", "/home/user"),
+        (r"/home/(?!user\b)[A-Za-z0-9_.-]+", "/home/user"),
+        (r"[A-Za-z]:[/\\]+Users[/\\]+[A-Za-z0-9_.-]+", "/home/user"),
     ]
-    forbidden = [r"/Users/"]
+    forbidden = [r"/Users/[A-Za-z0-9_]", r"[A-Za-z]:[/\\]+Users[/\\]+[A-Za-z0-9_]"]
     for owner in owners:
         esc = re.escape(owner)
         replace.append((esc, "anonymous"))
@@ -54,6 +60,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ref", default="HEAD")
     ap.add_argument("--out", default="anonymous_YLM.zip")
+    ap.add_argument("--repo-root", default=".")
     ap.add_argument("--keep-checkpoints", action="store_true")
     ap.add_argument(
         "--extra-terms",
@@ -62,8 +69,8 @@ def main():
     )
     args = ap.parse_args()
     extra = [x for x in args.extra_terms.split(",") if x.strip()]
-    replace, forbidden = build_rules(extra)
-    raw = subprocess.run(["git", "archive", "--format=tar", args.ref], capture_output=True, check=True).stdout
+    replace, forbidden = build_rules(extra, cwd=args.repo_root)
+    raw = subprocess.run(["git", "archive", "--format=tar", args.ref], cwd=args.repo_root, capture_output=True, check=True).stdout
     bad, n = [], 0
     with tarfile.open(fileobj=io.BytesIO(raw)) as tar, zipfile.ZipFile(args.out, "w", zipfile.ZIP_DEFLATED) as z:
         for m in tar.getmembers():
@@ -74,7 +81,7 @@ def main():
             data = tar.extractfile(m).read()
             name = m.name
             for pat, rep in replace:
-                name = re.sub(pat, rep, name)
+                name = re.sub(pat, rep, name, flags=re.I)
             if m.name.endswith(TEXT_SUFFIX) or "." not in m.name.split("/")[-1]:
                 try:
                     s = data.decode("utf-8")
@@ -82,7 +89,7 @@ def main():
                     s = None
                 if s is not None:
                     for pat, rep in replace:
-                        s = re.sub(pat, rep, s)
+                        s = re.sub(pat, rep, s, flags=re.I)
                     s = "\n".join(line for line in s.split("\n") if not re.match(r"(?i)^co-authored-by:", line.strip()))
                     for pat in forbidden:
                         if re.search(pat, s, re.I):

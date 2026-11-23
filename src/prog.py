@@ -54,15 +54,20 @@ class ProgModel(nn.Module):
         self.last_V = v
         denom_atoms = atom_mask.sum(1).clamp(min=1)[:, None, None]
         centered = (pos - (pos * atom_mask[..., None]).sum(1, keepdim=True) / denom_atoms) * atom_mask[..., None]
+        has_atoms = atom_mask.any(dim=1)
+        safe_mask = atom_mask.clone()
+        safe_mask[~has_atoms, 0] = True
         F, P, pooled, logits = [], [], [], []
         for k in range(2):
             w = self.token_w[k](h).squeeze(-1).masked_fill(~text_mask, float("-inf")).softmax(-1)
             hk = torch.einsum("bt,btd->bd", w, h)
             lg = torch.einsum("bk,bnk->bn", self.q[k](hk), keys) / math.sqrt(self.key)
             lg = lg.masked_fill(~atom_mask, float("-inf"))
-            a = lg.softmax(-1)
+            a = torch.einsum("bk,bnk->bn", self.q[k](hk), keys) / math.sqrt(self.key)
+            a = a.masked_fill(~safe_mask, float("-inf")).softmax(-1)
             if not self.training:
-                a = torch.nn.functional.one_hot(lg.argmax(-1), lg.shape[-1]).to(lg.dtype)
+                a = torch.nn.functional.one_hot(a.argmax(-1), lg.shape[-1]).to(lg.dtype)
+            a = a * has_atoms[:, None].to(a.dtype)
             F.append(torch.einsum("bn,bnc->bc", a, v))
             P.append(torch.einsum("bn,bnc->bc", a, centered))
             pooled.append(hk)

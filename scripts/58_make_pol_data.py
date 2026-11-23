@@ -74,12 +74,25 @@ def tensor(v):
 
 
 def main():
-    rng = random.Random(0)
-    P = json.load(open("data/paraphrases_pol.json"))
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--paraphrases", default="data/paraphrases.json")
+    ap.add_argument("--xyz", default="data/qm7b/qm7b_coords.xyz")
+    ap.add_argument("--labels_out", default="data/qm7b_pol.pkl")
+    ap.add_argument("--out", default="data/tensorqa_pol.json")
+    ap.add_argument("--seed", type=int, default=0)
+    args = ap.parse_args()
+
+    rng = random.Random(args.seed)
+    para_path = args.paraphrases
+    if not os.path.exists(para_path) and para_path == "data/paraphrases.json" and os.path.exists("data/paraphrases_pol.json"):
+        para_path = "data/paraphrases_pol.json"
+    P = json.load(open(para_path, encoding="utf-8"))
     held = set(P["heldout_styles"])
     styles = {t: {"train": {s: v for s, v in d.items() if s not in held and v},
                   "held": {s: v for s, v in d.items() if s in held and v}} for t, d in P["templates"].items()}
-    mols = read_xyz("data/qm7b/qm7b_coords.xyz")
+    mols = read_xyz(args.xyz)
     labels, graph, desc = [], {}, {}
     for m, d in enumerate(mols):
         mol = connectivity_mol(d["numbers"], d["pos"])
@@ -88,7 +101,7 @@ def main():
         a = tensor(d["ccsd_pol"])
         labels.append(dict(numbers=d["numbers"], pos=d["pos"], alpha=a, alpha_b3lyp=tensor(d["b3lyp_pol"]),
                            alpha_scan0=tensor(d["scan0_pol"])))
-    pickle.dump(labels, open("data/qm7b_pol.pkl", "wb"))
+    pickle.dump(labels, open(args.labels_out, "wb"))
     groups = defaultdict(list)
     for m, g in graph.items():
         groups[g].append(m)
@@ -131,7 +144,7 @@ def main():
                     for sp in sps:
                         t, st = pick(task, "held" if sp == "test_heldout" else "train")
                         add(m, sp, task, (i, j), tg, t, st)
-    json.dump(out, open("data/tensorqa_pol.json", "w"))
+    json.dump(out, open(args.out, "w", encoding="utf-8"))
     print("molecules", len(labels), "rows", len(out), "unique questions", len({q["question"] for q in out}))
     print(sorted(Counter((q["split"], q["task"]) for q in out).items()))
     iso = np.array([np.trace(l["alpha"]) / 3 for l in labels])

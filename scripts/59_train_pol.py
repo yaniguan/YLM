@@ -145,10 +145,12 @@ def evaluate(model, data, sp, device, n_rot, base, bs=256):
     out = dict(n=n)
     for t, k in TASK.items():
         sel = task == k
+        if not sel.any():
+            continue
         d = DIMS[t]
         T = tgt[sel][:, :d]
         base_pred = torch.full_like(T, base[t]) if t in ("pol_iso", "pol_dir") else torch.zeros_like(T)
-        rmse_base = (T - base_pred).pow(2).sum(-1).mean().sqrt().item()
+        rmse_base = max((T - base_pred).pow(2).sum(-1).mean().sqrt().item(), 1e-12)
         res = {}
         for mname in modes:
             P = pred[mname][sel][:, :d]
@@ -240,16 +242,17 @@ def main():
                 break
         vs = splits["val"] if not args.test_limit else {k: (v[: args.test_limit] if torch.is_tensor(v) else v[: args.test_limit]) for k, v in splits["val"].items()}
         val, _ = evaluate(model, data, vs, device, 0, base)
-        score = sum(val[t]["oracle"]["rel"] for t in OPS)
+        present_ops = [t for t in OPS if t in val]
+        score = sum(val[t]["oracle"]["rel"] for t in present_ops)
         if score < best:
             best = score
             torch.save(model.state_dict(), f"{out}/model.pt")
-        say(f"epoch {ep} loss {np.mean(ls):.4f} | val rel(oracle) " + " ".join(f"{t[4:]} {val[t]['oracle']['rel']:.3f}" for t in OPS)
+        say(f"epoch {ep} loss {np.mean(ls):.4f} | val rel(oracle) " + " ".join(f"{t[4:]} {val[t]['oracle']['rel']:.3f}" for t in present_ops)
             + f" | prog acc {val['program_learned']['task_acc']:.3f} | {time.time() - t0:.0f}s")
         if args.max_steps and step >= args.max_steps:
             break
     if os.path.exists(f"{out}/model.pt"):
-        model.load_state_dict(torch.load(f"{out}/model.pt", map_location=device))
+        model.load_state_dict(torch.load(f"{out}/model.pt", map_location=device, weights_only=True))
     git = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
     results = dict(args=vars(args), git=git, data_sha=t22.sha(args.data), parsed_sha=t22.sha(args.parsed), base=base, scale=scale.tolist())
     records = {}
