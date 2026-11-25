@@ -170,7 +170,7 @@ The repository is organized into two explicit tiers so the core equivariant lang
 - `src/encoder.py`, `src/irreps_to_text.py`, `src/model.py`: SE(3)/O(3)-equivariant `e3nn` message passing and Options A / B / C cross-attention (`c_tp_mode="channelwise"` cuts Option C cross-attention parameters **18.8x**, from `12.88M` to `0.68M`).
 - `src/prog.py` (`ProgModel`, `GroupProgModel`): neuro-symbolic invariant semantic selector (`force`, `diff`, `proj`, multi-atom `group`) paired with an exact O(3) vector executor (`scripts/64_interface_generalization_study.py`).
 - `src/ylm_lm.py` (`YLMCausalLM` + `<vec>`): causal language model with `IrrepsAdapter` side streams that autoregressively generates text containing `<vec>` and emits O(3)-equivariant 3D vectors (`checkpoints/generative_v0/`, `scripts/65_train_generative_ylm.py`).
-- `checkpoints/v0/` & `checkpoints/generative_v0/`: shipped 1–4 MB checkpoints + `src/api.py` sub-100ms CPU inference API + `ylm` CLI (`src/toolkit/`).
+- `checkpoints/v0/` & `checkpoints/generative_v0/`: shipped 1–11 MB checkpoints + `src/api.py` sub-100ms CPU inference API + `ylm` CLI (`src/toolkit/`).
 - `results/` & `tests/`: measured JSON artifacts (`results/interface_generalization/`, `results/scaling/`), historical cluster logs (`results/cluster_logs/`), and float64 symmetry regression suites.
 
 ### Tier 2 — Standalone Verifiers & Domain Extensions
@@ -235,7 +235,7 @@ Clebsch-Gordan self-product with a channel-wise (`uvu`) tensor product followed 
 `o3.Linear` channel mix. This preserves all compatible angular paths (including
 `1o x 1o -> 2e` and `1o x 1o -> 1e`) and exact O(3) equivariance while cutting the
 per-token CG weight count from cubic to quadratic in channel multiplicity (reducing
-default Option C parameters from ~13.1M to ~0.85M and lowering `SliceBackward0`
+default Option C parameters from ~13.1M to ~0.94M in `results/scaling/results.json`, and lowering `SliceBackward0`
 memory traffic). The default remains `fully_connected` for checkpoint compatibility.
 
 ## Optional invariant targets
