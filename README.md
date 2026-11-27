@@ -170,7 +170,7 @@ The repository is organized into two explicit tiers so the core equivariant lang
 - `src/encoder.py`, `src/irreps_to_text.py`, `src/model.py`: SE(3)/O(3)-equivariant `e3nn` message passing and Options A / B / C cross-attention (`c_tp_mode="channelwise"` cuts Option C cross-attention parameters **18.8x**, from `12.88M` to `0.68M`).
 - `src/prog.py` (`ProgModel`, `GroupProgModel`): neuro-symbolic invariant semantic selector (`force`, `diff`, `proj`, multi-atom `group`) paired with an exact O(3) vector executor (`scripts/64_interface_generalization_study.py`).
 - `src/ylm_lm.py` (`YLMCausalLM` + `<vec>`): causal language model with `IrrepsAdapter` side streams that autoregressively generates text containing `<vec>` and emits O(3)-equivariant 3D vectors (`checkpoints/generative_v0/`, `scripts/65_train_generative_ylm.py`).
-- `checkpoints/v0/` & `checkpoints/generative_v0/`: shipped 1–4 MB checkpoints + `src/api.py` sub-100ms CPU inference API + `ylm` CLI (`src/toolkit/`).
+- `checkpoints/v0/` & `checkpoints/generative_v0/`: shipped 1–11 MB checkpoints + `src/api.py` sub-100ms CPU inference API + `ylm` CLI (`src/toolkit/`).
 - `results/` & `tests/`: measured JSON artifacts (`results/interface_generalization/`, `results/scaling/`), historical cluster logs (`results/cluster_logs/`), and float64 symmetry regression suites.
 
 ### Tier 2 — Standalone Verifiers & Domain Extensions
@@ -235,7 +235,7 @@ Clebsch-Gordan self-product with a channel-wise (`uvu`) tensor product followed 
 `o3.Linear` channel mix. This preserves all compatible angular paths (including
 `1o x 1o -> 2e` and `1o x 1o -> 1e`) and exact O(3) equivariance while cutting the
 per-token CG weight count from cubic to quadratic in channel multiplicity (reducing
-default Option C parameters from ~13.1M to ~0.85M and lowering `SliceBackward0`
+default Option C parameters from ~13.1M to ~0.94M in `results/scaling/results.json`, and lowering `SliceBackward0`
 memory traffic). The default remains `fully_connected` for checkpoint compatibility.
 
 ## Optional invariant targets
@@ -348,7 +348,7 @@ ylm export-hf --labels data/qm9_xtb.pkl --v0 data/tensorqa_v0.json --out dist/hf
 
 - **MACE and NequIP / Allegro backbones**: `src/mace_backbone.py` (`MACEEncoder`) and `src/nequip_backbone.py` (`NequIPEncoder`) plug pretrained MACE-MP-0, MACE-OFF23, or TorchScript NequIP/Allegro `.pth` models into `YLM` (`--mace` / `--nequip`), keeping exact 3D forces (`F = -dE/dx`) and crystal repeat boxes.
 - **Live MD reaction monitor**: `src/toolkit/mlip_md.py` (`ylm run-md`) and `src/toolkit/md_hooks.py` (`OpenMMReactionReporter`, `LAMMPSReactionHook`) watch simulations step by step and log when bonds form, break, or transfer a proton (`H+`), saving SVG timelines and 3D HTML animations (`python scripts/33_demo_live_md_hooks.py`).
-- **Ouroboros 2D-to-3D stereo bridge**: `src/toolkit/ouroboros_bridge.py` (`ylm from-ouroboros`, `python scripts/34_ouroboros_to_ylm.py`) reads 2D drawings, stereo SMILES (`@/@@`, `/\`), `predictions.csv`, or `.extxyz` files from `yaniguan/ouroboros-ocsr` and checks 3D left/right handedness (`R`/`S`) and `cis`/`trans` double bonds.
+- **Ouroboros 2D-to-3D stereo bridge**: `src/toolkit/ouroboros_bridge.py` (`ylm from-ouroboros`, `python scripts/34_ouroboros_to_ylm.py`) reads 2D drawings, stereo SMILES (`@/@@`, `/\`), `predictions.csv`, or `.extxyz` files from `yaniguan/ouroboros-ocsr` and checks 3D left/right handedness (`R`/`S`) and `cis`/`trans` double bonds. `src/toolkit/ouroboros_context.py` reads the ouroboros `molecule_context/v1` JSONL: `status=ok` rows give a SMILES, `status=review` rows give "ask a human", and a `gold` field or unknown key is an error.
 
 ## Multi-task 3D model (`YLMUniverseModel`) and Uni-Mol comparison
 
